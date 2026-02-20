@@ -459,6 +459,8 @@ body::before {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    text-decoration: none;
+    cursor: pointer;
 }
 
 .sidebar-logo i {
@@ -686,6 +688,55 @@ body::before {
     border-top: 1px solid var(--border);
     padding: 0.5rem;
     transition: opacity 0.25s ease;
+}
+
+.auth-block {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border);
+}
+
+.auth-logged-out,
+.auth-logged-in {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.auth-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.auth-btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--neon-cyan);
+}
+
+.auth-btn.auth-logout {
+    background: transparent;
+}
+
+.auth-email {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.auth-block[data-configured="0"] {
+    display: none;
 }
 
 /* Content Wrapper: Main + Right Panel */

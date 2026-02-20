@@ -20,13 +20,66 @@ const App = {
         // Setup sidebar toggle
         this.setupSidebarToggle();
 
+        // Переход на лендинг по клику на SPHINX
+        document.getElementById('logoToLanding')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.location.href = 'landing.html';
+        });
+
         // Setup modals
         this.setupModals();
+
+        // Supabase Auth + Sync
+        this.setupSupabase();
 
         // Initial page load via Router (hashchange triggers on load)
         this.moveViewHeaderToCover();
 
         console.log('SPHINX GTD initialized');
+    },
+
+    setupSupabase() {
+        const block = document.getElementById('authBlock');
+        if (block) block.setAttribute('data-configured', SupabaseAuth?.isConfigured() ? '1' : '0');
+        if (typeof SupabaseAuth === 'undefined' || !SupabaseAuth.isConfigured()) return;
+        SupabaseAuth.init(async (session) => {
+            this.updateAuthUI(session);
+            if (session) {
+                SupabaseSync.init();
+                await SupabaseSync.loadFromSupabase();
+                GTD.renderAreas();
+                GTD.renderProjects();
+                Kanban.renderKanban('inboxKanban', null, 'inbox');
+                Habits.render();
+                Content.render();
+                Notes.render();
+                Wishboard.render();
+                StickyNotes.loadNotes();
+                StickyNotes.loadCompletedNotes();
+                StickyNotes.loadShapes();
+                StickyNotes.setupBackground();
+                GTD.updateBadges();
+            }
+        });
+        document.getElementById('authGoogle')?.addEventListener('click', () => SupabaseAuth.signInWithGoogle());
+        document.getElementById('authGithub')?.addEventListener('click', () => SupabaseAuth.signInWithGithub());
+        document.getElementById('authLogout')?.addEventListener('click', () => SupabaseAuth.signOut());
+    },
+
+    updateAuthUI(session) {
+        const out = document.getElementById('authLoggedOut');
+        const inEl = document.getElementById('authLoggedIn');
+        const email = document.getElementById('authEmail');
+        const block = document.getElementById('authBlock');
+        if (!block) return;
+        if (session) {
+            if (out) out.style.display = 'none';
+            if (inEl) inEl.style.display = 'flex';
+            if (email) email.textContent = session.user?.email || 'Вход выполнен';
+        } else {
+            if (out) out.style.display = 'flex';
+            if (inEl) inEl.style.display = 'none';
+        }
     },
 
     setupSidebarToggle() {
