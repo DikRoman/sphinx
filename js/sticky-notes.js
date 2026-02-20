@@ -8,7 +8,7 @@ const StickyNotes = {
     dragOffset: { x: 0, y: 0 },
     dragStartClient: { x: 0, y: 0 },
     dragStartPosition: { x: 0, y: 0 },
-    zoomLevel: 1.0,
+    zoomLevel: 0.5,
     resizingElement: null,
     resizeHandle: null,
     selectedElements: new Set(), // Выделенные элементы
@@ -24,17 +24,13 @@ const StickyNotes = {
         this.loadNotes();
         this.loadCompletedNotes();
         this.loadShapes();
-        // Загрузить сохраненный уровень масштаба
+        // Загрузить сохраненный уровень масштаба (по умолчанию 50%)
         const savedZoom = localStorage.getItem('sticky_notes_zoom_level');
-        if (savedZoom) {
-            this.zoomLevel = parseFloat(savedZoom);
-        }
+        this.zoomLevel = savedZoom ? parseFloat(savedZoom) : 0.5;
         this.setupEventListeners();
         this.setupSelection();
         this.setupBackground();
         this.updateZoomIndicator();
-        // Рендерим выполненные заметки при инициализации
-        this.renderCompletedNotes();
         // setupDragAndDrop будет вызван в renderNotes когда контейнер будет доступен
         // или при первом показе sticky notes view
     },
@@ -55,18 +51,6 @@ const StickyNotes = {
                     e.preventDefault();
                     e.stopPropagation();
                     this.createNewShape();
-                    break;
-                case 'showCompletedStickyNotes':
-                    e.preventDefault();
-                    document.getElementById('stickyNotesView').classList.remove('active');
-                    document.getElementById('completedStickyNotesView').classList.add('active');
-                    this.renderCompletedNotes();
-                    break;
-                case 'hideCompletedStickyNotes':
-                    e.preventDefault();
-                    document.getElementById('completedStickyNotesView').classList.remove('active');
-                    document.getElementById('stickyNotesView').classList.add('active');
-                    this.renderNotes();
                     break;
                 case 'stickyZoomIn':
                     e.preventDefault();

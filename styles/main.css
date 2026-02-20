@@ -299,7 +299,7 @@ body::before {
 }
 
 #rightPanelMonthYear {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     font-weight: 500;
 }
 
@@ -3029,7 +3029,7 @@ body::before {
 
 /* Right Panel - календарь и YouTube */
 .right-panel {
-    width: 260px;
+    width: 220px;
     flex-shrink: 0;
     background: var(--bg-secondary);
     border-left: 1px solid var(--border);
@@ -3045,18 +3045,18 @@ body::before {
 .right-panel-calendar,
 .right-panel-player {
     background: var(--bg-card);
-    border-radius: var(--radius-xl);
-    padding: 1rem;
+    border-radius: var(--radius-lg);
+    padding: 0.75rem;
     border: 1px solid var(--border);
 }
 
 .right-panel-title {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.4rem;
     font-weight: 600;
-    font-size: 0.875rem;
-    margin-bottom: 0.75rem;
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
     color: var(--text-primary);
 }
 
@@ -3088,8 +3088,8 @@ body::before {
 .right-panel-weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 2px;
-    font-size: 0.65rem;
+    gap: 1px;
+    font-size: 0.6rem;
     color: var(--text-muted);
     text-align: center;
     margin-bottom: 0.5rem;
@@ -3098,7 +3098,7 @@ body::before {
 .right-panel-days {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 2px;
+    gap: 1px;
 }
 
 .right-panel-day {
@@ -3106,7 +3106,7 @@ body::before {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     border-radius: var(--radius-md);
     color: var(--text-secondary);
 }

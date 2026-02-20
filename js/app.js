@@ -44,14 +44,7 @@ const App = {
     },
 
     moveViewHeaderToCover() {
-        const coverCenter = document.getElementById('coverCenter');
-        const pageContainer = document.getElementById('pageContainer');
-        if (!coverCenter || !pageContainer) return;
-        const viewHeader = pageContainer.querySelector('.view-header');
-        if (viewHeader) {
-            coverCenter.innerHTML = '';
-            coverCenter.appendChild(viewHeader);
-        }
+        // Заголовок блока (название + subtitle) остаётся под обложкой в контенте страницы
     },
 
     setupModals() {
