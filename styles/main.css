@@ -53,8 +53,8 @@
     --glow-cyan: 0 0 20px rgba(0, 245, 255, 0.4), 0 0 40px rgba(0, 245, 255, 0.2);
     --glow-pink: 0 0 20px rgba(255, 61, 127, 0.3), 0 0 40px rgba(255, 61, 127, 0.15);
     
-    --sidebar-width: 280px;
-    --sidebar-collapsed: 70px;
+    --sidebar-width: 200px;
+    --sidebar-collapsed: 24px;
     --header-height: 70px;
     
     --radius-sm: 10px;
@@ -250,6 +250,22 @@ body::before {
     color: var(--neon-green);
 }
 
+/* Layout: sidebar (full height) + main (cover + content) */
+.app-layout {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.app-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+}
+
 .app-body {
     flex: 1;
     display: flex;
@@ -305,16 +321,17 @@ body::before {
     flex: 1;
 }
 
-/* Sidebar - плавные формы (навигация ниже обложки) */
+/* Sidebar - узкая панель, полная высота, ушко-таб для скрытия */
 .sidebar {
     width: var(--sidebar-width);
+    min-height: 100%;
     background: linear-gradient(180deg, var(--bg-secondary) 0%, rgba(12, 12, 18, 0.98) 100%);
     border-right: 1px solid var(--border);
     box-shadow: 2px 0 20px rgba(0, 255, 136, 0.05);
     border-radius: 0 0 var(--radius-2xl) 0;
     display: flex;
     flex-direction: column;
-    transition: width 0.3s ease, border-radius 0.3s ease;
+    transition: width 0.3s ease, min-width 0.3s ease;
     overflow: hidden;
     position: relative;
     z-index: 200;
@@ -322,13 +339,61 @@ body::before {
 }
 
 .sidebar .nav-item,
-.sidebar button {
+.sidebar button:not(.sidebar-tab) {
     pointer-events: auto;
     cursor: pointer;
 }
 
+/* Ушко — таб для скрытия/раскрытия панели */
+.sidebar-tab {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 48px;
+    background: var(--gradient-green-blue);
+    border: 1px solid var(--border);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    color: #000;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 201;
+    box-shadow: 2px 0 8px rgba(0, 255, 136, 0.3);
+    transition: all 0.2s;
+}
+
+.sidebar-tab:hover {
+    box-shadow: 2px 0 12px rgba(0, 255, 136, 0.5);
+}
+
+.sidebar-tab i {
+    font-size: 0.7rem;
+    transition: transform 0.3s;
+}
+
 .sidebar.collapsed {
     width: var(--sidebar-collapsed);
+    min-width: var(--sidebar-collapsed);
+}
+
+.sidebar.collapsed .nav-menu,
+.sidebar.collapsed .sidebar-footer {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.sidebar.collapsed .sidebar-tab {
+    right: auto;
+    left: 0;
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    box-shadow: 2px 0 8px rgba(0, 255, 136, 0.3);
+}
+
+.sidebar.collapsed .sidebar-tab i {
+    transform: rotate(180deg);
 }
 
 .sidebar-header {
@@ -432,6 +497,7 @@ body::before {
     flex: 1;
     overflow-y: auto;
     padding: 0.5rem;
+    transition: opacity 0.25s ease;
 }
 
 .nav-section {
@@ -516,6 +582,7 @@ body::before {
 .sidebar-footer {
     border-top: 1px solid var(--border);
     padding: 0.5rem;
+    transition: opacity 0.25s ease;
 }
 
 /* Content Wrapper: Main + Right Panel */

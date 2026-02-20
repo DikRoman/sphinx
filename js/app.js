@@ -30,17 +30,16 @@ const App = {
     },
 
     setupSidebarToggle() {
-        const toggleBtn = document.getElementById('toggleSidebar');
-        const sidebar = document.querySelector('.sidebar');
+        const tab = document.getElementById('sidebarTab');
+        const sidebar = document.getElementById('sidebar');
+        if (!tab || !sidebar) return;
 
-        toggleBtn.addEventListener('click', () => {
+        tab.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             sidebar.classList.toggle('collapsed');
-            const icon = toggleBtn.querySelector('i');
-            if (sidebar.classList.contains('collapsed')) {
-                icon.className = 'fas fa-chevron-right';
-            } else {
-                icon.className = 'fas fa-chevron-left';
-            }
+            const icon = tab.querySelector('i');
+            icon.className = sidebar.classList.contains('collapsed') ? 'fas fa-chevron-right' : 'fas fa-chevron-left';
         });
     },
 

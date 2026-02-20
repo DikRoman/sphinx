@@ -12,36 +12,6 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- Cover Bar - обложка с фоном -->
-        <header class="app-cover" id="appCover">
-            <button class="cover-settings-btn" id="coverSettingsBtn" title="Изменить обложку">
-                <i class="fas fa-image"></i>
-            </button>
-            <div class="cover-left">
-                <div class="logo">
-                    <i class="fas fa-sphinx"></i>
-                    <span>SPHINX</span>
-                </div>
-                <button class="btn-icon" id="toggleSidebar" title="Свернуть">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-            </div>
-            <div class="cover-center" id="coverCenter">
-                <!-- View header will be moved here dynamically -->
-            </div>
-            <div class="cover-right" id="coverRight">
-                <div class="right-panel-title">
-                    <i class="fas fa-calendar"></i>
-                    <span>Календарь</span>
-                </div>
-                <div class="right-panel-calendar-header">
-                    <button type="button" class="right-panel-nav" id="rightPanelPrevMonth" title="Пред. месяц"><i class="fas fa-chevron-left"></i></button>
-                    <span id="rightPanelMonthYear"></span>
-                    <button type="button" class="right-panel-nav" id="rightPanelNextMonth" title="След. месяц"><i class="fas fa-chevron-right"></i></button>
-                </div>
-            </div>
-        </header>
-
         <!-- Cover Settings Modal -->
         <div class="modal cover-modal" id="coverModal">
             <div class="modal-content modal-small">
@@ -80,10 +50,12 @@
             </div>
         </div>
 
-        <!-- Body: Sidebar + Content -->
-        <div class="app-body">
-        <!-- Sidebar - только навигация (ниже обложки) -->
-        <aside class="sidebar">
+        <!-- Layout: Sidebar (full height) + Main (cover + content) -->
+        <div class="app-layout">
+        <aside class="sidebar" id="sidebar">
+            <button class="sidebar-tab" id="sidebarTab" title="Скрыть / Показать панель">
+                <i class="fas fa-chevron-left"></i>
+            </button>
             <!-- GTD Navigation -->
             <nav class="nav-menu">
                 <div class="nav-section">
@@ -152,7 +124,31 @@
             </div>
         </aside>
 
-        <!-- Content Wrapper: Main + Right Panel -->
+        <div class="app-main">
+        <header class="app-cover" id="appCover">
+            <button class="cover-settings-btn" id="coverSettingsBtn" title="Изменить обложку">
+                <i class="fas fa-image"></i>
+            </button>
+            <div class="cover-left">
+                <div class="logo">
+                    <i class="fas fa-sphinx"></i>
+                    <span>SPHINX</span>
+                </div>
+            </div>
+            <div class="cover-center" id="coverCenter"></div>
+            <div class="cover-right" id="coverRight">
+                <div class="right-panel-title">
+                    <i class="fas fa-calendar"></i>
+                    <span>Календарь</span>
+                </div>
+                <div class="right-panel-calendar-header">
+                    <button type="button" class="right-panel-nav" id="rightPanelPrevMonth" title="Пред. месяц"><i class="fas fa-chevron-left"></i></button>
+                    <span id="rightPanelMonthYear"></span>
+                    <button type="button" class="right-panel-nav" id="rightPanelNextMonth" title="След. месяц"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </header>
+        <div class="app-body">
         <div class="content-wrapper">
         <!-- Main Content -->
         <main class="main-content">
@@ -178,6 +174,7 @@
                 </div>
             </div>
         </aside>
+        </div>
         </div>
         </div>
     </div>
