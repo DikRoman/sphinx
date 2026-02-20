@@ -66,6 +66,7 @@ const RightPanel = {
             }
         });
         this.updateResumeButton();
+        this.applyPlayerSize();
     },
 
     setupCalendarNav() {
@@ -383,8 +384,35 @@ const RightPanel = {
                 wrap?.classList.toggle('vertical-mode', m === 'vertical');
                 document.querySelectorAll('.youtube-flyout-option').forEach(x => x.classList.toggle('active', x.dataset.mode === m));
                 flyout?.classList.remove('open');
+                this.applyPlayerSize();
             });
         });
+    },
+
+    applyPlayerSize() {
+        const wrap = document.querySelector('.youtube-player-wrap');
+        const container = document.getElementById('youtubePlayerContainer');
+        const isVertical = wrap?.classList.contains('vertical-mode');
+        if (container) {
+            if (isVertical) {
+                container.style.width = '120px';
+                container.style.maxWidth = '100%';
+                container.style.margin = '0 auto';
+                container.style.aspectRatio = '9/16';
+            } else {
+                container.style.width = '';
+                container.style.maxWidth = '';
+                container.style.margin = '';
+                container.style.aspectRatio = '';
+            }
+        }
+        if (this.ytPlayer && typeof this.ytPlayer.setSize === 'function') {
+            try {
+                const w = isVertical ? 120 : (container?.offsetWidth || 220);
+                const h = isVertical ? 213 : 180;
+                this.ytPlayer.setSize(w, h);
+            } catch (e) {}
+        }
     },
 
     setupPlayerNav() {
@@ -436,6 +464,7 @@ const RightPanel = {
             });
             document.getElementById('youtubePlayerContainer')?.style.setProperty('display', 'block');
             document.getElementById('youtubeExpandBtn')?.style.setProperty('display', 'flex');
+            this.applyPlayerSize();
         } else {
             const container = document.getElementById('youtubePlayerContainer');
             if (container && !container.querySelector('iframe')) {
