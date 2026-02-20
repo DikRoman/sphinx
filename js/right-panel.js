@@ -4,13 +4,30 @@ const RightPanel = {
     ytPlayer: null,
     currentVideoId: null,
     savePositionInterval: null,
+    calendarCollapsed: false,
 
     init() {
         this.currentDate = new Date();
+        this.calendarCollapsed = localStorage.getItem('sphinx_calendar_collapsed') === 'true';
         this.renderCalendar();
+        this.setupCalendarTab();
         this.setupCalendarNav();
         this.setupYouTubePlayer();
         this.initYouTubeAPI();
+    },
+
+    setupCalendarTab() {
+        const tab = document.getElementById('calendarTab');
+        const calendar = document.getElementById('rightPanelCalendar');
+        tab?.addEventListener('click', () => {
+            this.calendarCollapsed = !this.calendarCollapsed;
+            localStorage.setItem('sphinx_calendar_collapsed', this.calendarCollapsed);
+            calendar?.classList.toggle('collapsed', this.calendarCollapsed);
+            const icon = tab?.querySelector('i');
+            icon.className = this.calendarCollapsed ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
+        });
+        calendar?.classList.toggle('collapsed', this.calendarCollapsed);
+        document.getElementById('calendarTab')?.querySelector('i').className = this.calendarCollapsed ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
     },
 
     initYouTubeAPI() {
@@ -87,6 +104,23 @@ const RightPanel = {
         }
 
         daysEl.innerHTML = html;
+        this.renderWeekStrip();
+    },
+
+    renderWeekStrip() {
+        const strip = document.getElementById('rightPanelWeekStrip');
+        if (!strip) return;
+        const d = new Date();
+        const day = d.getDay();
+        const mondayOffset = day === 0 ? -6 : 1 - day;
+        let html = '';
+        for (let i = 0; i < 7; i++) {
+            const fd = new Date(d);
+            fd.setDate(d.getDate() + mondayOffset + i);
+            const isToday = fd.toDateString() === d.toDateString();
+            html += `<span class="right-panel-day ${isToday ? 'today' : ''}">${fd.getDate()}</span>`;
+        }
+        strip.innerHTML = html;
     },
 
     parseVideoId(input) {

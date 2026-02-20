@@ -172,7 +172,10 @@
 
         <!-- Right Panel: Calendar + YouTube -->
         <aside class="right-panel" id="rightPanel">
-            <div class="right-panel-calendar">
+            <div class="right-panel-calendar" id="rightPanelCalendar">
+                <button type="button" class="calendar-tab" id="calendarTab" title="Свернуть / Развернуть">
+                    <i class="fas fa-chevron-down"></i>
+                </button>
                 <div class="right-panel-calendar-header">
                     <div class="right-panel-title">
                         <i class="fas fa-calendar"></i>
@@ -188,6 +191,7 @@
                     <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span>
                 </div>
                 <div class="right-panel-days" id="rightPanelDays"></div>
+                <div class="right-panel-week-strip" id="rightPanelWeekStrip"></div>
             </div>
             <div class="right-panel-player">
                 <div class="right-panel-title">

@@ -3259,9 +3259,73 @@ body::before {
     overflow-y: auto;
 }
 
+.right-panel-calendar {
+    position: relative;
+}
+
 .right-panel-calendar,
 .right-panel-player {
     padding: 0.75rem;
+}
+
+.calendar-tab {
+    position: absolute;
+    top: -0.25rem;
+    left: -0.25rem;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-muted);
+    font-size: 0.5rem;
+    cursor: pointer;
+    z-index: 2;
+    transition: all 0.2s;
+}
+
+.calendar-tab:hover {
+    background: var(--bg-hover);
+    color: var(--neon-cyan);
+    border-color: var(--neon-cyan);
+}
+
+.right-panel-week-strip {
+    display: none;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    margin-top: 0.5rem;
+}
+
+.right-panel-calendar.collapsed .right-panel-calendar-header {
+    display: none;
+}
+
+.right-panel-calendar.collapsed .right-panel-weekdays,
+.right-panel-calendar.collapsed .right-panel-week-strip {
+    margin-bottom: 0.2rem;
+}
+
+.right-panel-calendar.collapsed .right-panel-days {
+    display: none;
+}
+
+.right-panel-calendar.collapsed .right-panel-week-strip {
+    display: grid;
+}
+
+.right-panel-calendar.collapsed .right-panel-weekdays span,
+.right-panel-calendar.collapsed .right-panel-week-strip .right-panel-day {
+    font-size: 0.55rem;
+}
+
+.right-panel-calendar.collapsed .right-panel-week-strip .right-panel-day {
+    aspect-ratio: 1;
+    min-height: 0;
 }
 
 .right-panel-title {
