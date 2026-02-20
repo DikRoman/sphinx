@@ -235,7 +235,6 @@ const RightPanel = {
 
         newPlaylistBtn?.addEventListener('click', () => this.showNewPlaylistModal());
 
-        this.setupPlayerMenu();
         this.setupPlayerNav();
         document.getElementById('youtubeExpandBtn')?.addEventListener('click', () => this.expandVideo());
         document.getElementById('youtubeExpandClose')?.addEventListener('click', () => this.collapseVideo());
@@ -367,62 +366,21 @@ const RightPanel = {
         this.renderPlaylists();
     },
 
-    setupPlayerMenu() {
-        const btn = document.getElementById('youtubePlayerMenuBtn');
-        const flyout = document.getElementById('youtubePlayerFlyout');
-        const wrap = document.querySelector('.youtube-player-wrap');
-        const mode = localStorage.getItem('sphinx_youtube_mode') || 'normal';
-        wrap?.classList.toggle('vertical-mode', mode === 'vertical');
-        document.querySelectorAll('.youtube-flyout-option').forEach(o => {
-            o.classList.toggle('active', o.dataset.mode === mode);
-        });
-        btn?.addEventListener('click', (e) => {
-            e.stopPropagation();
-            flyout?.classList.toggle('open');
-        });
-        document.addEventListener('click', () => flyout?.classList.remove('open'));
-        flyout?.addEventListener('click', (e) => e.stopPropagation());
-        document.querySelectorAll('.youtube-flyout-option').forEach(o => {
-            o.addEventListener('click', () => {
-                const m = o.dataset.mode;
-                localStorage.setItem('sphinx_youtube_mode', m);
-                wrap?.classList.toggle('vertical-mode', m === 'vertical');
-                document.querySelectorAll('.youtube-flyout-option').forEach(x => x.classList.toggle('active', x.dataset.mode === m));
-                flyout?.classList.remove('open');
-                this.applyPlayerSize();
-            });
-        });
-    },
-
     applyPlayerSize() {
-        const wrap = document.querySelector('.youtube-player-wrap');
         const container = document.getElementById('youtubePlayerContainer');
-        const isVertical = wrap?.classList.contains('vertical-mode');
-        if (container) {
-            if (isVertical) {
-                container.style.width = '120px';
-                container.style.maxWidth = '100%';
-                container.style.margin = '0 auto';
-                container.style.aspectRatio = '9/16';
-            } else {
-                container.style.width = '';
-                container.style.maxWidth = '';
-                container.style.margin = '';
-                container.style.aspectRatio = '';
-            }
-        }
         if (this.ytPlayer && typeof this.ytPlayer.setSize === 'function') {
             try {
-                const w = isVertical ? 120 : (container?.offsetWidth || 220);
-                const h = isVertical ? 213 : 180;
-                this.ytPlayer.setSize(w, h);
+                const w = container?.offsetWidth || 220;
+                this.ytPlayer.setSize(w, 180);
             } catch (e) {}
         }
     },
 
     setupPlayerNav() {
-        document.getElementById('youtubePrevBtn')?.addEventListener('click', () => this.playPrev());
-        document.getElementById('youtubeNextBtn')?.addEventListener('click', () => this.playNext());
+        const prevBtn = document.getElementById('youtubePrevBtn');
+        const nextBtn = document.getElementById('youtubeNextBtn');
+        prevBtn?.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); this.playPrev(); });
+        nextBtn?.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); this.playNext(); });
     },
 
     getCurrentPlaylistVideos() {
