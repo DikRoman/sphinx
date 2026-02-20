@@ -3539,6 +3539,9 @@ body::before {
 
 .youtube-player-wrap {
     position: relative;
+    margin-left: -1.75rem;
+    margin-right: -1.75rem;
+    width: calc(100% + 3.5rem);
 }
 
 .youtube-expand-btn {
