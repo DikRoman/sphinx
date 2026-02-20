@@ -27,7 +27,8 @@ const RightPanel = {
             icon.className = this.calendarCollapsed ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
         });
         calendar?.classList.toggle('collapsed', this.calendarCollapsed);
-        document.getElementById('calendarTab')?.querySelector('i').className = this.calendarCollapsed ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
+        const tabIcon = document.getElementById('calendarTab')?.querySelector('i');
+        if (tabIcon) tabIcon.className = this.calendarCollapsed ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
     },
 
     initYouTubeAPI() {

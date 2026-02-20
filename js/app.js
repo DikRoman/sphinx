@@ -10,7 +10,7 @@ const App = {
         Notes.init();
         StickyNotes.init();
         Wishboard.init();
-        RightPanel.init();
+        if (typeof RightPanel !== 'undefined') RightPanel.init();
         Gantt.init();
         if (typeof Cover !== 'undefined') Cover.init();
 
