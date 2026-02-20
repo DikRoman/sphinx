@@ -29,6 +29,9 @@ const App = {
         // Setup modals
         this.setupModals();
 
+        // Right panel: resize, music collapse
+        this.setupPanelControls();
+
         // Supabase Auth + Sync
         this.setupSupabase();
 
@@ -36,6 +39,64 @@ const App = {
         this.moveViewHeaderToCover();
 
         console.log('SPHINX GTD initialized');
+    },
+
+    setupPanelControls() {
+        const COVER_HEIGHT_KEY = 'sphinx_cover_height';
+        const DEFAULT_COVER = 180;
+
+        const cover = document.getElementById('appCover');
+        const resizeHandle = document.getElementById('rightPanelResizeHandle');
+        const musicTab = document.getElementById('musicCollapseTab');
+        const musicPlayer = document.getElementById('rightPanelPlayer');
+
+        if (resizeHandle && cover) {
+            let dragging = false;
+            let startY = 0, startHeight = 0;
+            const minCover = 0, maxCover = 280;
+
+            resizeHandle.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                dragging = true;
+                resizeHandle.classList.add('dragging');
+                startY = e.clientY;
+                startHeight = parseInt(cover.style.height) || DEFAULT_COVER;
+            });
+            document.addEventListener('mousemove', (e) => {
+                if (!dragging) return;
+                const dy = startY - e.clientY;
+                let h = Math.max(minCover, Math.min(maxCover, startHeight - dy));
+                cover.style.height = h + 'px';
+                cover.style.minHeight = h + 'px';
+                localStorage.setItem(COVER_HEIGHT_KEY, String(h));
+            });
+            document.addEventListener('mouseup', () => {
+                if (dragging) {
+                    dragging = false;
+                    resizeHandle.classList.remove('dragging');
+                }
+            });
+            const saved = localStorage.getItem(COVER_HEIGHT_KEY);
+            if (saved) {
+                const h = parseInt(saved);
+                if (h >= 0 && h <= 400) {
+                    cover.style.height = h + 'px';
+                    cover.style.minHeight = h + 'px';
+                }
+            }
+        }
+
+        if (musicTab && musicPlayer) {
+            const collapsed = localStorage.getItem('sphinx_music_collapsed') === '1';
+            if (collapsed) musicPlayer.classList.add('collapsed');
+            const icon = musicTab.querySelector('i');
+            musicTab.addEventListener('click', () => {
+                const c = musicPlayer.classList.toggle('collapsed');
+                localStorage.setItem('sphinx_music_collapsed', c ? '1' : '0');
+                if (icon) icon.className = c ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
+            });
+            if (icon && collapsed) icon.className = 'fas fa-chevron-up';
+        }
     },
 
     setupSupabase() {

@@ -140,6 +140,55 @@ body::before {
     background-color: transparent;
 }
 
+.app-cover.collapsed {
+    height: 0 !important;
+    min-height: 0 !important;
+    padding: 0;
+    overflow: hidden;
+    border: none;
+}
+
+.app-cover.collapsed .cover-settings-btn,
+.app-cover.collapsed .cover-layout-btn,
+.app-cover.collapsed .cover-center {
+    display: none;
+}
+
+.cover-collapse-tab {
+    position: absolute;
+    bottom: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    color: var(--text-muted);
+    font-size: 0.6rem;
+    cursor: pointer;
+    z-index: 5;
+    transition: all 0.2s;
+}
+
+.cover-collapse-tab:hover {
+    background: var(--bg-hover);
+    color: var(--neon-cyan);
+}
+
+.app-cover.collapsed .cover-collapse-tab {
+    bottom: auto;
+    top: 0.25rem;
+}
+
+.app-cover.collapsed .cover-collapse-tab i {
+    transform: rotate(180deg);
+}
+
 .cover-settings-btn {
     position: absolute;
     top: 0.5rem;
@@ -3259,8 +3308,67 @@ body::before {
     overflow-y: auto;
 }
 
+.right-panel-resize-handle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 8px;
+    cursor: ns-resize;
+    z-index: 3;
+    background: linear-gradient(to bottom, rgba(0,245,255,0.2), transparent);
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.right-panel-resize-handle:hover,
+.right-panel-resize-handle.dragging {
+    opacity: 1;
+}
+
+.right-panel {
+    position: relative;
+}
+
 .right-panel-calendar {
     position: relative;
+}
+
+.right-panel-player {
+    position: relative;
+}
+
+.music-collapse-tab {
+    position: absolute;
+    top: -0.25rem;
+    left: -0.25rem;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-muted);
+    font-size: 0.5rem;
+    cursor: pointer;
+    z-index: 2;
+    transition: all 0.2s;
+}
+
+.music-collapse-tab:hover {
+    background: var(--bg-hover);
+    color: var(--neon-cyan);
+}
+
+.right-panel-player.collapsed .youtube-collapsible {
+    display: none;
+}
+
+.right-panel-player.collapsed .music-collapse-tab i {
+    transform: rotate(180deg);
 }
 
 .right-panel-calendar,

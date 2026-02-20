@@ -139,6 +139,9 @@
 
         <div class="app-main">
         <header class="app-cover" id="appCover">
+            <button type="button" class="cover-collapse-tab" id="coverCollapseTab" title="Свернуть / Развернуть обложку">
+                <i class="fas fa-chevron-down"></i>
+            </button>
             <button class="cover-settings-btn" id="coverSettingsBtn" title="Изменить обложку">
                 <i class="fas fa-image"></i>
             </button>
@@ -173,6 +176,7 @@
 
         <!-- Right Panel: Calendar + YouTube -->
         <aside class="right-panel" id="rightPanel">
+            <div class="right-panel-resize-handle" id="rightPanelResizeHandle" title="Тянуть вверх для растягивания"></div>
             <div class="right-panel-calendar" id="rightPanelCalendar">
                 <button type="button" class="calendar-tab" id="calendarTab" title="Свернуть / Развернуть">
                     <i class="fas fa-chevron-down"></i>
@@ -194,12 +198,16 @@
                 <div class="right-panel-days" id="rightPanelDays"></div>
                 <div class="right-panel-week-strip" id="rightPanelWeekStrip"></div>
             </div>
-            <div class="right-panel-player">
+            <div class="right-panel-player" id="rightPanelPlayer">
+                <button type="button" class="music-collapse-tab" id="musicCollapseTab" title="Свернуть / Развернуть">
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="youtube-collapsible" id="youtubeCollapsible">
                 <div class="right-panel-title">
                     <i class="fas fa-music"></i>
                     <span>Музыка</span>
                 </div>
-                <div class="right-panel-youtube">
+                <div class="right-panel-youtube" id="rightPanelYoutube">
                     <div class="youtube-add-row">
                         <input type="text" id="youtubeUrl" class="form-input" placeholder="Ссылка или ID видео">
                         <select id="youtubePlaylistSelect" class="form-input youtube-playlist-select">
@@ -214,12 +222,13 @@
                         <i class="fas fa-play-circle"></i><span class="youtube-resume-label"> Продолжить</span>
                     </button>
                     <div class="youtube-playlists" id="youtubePlaylists"></div>
-                    <div class="youtube-player-wrap">
-                        <button type="button" class="youtube-expand-btn" id="youtubeExpandBtn" title="Развернуть видео" style="display: none;">
-                            <i class="fas fa-expand"></i>
-                        </button>
-                        <div id="youtubePlayerContainer"></div>
-                    </div>
+                </div>
+                </div>
+                <div class="youtube-player-wrap">
+                    <button type="button" class="youtube-expand-btn" id="youtubeExpandBtn" title="Развернуть видео" style="display: none;">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    <div id="youtubePlayerContainer"></div>
                 </div>
             </div>
         </aside>

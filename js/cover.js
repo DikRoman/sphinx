@@ -2,12 +2,31 @@
 const Cover = {
     STORAGE_KEY: 'sphinx_cover_image',
     LAYOUT_KEY: 'sphinx_cover_position',
+    COLLAPSED_KEY: 'sphinx_cover_collapsed',
 
     init() {
         this.loadCover();
         this.loadLayout();
+        this.applyCollapsedState();
+        this.setupCoverTab();
         this.setupEventListeners();
         this.setupLayoutListeners();
+    },
+
+    setupCoverTab() {
+        const tab = document.getElementById('coverCollapseTab');
+        const cover = document.getElementById('appCover');
+        tab?.addEventListener('click', () => {
+            const collapsed = cover?.classList.toggle('collapsed');
+            localStorage.setItem(this.COLLAPSED_KEY, collapsed ? '1' : '0');
+        });
+    },
+
+    applyCollapsedState() {
+        const cover = document.getElementById('appCover');
+        if (cover && localStorage.getItem(this.COLLAPSED_KEY) === '1') {
+            cover.classList.add('collapsed');
+        }
     },
 
     loadCover() {
