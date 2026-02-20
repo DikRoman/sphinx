@@ -29,14 +29,16 @@ const GTD = {
         const areas = Storage.getAreas();
         areasList.innerHTML = '';
 
-        Object.values(areas).forEach(area => {
+        const areaColors = ['#00F5FF', '#FF3D7F', '#FFE135', '#00FF88', '#A855F7', '#00B8FF'];
+        Object.values(areas).forEach((area, i) => {
+            const color = area.color || areaColors[i % areaColors.length];
             const item = document.createElement('a');
             item.href = `#area/${area.id}`;
             item.className = 'nav-item';
             item.dataset.page = 'area';
             item.dataset.areaId = area.id;
             item.innerHTML = `
-                <i class="fas fa-${area.icon || 'folder'}"></i>
+                <i class="fas fa-${area.icon || 'folder'}" style="color: ${color}"></i>
                 <span>${this.escapeHtml(area.name)}</span>
             `;
             areasList.appendChild(item);
@@ -48,14 +50,16 @@ const GTD = {
         const projects = Storage.getProjects();
         projectsList.innerHTML = '';
 
-        Object.values(projects).forEach(project => {
+        const projectColors = ['#00D4AA', '#FF00E5', '#00F5FF', '#FFE135', '#A855F7'];
+        Object.values(projects).forEach((project, i) => {
+            const color = projectColors[i % projectColors.length];
             const item = document.createElement('a');
             item.href = `#project/${project.id}`;
             item.className = 'nav-item';
             item.dataset.page = 'project';
             item.dataset.projectId = project.id;
             item.innerHTML = `
-                <i class="fas fa-project-diagram"></i>
+                <i class="fas fa-project-diagram" style="color: ${color}"></i>
                 <span>${this.escapeHtml(project.name)}</span>
             `;
             projectsList.appendChild(item);

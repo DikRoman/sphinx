@@ -648,6 +648,34 @@ body::before {
     color: #000;
 }
 
+/* Дофаминовые цвета иконок в навигации */
+.nav-item[data-icon-color="cyan"] i { color: #00F5FF; }
+.nav-item[data-icon-color="pink"] i { color: #FF3D7F; }
+.nav-item[data-icon-color="yellow"] i { color: #FFE135; }
+.nav-item[data-icon-color="green"] i { color: #00FF88; }
+.nav-item[data-icon-color="teal"] i { color: #00D4AA; }
+.nav-item[data-icon-color="purple"] i { color: #A855F7; }
+.nav-item[data-icon-color="blue"] i { color: #00B8FF; }
+.nav-item[data-icon-color="magenta"] i { color: #FF00E5; }
+
+.nav-item[data-icon-color="cyan"]:hover i,
+.nav-item[data-icon-color="pink"]:hover i,
+.nav-item[data-icon-color="yellow"]:hover i,
+.nav-item[data-icon-color="green"]:hover i,
+.nav-item[data-icon-color="teal"]:hover i,
+.nav-item[data-icon-color="purple"]:hover i,
+.nav-item[data-icon-color="blue"]:hover i,
+.nav-item[data-icon-color="magenta"]:hover i { filter: brightness(1.2); }
+
+.nav-item.active[data-icon-color="cyan"] i { color: #005a66; }
+.nav-item.active[data-icon-color="pink"] i { color: #c91f5a; }
+.nav-item.active[data-icon-color="yellow"] i { color: #9a8010; }
+.nav-item.active[data-icon-color="green"] i { color: #00854d; }
+.nav-item.active[data-icon-color="teal"] i { color: #007a5c; }
+.nav-item.active[data-icon-color="purple"] i { color: #5c2a9e; }
+.nav-item.active[data-icon-color="blue"] i { color: #00668a; }
+.nav-item.active[data-icon-color="magenta"] i { color: #9e008e; }
+
 .sidebar.collapsed .nav-item span,
 .sidebar.collapsed .nav-section-title,
 .sidebar.collapsed .badge {
