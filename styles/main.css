@@ -3727,16 +3727,21 @@ body::before {
     flex-direction: column;
 }
 
+/* Вертикальный режим: центр видео, растягивание по высоте (cover) */
 .youtube-player-wrap.vertical-mode #youtubePlayerContainer {
     width: 120px;
+    height: 213px;
     max-width: 100%;
     margin: 0 auto;
+    overflow: hidden;
 }
 
 .youtube-player-wrap.vertical-mode #youtubePlayerContainer iframe {
-    width: 100% !important;
+    /* 16:9 видео в 9:16 контейнере — масштаб по высоте, обрезка по краям, центр виден */
+    width: 378px !important;
     height: 213px !important;
-    aspect-ratio: 9/16;
+    max-width: none !important;
+    margin-left: -129px;
 }
 
 .youtube-menu-wrap {

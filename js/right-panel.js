@@ -252,9 +252,14 @@ const RightPanel = {
             const playlistHeader = e.target.closest('.youtube-playlist-header');
             if (playBtn) {
                 e.preventDefault();
-                const plId = playBtn.dataset.playlistId;
-                const idx = playBtn.dataset.videoIndex != null ? parseInt(playBtn.dataset.videoIndex, 10) : -1;
-                this.playVideo(playBtn.dataset.playVideo, null, plId, idx);
+                e.stopPropagation();
+                const videoId = playBtn.getAttribute('data-play-video') || playBtn.dataset?.playVideo;
+                let plId = playBtn.getAttribute('data-playlist-id') || playBtn.dataset?.playlistId;
+                if (!plId || plId === '') plId = null;
+                let idx = -1;
+                const idxAttr = playBtn.getAttribute('data-video-index') ?? playBtn.dataset?.videoIndex;
+                if (idxAttr !== undefined && idxAttr !== null && idxAttr !== '') idx = parseInt(String(idxAttr), 10);
+                this.playVideo(videoId, null, plId || null, idx >= 0 ? idx : -1);
             } else if (delVideo) {
                 e.preventDefault();
                 this.deleteVideo(delVideo.dataset.playlistId, delVideo.dataset.videoId);
@@ -421,10 +426,22 @@ const RightPanel = {
     },
 
     getCurrentPlaylistVideos() {
-        if (!this.currentPlaylistId) return [];
         const data = this.getData();
-        const pl = data.playlists.find(p => p.id === this.currentPlaylistId);
-        return pl ? pl.videos : [];
+        if (this.currentPlaylistId) {
+            const pl = data.playlists.find(p => p.id === this.currentPlaylistId);
+            if (pl && pl.videos?.length) return pl.videos;
+        }
+        if (this.currentVideoId) {
+            for (const p of data.playlists || []) {
+                const idx = p.videos?.findIndex(v => v.id === this.currentVideoId);
+                if (idx >= 0) {
+                    this.currentPlaylistId = p.id;
+                    this.currentVideoIndex = idx;
+                    return p.videos;
+                }
+            }
+        }
+        return [];
     },
 
     playNext() {
