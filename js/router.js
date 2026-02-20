@@ -85,6 +85,13 @@ const Router = {
             stickyNotes: () => {
                 StickyNotes.renderNotes();
                 setTimeout(() => StickyNotes.applyZoom(), 10);
+                const header = document.getElementById('stickyBlockHeader');
+                const collapsed = localStorage.getItem('sticky_header_collapsed') === 'true';
+                if (header) {
+                    header.classList.toggle('collapsed', collapsed);
+                    const icon = document.querySelector('#stickyHeaderTab i');
+                    if (icon) icon.className = collapsed ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
+                }
             },
             habits: () => { Habits.renderHabits(); },
             content: () => { Content.renderContent(); },

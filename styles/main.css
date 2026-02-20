@@ -1771,12 +1771,81 @@ body::before {
     flex-direction: column;
 }
 
+/* Блок заголовка стикеров — компактный, со скрытием по ушку */
+.sticky-block-header {
+    position: relative;
+    flex-shrink: 0;
+    transition: min-height 0.25s ease, padding 0.25s ease;
+}
+
+.sticky-block-header.collapsed {
+    min-height: auto;
+}
+
+.sticky-block-header.collapsed .sticky-view-header {
+    display: none;
+}
+
+.sticky-view-header {
+    padding: 0.75rem 1.25rem 0.75rem 2.5rem;
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 1px 0 rgba(0, 255, 136, 0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-primary);
+}
+
+.sticky-view-header h1 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.15rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.sticky-view-header .view-subtitle {
+    font-size: 0.75rem;
+}
+
+.sticky-header-tab {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: var(--gradient-green-blue);
+    color: #000;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    font-size: 0.65rem;
+    transition: transform 0.25s;
+}
+
+.sticky-header-tab:hover {
+    box-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
+}
+
+.sticky-block-header.collapsed .sticky-header-tab {
+    position: relative;
+    top: 0;
+    left: 0;
+    margin: 0.25rem 0 0.25rem 0.5rem;
+    transform: rotate(180deg);
+}
+
 /* Панель инструментов для стикеров */
 .sticky-notes-toolbar {
     display: flex !important;
     justify-content: space-between;
     align-items: center;
-    padding: 0.75rem 1.5rem;
+    padding: 0.5rem 1rem;
     background: var(--bg-primary);
     border-bottom: 1px solid var(--border);
     gap: 1rem;
@@ -1785,8 +1854,8 @@ body::before {
     flex-shrink: 0 !important;
     flex-grow: 0 !important;
     width: 100%;
-    min-height: 50px;
-    max-height: 60px;
+    min-height: 40px;
+    max-height: 48px;
     visibility: visible !important;
     opacity: 1 !important;
     box-sizing: border-box;

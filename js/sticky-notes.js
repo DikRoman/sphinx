@@ -66,6 +66,18 @@ const StickyNotes = {
                     break;
             }
         });
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('#stickyHeaderTab')) {
+                e.preventDefault();
+                const header = document.getElementById('stickyBlockHeader');
+                if (!header) return;
+                header.classList.toggle('collapsed');
+                const icon = document.querySelector('#stickyHeaderTab i');
+                if (icon) icon.className = header.classList.contains('collapsed') ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
+                localStorage.setItem('sticky_header_collapsed', header.classList.contains('collapsed'));
+            }
+        });
+
         document.getElementById('stickyNotesBackground')?.addEventListener('change', (e) => {
             this.setBackground(e.target.value);
         });
