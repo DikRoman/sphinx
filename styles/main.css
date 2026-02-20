@@ -3261,10 +3261,7 @@ body::before {
 
 .right-panel-calendar,
 .right-panel-player {
-    background: var(--bg-card);
-    border-radius: var(--radius-lg);
     padding: 0.75rem;
-    border: 1px solid var(--border);
 }
 
 .right-panel-title {
