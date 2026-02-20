@@ -195,8 +195,26 @@
                     <span>Музыка</span>
                 </div>
                 <div class="right-panel-youtube">
-                    <input type="text" id="youtubeUrl" class="form-input" placeholder="Ссылка YouTube или ID видео">
-                    <iframe id="youtubePlayer" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    <div class="youtube-add-row">
+                        <input type="text" id="youtubeUrl" class="form-input" placeholder="Ссылка или ID видео">
+                        <select id="youtubePlaylistSelect" class="form-input youtube-playlist-select">
+                            <option value="">— в плейлист —</option>
+                        </select>
+                        <button type="button" class="youtube-add-btn" id="youtubeAddVideo" title="Добавить"><i class="fas fa-plus"></i></button>
+                    </div>
+                    <button type="button" class="youtube-new-playlist-btn" id="youtubeNewPlaylist">
+                        <i class="fas fa-folder-plus"></i> Новый плейлист
+                    </button>
+                    <button type="button" class="youtube-resume-btn" id="youtubeResumeBtn" title="Продолжить с того же места" style="display: none;">
+                        <i class="fas fa-play-circle"></i><span class="youtube-resume-label"> Продолжить</span>
+                    </button>
+                    <div class="youtube-playlists" id="youtubePlaylists"></div>
+                    <div class="youtube-player-wrap">
+                        <button type="button" class="youtube-expand-btn" id="youtubeExpandBtn" title="Развернуть видео" style="display: none;">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                        <div id="youtubePlayerContainer"></div>
+                    </div>
                 </div>
             </div>
         </aside>
@@ -237,6 +255,14 @@
         </div>
     </div>
 
+    <!-- YouTube Expanded Modal -->
+    <div class="modal youtube-expanded-modal" id="youtubeExpandedModal">
+        <div class="youtube-expanded-content">
+            <button type="button" class="youtube-expand-close" id="youtubeExpandClose" title="Свернуть"><i class="fas fa-compress"></i></button>
+            <div id="youtubeExpandedPlayer"></div>
+        </div>
+    </div>
+
     <!-- Note Modal -->
     <div class="modal" id="noteModal">
         <div class="modal-content modal-large">
@@ -263,6 +289,7 @@
     <script src="js/sticky-notes.js"></script>
     <script src="js/wishboard.js"></script>
     <script src="js/gantt.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
     <script src="js/right-panel.js"></script>
     <script src="js/cover.js"></script>
     <script src="js/router.js"></script>

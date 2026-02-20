@@ -1748,6 +1748,51 @@ body::before {
     background: var(--bg-hover);
 }
 
+/* YouTube расширенный плеер */
+.youtube-expanded-modal .youtube-expanded-content {
+    position: relative;
+    width: 90%;
+    max-width: 1200px;
+    aspect-ratio: 16/9;
+    background: #000;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.youtube-expanded-modal #youtubeExpandedPlayer {
+    width: 100%;
+    height: 100%;
+}
+
+.youtube-expanded-modal #youtubeExpandedPlayer iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.youtube-expand-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    z-index: 10;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.youtube-expand-close:hover {
+    background: rgba(0, 245, 255, 0.3);
+    color: var(--neon-cyan);
+}
+
 .modal-body {
     margin-top: 1rem;
 }
@@ -3301,14 +3346,243 @@ body::before {
 .right-panel-youtube .form-input {
     width: 100%;
     box-sizing: border-box;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
     font-size: 0.75rem;
     padding: 0.5rem;
+}
+
+.youtube-add-row {
+    display: flex;
+    gap: 0.35rem;
+    margin-bottom: 0.5rem;
+}
+
+.youtube-add-row .form-input:first-child {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.youtube-playlist-select {
+    width: auto;
+    min-width: 90px;
+    margin-bottom: 0;
+}
+
+.youtube-add-btn {
+    padding: 0.5rem 0.6rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    color: var(--neon-cyan);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.youtube-add-btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--neon-cyan);
+}
+
+.youtube-new-playlist-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.7rem;
+    background: transparent;
+    border: 1px dashed var(--border);
+    color: var(--text-muted);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    margin-bottom: 0.75rem;
+    width: 100%;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.youtube-new-playlist-btn:hover {
+    border-color: var(--neon-teal);
+    color: var(--neon-teal);
+}
+
+.youtube-resume-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.6rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.75rem;
+    background: rgba(0, 245, 255, 0.1);
+    border: 1px solid var(--neon-teal);
+    color: var(--neon-teal);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    width: 100%;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.youtube-resume-btn:hover {
+    background: rgba(0, 245, 255, 0.2);
+    box-shadow: 0 0 12px rgba(0, 245, 255, 0.2);
+}
+
+.youtube-playlists {
+    max-height: 180px;
+    overflow-y: auto;
+    margin-bottom: 0.75rem;
+}
+
+.youtube-empty {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 0.5rem;
+}
+
+.youtube-playlist {
+    margin-bottom: 0.35rem;
+}
+
+.youtube-playlist-header {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.5rem;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: background 0.2s;
+}
+
+.youtube-playlist-header:hover {
+    background: var(--bg-hover);
+}
+
+.youtube-playlist-header i:first-child {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    transition: transform 0.2s;
+}
+
+.youtube-playlist.expanded .youtube-playlist-header i:first-child {
+    transform: rotate(90deg);
+}
+
+.youtube-playlist-header span:first-of-type {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.youtube-playlist-count {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+.youtube-playlist-videos {
+    display: none;
+    padding: 0.25rem 0 0 0.75rem;
+}
+
+.youtube-playlist.expanded .youtube-playlist-videos {
+    display: block;
+}
+
+.youtube-video-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0;
+    font-size: 0.75rem;
+}
+
+.youtube-play-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.5rem;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    text-align: left;
+    overflow: hidden;
+}
+
+.youtube-play-btn:hover {
+    background: var(--bg-hover);
+    color: var(--neon-cyan);
+}
+
+.youtube-play-btn i {
+    color: var(--neon-teal);
+    flex-shrink: 0;
+}
+
+.youtube-del-video,
+.youtube-del-playlist {
+    padding: 0.2rem 0.35rem;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.youtube-del-video:hover,
+.youtube-del-playlist:hover {
+    color: var(--error);
+    opacity: 1;
+}
+
+.youtube-player-wrap {
+    position: relative;
+}
+
+.youtube-expand-btn {
+    position: absolute;
+    top: 0.35rem;
+    right: 0.35rem;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.youtube-expand-btn:hover {
+    background: rgba(0, 245, 255, 0.3);
+    color: var(--neon-cyan);
+}
+
+#youtubePlayerContainer {
+    width: 100%;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    display: none;
+}
+
+#youtubePlayerContainer iframe {
+    width: 100%;
+    aspect-ratio: 16/9;
+    border: none;
 }
 
 .right-panel-youtube iframe {
     width: 100%;
     aspect-ratio: 16/9;
     border-radius: var(--radius-md);
-    display: none;
 }

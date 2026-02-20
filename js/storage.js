@@ -203,5 +203,24 @@ const Storage = {
 
     saveWishboardSettings(settings) {
         localStorage.setItem(CONFIG.STORAGE_KEYS.WISHBOARD_SETTINGS, JSON.stringify(settings));
+    },
+
+    // YouTube playlists
+    getYoutubePlaylists() {
+        const data = localStorage.getItem(CONFIG.STORAGE_KEYS.YOUTUBE_PLAYLISTS);
+        return data ? JSON.parse(data) : { playlists: [] };
+    },
+
+    saveYoutubePlaylists(data) {
+        localStorage.setItem(CONFIG.STORAGE_KEYS.YOUTUBE_PLAYLISTS, JSON.stringify(data));
+    },
+
+    getYoutubeHistory() {
+        const data = localStorage.getItem(CONFIG.STORAGE_KEYS.YOUTUBE_HISTORY);
+        return data ? JSON.parse(data) : { positions: {}, lastVideo: null };
+    },
+
+    saveYoutubeHistory(data) {
+        localStorage.setItem(CONFIG.STORAGE_KEYS.YOUTUBE_HISTORY, JSON.stringify(data));
     }
 };

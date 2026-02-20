@@ -8,7 +8,9 @@ const CONFIG = {
         CONTENT: 'sphinx_content',
         NOTES: 'sphinx_notes',
         WISHBOARD: 'sphinx_wishboard',
-        WISHBOARD_SETTINGS: 'sphinx_wishboard_settings'
+        WISHBOARD_SETTINGS: 'sphinx_wishboard_settings',
+        YOUTUBE_PLAYLISTS: 'sphinx_youtube_playlists',
+        YOUTUBE_HISTORY: 'sphinx_youtube_history'
     },
     
     // Default Areas
