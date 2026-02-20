@@ -1,0 +1,22 @@
+<div class="view-panel active" id="calendarView">
+    <div class="view-header">
+        <div>
+            <h1><i class="fas fa-calendar-alt"></i> Календарь</h1>
+            <p class="view-subtitle">Планирование задач по времени</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn-secondary" id="calendarViewDay"><i class="fas fa-calendar-day"></i> День</button>
+            <button class="btn-secondary active" id="calendarViewWeek"><i class="fas fa-calendar-week"></i> Неделя</button>
+            <button class="btn-secondary" id="calendarViewMonth"><i class="fas fa-calendar"></i> Месяц</button>
+            <button class="btn-secondary" id="calendarPrev"><i class="fas fa-chevron-left"></i></button>
+            <button class="btn-secondary" id="calendarNext"><i class="fas fa-chevron-right"></i></button>
+            <button class="btn-secondary" id="calendarToday">Сегодня</button>
+            <div style="border-left: 1px solid var(--border); margin: 0 0.5rem;"></div>
+            <button class="btn-secondary" id="calendarZoomOut" title="Уменьшить"><i class="fas fa-search-minus"></i></button>
+            <button class="btn-secondary" id="calendarZoomReset" title="Сбросить"><i class="fas fa-expand-arrows-alt"></i></button>
+            <button class="btn-secondary" id="calendarZoomIn" title="Увеличить"><i class="fas fa-search-plus"></i></button>
+            <span id="calendarZoomLevel" style="padding: 0 0.75rem; color: var(--text-muted); font-size: 0.875rem;">100%</span>
+        </div>
+    </div>
+    <div class="calendar-container" id="calendarContainer"></div>
+</div>

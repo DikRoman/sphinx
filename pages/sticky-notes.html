@@ -1,0 +1,60 @@
+<div class="view-panel active" id="stickyNotesView">
+    <div class="view-header">
+        <div>
+            <h1><i class="fas fa-thumbtack"></i> Стикеры</h1>
+            <p class="view-subtitle">Перетаскиваемые цветные заметки</p>
+        </div>
+        <div class="header-actions">
+            <select class="select-input" id="stickyNotesBackground" title="Фон">
+                <option value="dark">Тёмный</option>
+                <option value="light">Светлый</option>
+                <option value="sandy">Песочный</option>
+            </select>
+        </div>
+    </div>
+    <div class="sticky-notes-toolbar">
+        <div class="toolbar-group">
+            <button class="toolbar-btn" id="addStickyNote" title="Добавить стикер">
+                <i class="fas fa-sticky-note"></i>
+                <span>Стикер</span>
+            </button>
+            <button class="toolbar-btn" id="addShape" title="Добавить фигуру">
+                <i class="fas fa-square"></i>
+                <span>Фигура</span>
+            </button>
+        </div>
+        <div class="toolbar-group">
+            <button class="toolbar-btn" id="showCompletedStickyNotes" title="Выполненные">
+                <i class="fas fa-check-circle"></i>
+                <span>Выполненные</span>
+            </button>
+        </div>
+        <div class="toolbar-group">
+            <button class="toolbar-btn" id="stickyZoomOut" title="Уменьшить">
+                <i class="fas fa-search-minus"></i>
+            </button>
+            <span class="toolbar-zoom-level" id="stickyZoomLevel">100%</span>
+            <button class="toolbar-btn" id="stickyZoomIn" title="Увеличить">
+                <i class="fas fa-search-plus"></i>
+            </button>
+            <button class="toolbar-btn" id="stickyZoomReset" title="Сбросить">
+                <i class="fas fa-expand-arrows-alt"></i>
+            </button>
+        </div>
+    </div>
+    <div class="sticky-notes-container" id="stickyNotesContainer"></div>
+</div>
+<div class="view-panel" id="completedStickyNotesView">
+    <div class="view-header">
+        <div>
+            <h1><i class="fas fa-check-circle"></i> Выполненные стикеры</h1>
+            <p class="view-subtitle">Завершенные задачи и заметки</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn-secondary" id="hideCompletedStickyNotes">
+                <i class="fas fa-arrow-left"></i> Назад
+            </button>
+        </div>
+    </div>
+    <div class="completed-sticky-notes-container" id="completedStickyNotesContainer"></div>
+</div>

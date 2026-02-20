@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPHINX - GTD Productivity System</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Cover Bar - обложка с фоном -->
+        <header class="app-cover" id="appCover">
+            <button class="cover-settings-btn" id="coverSettingsBtn" title="Изменить обложку">
+                <i class="fas fa-image"></i>
+            </button>
+            <div class="cover-left">
+                <div class="logo">
+                    <i class="fas fa-sphinx"></i>
+                    <span>SPHINX</span>
+                </div>
+                <button class="btn-icon" id="toggleSidebar" title="Свернуть">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            </div>
+            <div class="cover-center" id="coverCenter">
+                <!-- View header will be moved here dynamically -->
+            </div>
+            <div class="cover-right" id="coverRight">
+                <div class="right-panel-title">
+                    <i class="fas fa-calendar"></i>
+                    <span>Календарь</span>
+                </div>
+                <div class="right-panel-calendar-header">
+                    <button type="button" class="right-panel-nav" id="rightPanelPrevMonth" title="Пред. месяц"><i class="fas fa-chevron-left"></i></button>
+                    <span id="rightPanelMonthYear"></span>
+                    <button type="button" class="right-panel-nav" id="rightPanelNextMonth" title="След. месяц"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Cover Settings Modal -->
+        <div class="modal cover-modal" id="coverModal">
+            <div class="modal-content modal-small">
+                <span class="modal-close" data-close="coverModal">&times;</span>
+                <div class="modal-body">
+                    <h3>Обложка блока</h3>
+                    <p class="modal-hint">Загрузите своё изображение, вставьте ссылку (в т.ч. с unsplash.com) или выберите случайное фото</p>
+                    <div class="cover-options">
+                        <label class="cover-option-btn" for="coverUpload">
+                            <input type="file" accept="image/*" id="coverUpload" hidden>
+                            <i class="fas fa-upload"></i>
+                            <span>Загрузить</span>
+                        </label>
+                        <button type="button" class="cover-option-btn" id="coverUrlBtn">
+                            <i class="fas fa-link"></i>
+                            <span>По ссылке</span>
+                        </button>
+                        <button type="button" class="cover-option-btn" id="coverUnsplash">
+                            <i class="fas fa-random"></i>
+                            <span>Случайное</span>
+                        </button>
+                        <button type="button" class="cover-option-btn cover-option-remove" id="coverRemove">
+                            <i class="fas fa-times"></i>
+                            <span>Убрать</span>
+                        </button>
+                    </div>
+                    <div class="cover-url-row" id="coverUrlRow" style="display: none;">
+                        <input type="url" id="coverUrlInput" class="form-input" placeholder="Вставьте ссылку на изображение">
+                        <button class="btn-primary" id="coverUrlApply">Применить</button>
+                    </div>
+                    <div class="cover-unsplash-row" id="coverUnsplashRow" style="display: none;">
+                        <p class="cover-hint">Случайное фото с Picsum Photos</p>
+                        <button class="btn-primary" id="coverUnsplashApply">Выбрать случайное</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Body: Sidebar + Content -->
+        <div class="app-body">
+        <!-- Sidebar - только навигация (ниже обложки) -->
+        <aside class="sidebar">
+            <!-- GTD Navigation -->
+            <nav class="nav-menu">
+                <div class="nav-section">
+                    <div class="nav-section-title">GTD</div>
+                    <a href="#inbox" class="nav-item active" data-page="inbox">
+                        <i class="fas fa-inbox"></i>
+                        <span>Inbox</span>
+                        <span class="badge" id="inboxBadge">0</span>
+                    </a>
+                    <a href="#sticky-notes" class="nav-item" data-page="sticky-notes">
+                        <i class="fas fa-thumbtack"></i>
+                        <span>Стикеры</span>
+                    </a>
+                    <a href="#today" class="nav-item" data-page="today">
+                        <i class="fas fa-calendar-day"></i>
+                        <span>Сегодня</span>
+                        <span class="badge" id="todayBadge">0</span>
+                    </a>
+                    <a href="#calendar" class="nav-item" data-page="calendar">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Календарь</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Области</div>
+                    <div id="areasList">
+                        <!-- Areas will be dynamically added -->
+                    </div>
+                    <button class="nav-item nav-add" id="addArea">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Добавить область</span>
+                    </button>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Проекты</div>
+                    <div id="projectsList">
+                        <!-- Projects will be dynamically added -->
+                    </div>
+                    <button class="nav-item nav-add" id="addProject">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Новый проект</span>
+                    </button>
+                </div>
+            </nav>
+
+            <!-- Bottom Menu -->
+            <div class="sidebar-footer">
+                <a href="#habits" class="nav-item" data-page="habits">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Привычки</span>
+                </a>
+                <a href="#content" class="nav-item" data-page="content">
+                    <i class="fas fa-film"></i>
+                    <span>Контент</span>
+                </a>
+                <a href="#gantt" class="nav-item" data-page="gantt">
+                    <i class="fas fa-chart-gantt"></i>
+                    <span>Ганта</span>
+                </a>
+                <a href="#wishboard" class="nav-item" data-page="wishboard">
+                    <i class="fas fa-gem"></i>
+                    <span>Доска желаний</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Content Wrapper: Main + Right Panel -->
+        <div class="content-wrapper">
+        <!-- Main Content -->
+        <main class="main-content">
+            <div id="pageContainer"></div>
+        </main>
+
+        <!-- Right Panel: Calendar + YouTube -->
+        <aside class="right-panel" id="rightPanel">
+            <div class="right-panel-calendar">
+                <div class="right-panel-weekdays">
+                    <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span>
+                </div>
+                <div class="right-panel-days" id="rightPanelDays"></div>
+            </div>
+            <div class="right-panel-player">
+                <div class="right-panel-title">
+                    <i class="fas fa-music"></i>
+                    <span>Музыка</span>
+                </div>
+                <div class="right-panel-youtube">
+                    <input type="text" id="youtubeUrl" class="form-input" placeholder="Ссылка YouTube или ID видео">
+                    <iframe id="youtubePlayer" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+            </div>
+        </aside>
+        </div>
+        </div>
+    </div>
+
+    <!-- Task Modal -->
+    <div class="modal" id="taskModal">
+        <div class="modal-content modal-large">
+            <span class="modal-close">&times;</span>
+            <div class="modal-body" id="taskModalBody"></div>
+        </div>
+    </div>
+
+    <!-- Area/Project Modal -->
+    <div class="modal" id="areaModal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <div class="modal-body" id="areaModalBody"></div>
+        </div>
+    </div>
+
+    <!-- Habit Modal -->
+    <div class="modal" id="habitModal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <div class="modal-body" id="habitModalBody"></div>
+        </div>
+    </div>
+
+    <!-- Content Modal -->
+    <div class="modal" id="contentModal">
+        <div class="modal-content modal-large">
+            <span class="modal-close">&times;</span>
+            <div class="modal-body" id="contentModalBody"></div>
+        </div>
+    </div>
+
+    <!-- Note Modal -->
+    <div class="modal" id="noteModal">
+        <div class="modal-content modal-large">
+            <span class="modal-close">&times;</span>
+            <div class="modal-body" id="noteModalBody"></div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/gtd.js"></script>
+    <script src="js/kanban.js"></script>
+    <script src="js/habits.js"></script>
+    <script src="js/content.js"></script>
+    <script src="js/calendar.js"></script>
+    <script src="js/notes.js"></script>
+    <script src="js/sticky-notes.js"></script>
+    <script src="js/wishboard.js"></script>
+    <script src="js/gantt.js"></script>
+    <script src="js/right-panel.js"></script>
+    <script src="js/cover.js"></script>
+    <script src="js/router.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

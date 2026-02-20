@@ -1,0 +1,60 @@
+<div class="view-panel active" id="wishboardView">
+    <div class="view-header">
+        <div>
+            <h1><i class="fas fa-gem"></i> Доска желаний</h1>
+            <p class="view-subtitle">Картинки для вдохновения и визуализации целей</p>
+        </div>
+        <div class="header-actions">
+            <select class="select-input" id="wishboardBoards" title="Доски"></select>
+            <button class="btn-secondary" id="addWishboardBoard" title="Новая доска">
+                <i class="fas fa-plus"></i> Доска
+            </button>
+            <input type="text" class="form-input wishboard-board-name" id="wishboardBoardName" placeholder="Название доски" style="max-width: 180px;">
+            <select class="select-input" id="wishboardBackground" title="Фон">
+                <option value="dark">Тёмный</option>
+                <option value="light">Светлый</option>
+                <option value="beige">Бежевый</option>
+            </select>
+            <button class="btn-primary" id="addWishboardImage">
+                <i class="fas fa-plus"></i> Добавить картинку
+            </button>
+        </div>
+    </div>
+    <div class="wishboard-content-area">
+        <div class="wishboard-toolbar">
+            <button type="button" class="wishboard-tool-btn" id="wbToolAddImage" title="Добавить картинку">
+                <i class="fas fa-image"></i>
+            </button>
+            <button type="button" class="wishboard-tool-btn" id="wbToolFrame" title="Стиль рамки">
+                <i class="fas fa-crop"></i>
+            </button>
+            <div class="wishboard-tool-sep"></div>
+            <button type="button" class="wishboard-tool-btn wishboard-tool-bg" id="wbToolBg" title="Фон">
+                <i class="fas fa-palette"></i>
+            </button>
+            <div class="wishboard-tool-sep"></div>
+            <button type="button" class="wishboard-tool-btn" title="Панорама — ПКМ">
+                <i class="fas fa-arrows-alt"></i>
+            </button>
+        </div>
+        <div class="wishboard-wrapper" id="wishboardWrapper">
+            <div class="wishboard-container" id="wishboardContainer"></div>
+            <div class="wishboard-add-prompt" id="wishboardAddPrompt">
+                <div class="wishboard-prompt-content">
+                    <i class="fas fa-image"></i>
+                    <p>Добавьте картинку для вдохновения</p>
+                    <p class="wishboard-prompt-hint">Ссылка или перетащите файл / вставьте (Ctrl+V)</p>
+                    <div class="wishboard-frame-options">
+                        <label><input type="radio" name="frameStyle" value="polaroid" checked> Поляроид</label>
+                        <label><input type="radio" name="frameStyle" value="frame"> Рамка</label>
+                    </div>
+                    <div class="wishboard-add-zone" id="wishboardAddZone">
+                        <input type="url" id="wishboardImageUrl" class="form-input" placeholder="https://example.com/image.jpg">
+                        <button class="btn-primary" id="wishboardAddByUrl">Добавить</button>
+                    </div>
+                    <button class="btn-secondary wishboard-close-prompt" id="wishboardClosePrompt">Отмена</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
