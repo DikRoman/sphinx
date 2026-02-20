@@ -9,11 +9,11 @@
                 <p class="view-subtitle">Перетаскиваемые цветные заметки</p>
             </div>
             <div class="header-actions">
-                <select class="select-input" id="stickyNotesBackground" title="Фон">
-                    <option value="dark">Тёмный</option>
-                    <option value="light">Светлый</option>
-                    <option value="sandy">Песочный</option>
-                </select>
+                <div class="sticky-bg-picker" title="Цвет фона доски">
+                    <button type="button" class="sticky-bg-btn active" data-bg="dark" id="stickyBgDark" style="background:#121212;" title="Тёмный"></button>
+                    <button type="button" class="sticky-bg-btn" data-bg="light" id="stickyBgLight" style="background:#f5f3ef;" title="Светлый"></button>
+                    <button type="button" class="sticky-bg-btn" data-bg="sandy" id="stickyBgSandy" style="background:#e8e2d4;" title="Песочный"></button>
+                </div>
             </div>
         </div>
     </div>

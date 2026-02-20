@@ -1961,6 +1961,29 @@ body::before {
     background-color: #e8e2d4;
 }
 
+.sticky-bg-picker {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.sticky-bg-btn {
+    width: 28px;
+    height: 28px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.sticky-bg-btn:hover {
+    border-color: var(--neon-cyan);
+}
+
+.sticky-bg-btn.active {
+    border-color: var(--neon-green);
+    box-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
+}
+
 /* Скрываем стандартный drag ghost */
 .sticky-notes-container * {
     -webkit-user-drag: element;
@@ -2083,8 +2106,8 @@ body::before {
 }
 
 .sticky-note.dragging {
-    opacity: 0.6;
-    transform: rotate(0deg) scale(1.05);
+    opacity: 0.9;
+    cursor: grabbing !important;
     z-index: 1000;
     pointer-events: none;
     box-shadow: 
@@ -2093,6 +2116,7 @@ body::before {
 }
 
 .sticky-note-header {
+    cursor: grab;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -2255,7 +2279,7 @@ body::before {
 .sticky-shape {
     position: absolute;
     padding: 0.5rem;
-    cursor: move;
+    cursor: grab;
     box-shadow: 
         0 4px 6px rgba(0, 0, 0, 0.1),
         0 2px 4px rgba(0, 0, 0, 0.06),
@@ -2302,8 +2326,8 @@ body::before {
 }
 
 .sticky-shape.dragging {
-    opacity: 0.6;
-    transform: scale(1.05);
+    opacity: 0.9;
+    cursor: grabbing !important;
     z-index: 1000;
     pointer-events: none;
     box-shadow: 

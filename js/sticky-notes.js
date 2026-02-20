@@ -78,8 +78,15 @@ const StickyNotes = {
             }
         });
 
-        document.getElementById('stickyNotesBackground')?.addEventListener('change', (e) => {
-            this.setBackground(e.target.value);
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.sticky-bg-btn');
+            if (btn && document.getElementById('pageContainer')?.contains(btn)) {
+                e.preventDefault();
+                const bg = btn.dataset.bg;
+                this.setBackground(bg);
+                document.querySelectorAll('.sticky-bg-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            }
         });
         // Поддержка колесика мыши для масштабирования с центрированием
         const container = document.getElementById('stickyNotesContainer');
@@ -405,23 +412,10 @@ const StickyNotes = {
                 const dx = (e.clientX - this.dragStartClient.x) / this.zoomLevel;
                 const dy = (e.clientY - this.dragStartClient.y) / this.zoomLevel;
                 
-                const x = this.dragStartPosition.x + dx;
-                const y = this.dragStartPosition.y + dy;
-                
-                const elementWidth = note.width || 230;
-                const elementHeight = note.height || 150;
-                const containerWidth = container.scrollWidth / this.zoomLevel;
-                const containerHeight = container.scrollHeight / this.zoomLevel;
-                const maxX = Math.max(0, containerWidth - elementWidth);
-                const maxY = Math.max(0, containerHeight - elementHeight);
-                
-                note.position.x = Math.max(0, Math.min(x, maxX));
-                note.position.y = Math.max(0, Math.min(y, maxY));
-                
                 const noteElement = container.querySelector(`[data-note-id="${note.id}"]`);
                 if (noteElement) {
-                    noteElement.style.left = `${note.position.x}px`;
-                    noteElement.style.top = `${note.position.y}px`;
+                    noteElement.style.transform = `translate(${dx}px, ${dy}px) scale(1.05)`;
+                    noteElement.style.willChange = 'transform';
                 }
             } else if (this.draggedShape) {
                 e.preventDefault();
@@ -431,23 +425,10 @@ const StickyNotes = {
                 const dx = (e.clientX - this.dragStartClient.x) / this.zoomLevel;
                 const dy = (e.clientY - this.dragStartClient.y) / this.zoomLevel;
                 
-                const x = this.dragStartPosition.x + dx;
-                const y = this.dragStartPosition.y + dy;
-                
-                const elementWidth = shape.width || 250;
-                const elementHeight = shape.height || 150;
-                const containerWidth = container.scrollWidth / this.zoomLevel;
-                const containerHeight = container.scrollHeight / this.zoomLevel;
-                const maxX = Math.max(0, containerWidth - elementWidth);
-                const maxY = Math.max(0, containerHeight - elementHeight);
-                
-                shape.position.x = Math.max(0, Math.min(x, maxX));
-                shape.position.y = Math.max(0, Math.min(y, maxY));
-                
                 const shapeElement = container.querySelector(`[data-shape-id="${shape.id}"]`);
                 if (shapeElement) {
-                    shapeElement.style.left = `${shape.position.x}px`;
-                    shapeElement.style.top = `${shape.position.y}px`;
+                    shapeElement.style.transform = `translate(${dx}px, ${dy}px) scale(1.05)`;
+                    shapeElement.style.willChange = 'transform';
                 }
             } else if (this.isPanning) {
                 e.preventDefault();
@@ -459,25 +440,61 @@ const StickyNotes = {
             }
         });
 
-        const finishDrag = () => {
+        const finishDrag = (e) => {
             if (this.draggedNote) {
                 const note = this.notes[this.draggedNote];
-                if (note) {
+                const el = container.querySelector(`[data-note-id="${this.draggedNote}"]`);
+                if (note && el) {
+                    const dx = (e?.clientX ?? this.dragStartClient.x) - this.dragStartClient.x;
+                    const dy = (e?.clientY ?? this.dragStartClient.y) - this.dragStartClient.y;
+                    const moveX = dx / this.zoomLevel;
+                    const moveY = dy / this.zoomLevel;
+                    const elW = note.width || 230;
+                    const elH = note.height || 150;
+                    const maxX = Math.max(0, container.scrollWidth / this.zoomLevel - elW);
+                    const maxY = Math.max(0, container.scrollHeight / this.zoomLevel - elH);
+                    note.position.x = Math.max(0, Math.min(this.dragStartPosition.x + moveX, maxX));
+                    note.position.y = Math.max(0, Math.min(this.dragStartPosition.y + moveY, maxY));
                     note.updatedAt = new Date().toISOString();
+                    el.style.transform = '';
+                    el.style.willChange = '';
+                    el.style.left = note.position.x + 'px';
+                    el.style.top = note.position.y + 'px';
                     this.saveNotes();
                 }
-                const el = container.querySelector(`[data-note-id="${this.draggedNote}"]`);
-                if (el) el.classList.remove('dragging');
+                if (el) {
+                    el.classList.remove('dragging');
+                    el.style.transform = '';
+                    el.style.willChange = '';
+                }
                 this.draggedNote = null;
             }
             if (this.draggedShape) {
                 const shape = this.shapes[this.draggedShape];
-                if (shape) {
+                const el = container.querySelector(`[data-shape-id="${this.draggedShape}"]`);
+                if (shape && el) {
+                    const dx = (e?.clientX ?? this.dragStartClient.x) - this.dragStartClient.x;
+                    const dy = (e?.clientY ?? this.dragStartClient.y) - this.dragStartClient.y;
+                    const moveX = dx / this.zoomLevel;
+                    const moveY = dy / this.zoomLevel;
+                    const elW = shape.width || 250;
+                    const elH = shape.height || 150;
+                    const maxX = Math.max(0, container.scrollWidth / this.zoomLevel - elW);
+                    const maxY = Math.max(0, container.scrollHeight / this.zoomLevel - elH);
+                    shape.position.x = Math.max(0, Math.min(this.dragStartPosition.x + moveX, maxX));
+                    shape.position.y = Math.max(0, Math.min(this.dragStartPosition.y + moveY, maxY));
                     shape.updatedAt = new Date().toISOString();
+                    el.style.transform = '';
+                    el.style.willChange = '';
+                    el.style.left = shape.position.x + 'px';
+                    el.style.top = shape.position.y + 'px';
                     this.saveShapes();
                 }
-                const el = container.querySelector(`[data-shape-id="${this.draggedShape}"]`);
-                if (el) el.classList.remove('dragging');
+                if (el) {
+                    el.classList.remove('dragging');
+                    el.style.transform = '';
+                    el.style.willChange = '';
+                }
                 this.draggedShape = null;
             }
             if (this.isPanning) {
@@ -486,8 +503,8 @@ const StickyNotes = {
             }
         };
 
-        document.addEventListener('mouseup', finishDrag);
-        window.addEventListener('blur', finishDrag);
+        document.addEventListener('mouseup', (e) => finishDrag(e));
+        window.addEventListener('blur', () => finishDrag(null));
 
         // Pan для контейнера (правая кнопка мыши или пробел)
         container.addEventListener('contextmenu', (e) => {
@@ -533,8 +550,9 @@ const StickyNotes = {
     setupBackground() {
         const bg = localStorage.getItem('sphinx_sticky_notes_background') || 'dark';
         this.applyBackground(bg);
-        const sel = document.getElementById('stickyNotesBackground');
-        if (sel) sel.value = bg;
+        document.querySelectorAll('.sticky-bg-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.bg === bg);
+        });
     },
 
     setBackground(bg) {
@@ -837,7 +855,7 @@ const StickyNotes = {
         div.addEventListener('mousemove', (e) => {
             if (this.draggedNote === note.id) {
                 const movedDistance = Math.abs(e.clientX - noteMouseDownX) + Math.abs(e.clientY - noteMouseDownY);
-                if (movedDistance > 5) {
+                if (movedDistance > 2) {
                     noteHasDragged = true;
                 }
             }
@@ -1116,7 +1134,7 @@ const StickyNotes = {
         div.addEventListener('mousemove', (e) => {
             if (this.draggedShape === shape.id) {
                 const movedDistance = Math.abs(e.clientX - shapeMouseDownX) + Math.abs(e.clientY - shapeMouseDownY);
-                if (movedDistance > 5) {
+                if (movedDistance > 2) {
                     shapeHasDragged = true;
                 }
             }

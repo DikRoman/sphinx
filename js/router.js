@@ -83,6 +83,7 @@ const Router = {
             today: () => { App.renderTodayView(); },
             calendar: () => { Calendar.render(); },
             stickyNotes: () => {
+                StickyNotes.setupBackground();
                 StickyNotes.renderNotes();
                 setTimeout(() => StickyNotes.applyZoom(), 10);
                 const header = document.getElementById('stickyBlockHeader');
