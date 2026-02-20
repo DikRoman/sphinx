@@ -56,10 +56,12 @@
             <button class="sidebar-tab" id="sidebarTab" title="Скрыть / Показать панель">
                 <i class="fas fa-chevron-left"></i>
             </button>
-            <!-- GTD Navigation -->
+            <div class="sidebar-logo">
+                <i class="fas fa-sphinx"></i>
+                <span>SPHINX</span>
+            </div>
             <nav class="nav-menu">
                 <div class="nav-section">
-                    <div class="nav-section-title">GTD</div>
                     <a href="#inbox" class="nav-item active" data-page="inbox">
                         <i class="fas fa-inbox"></i>
                         <span>Inbox</span>
@@ -129,22 +131,25 @@
             <button class="cover-settings-btn" id="coverSettingsBtn" title="Изменить обложку">
                 <i class="fas fa-image"></i>
             </button>
-            <div class="cover-left">
-                <div class="logo">
-                    <i class="fas fa-sphinx"></i>
-                    <span>SPHINX</span>
-                </div>
-            </div>
+            <button class="cover-layout-btn" id="coverLayoutBtn" title="Расположение обложки">
+                <i class="fas fa-crop-alt"></i> Расположение
+            </button>
             <div class="cover-center" id="coverCenter"></div>
-            <div class="cover-right" id="coverRight">
-                <div class="right-panel-title">
-                    <i class="fas fa-calendar"></i>
-                    <span>Календарь</span>
-                </div>
-                <div class="right-panel-calendar-header">
-                    <button type="button" class="right-panel-nav" id="rightPanelPrevMonth" title="Пред. месяц"><i class="fas fa-chevron-left"></i></button>
-                    <span id="rightPanelMonthYear"></span>
-                    <button type="button" class="right-panel-nav" id="rightPanelNextMonth" title="След. месяц"><i class="fas fa-chevron-right"></i></button>
+            <div class="cover-layout-overlay" id="coverLayoutOverlay" style="display: none;">
+                <div class="cover-layout-panel">
+                    <h4>Расположение обложки</h4>
+                    <div class="cover-layout-grid">
+                        <button type="button" class="cover-layout-option" data-position="top left">↖</button>
+                        <button type="button" class="cover-layout-option" data-position="top center">↑</button>
+                        <button type="button" class="cover-layout-option" data-position="top right">↗</button>
+                        <button type="button" class="cover-layout-option" data-position="center left">←</button>
+                        <button type="button" class="cover-layout-option active" data-position="center center">◆</button>
+                        <button type="button" class="cover-layout-option" data-position="center right">→</button>
+                        <button type="button" class="cover-layout-option" data-position="bottom left">↙</button>
+                        <button type="button" class="cover-layout-option" data-position="bottom center">↓</button>
+                        <button type="button" class="cover-layout-option" data-position="bottom right">↘</button>
+                    </div>
+                    <button type="button" class="btn-primary cover-layout-ok" id="coverLayoutOk">ОК</button>
                 </div>
             </div>
         </header>
@@ -158,6 +163,17 @@
         <!-- Right Panel: Calendar + YouTube -->
         <aside class="right-panel" id="rightPanel">
             <div class="right-panel-calendar">
+                <div class="right-panel-calendar-header">
+                    <div class="right-panel-title">
+                        <i class="fas fa-calendar"></i>
+                        <span>Календарь</span>
+                    </div>
+                    <div class="right-panel-month-nav">
+                        <button type="button" class="right-panel-nav" id="rightPanelPrevMonth" title="Пред. месяц"><i class="fas fa-chevron-left"></i></button>
+                        <span id="rightPanelMonthYear"></span>
+                        <button type="button" class="right-panel-nav" id="rightPanelNextMonth" title="След. месяц"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
                 <div class="right-panel-weekdays">
                     <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span>
                 </div>

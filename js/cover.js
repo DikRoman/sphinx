@@ -1,15 +1,23 @@
 // Cover / обложка блока
 const Cover = {
     STORAGE_KEY: 'sphinx_cover_image',
+    LAYOUT_KEY: 'sphinx_cover_position',
 
     init() {
         this.loadCover();
+        this.loadLayout();
         this.setupEventListeners();
+        this.setupLayoutListeners();
     },
 
     loadCover() {
         const url = localStorage.getItem(this.STORAGE_KEY);
         if (url) this.setBackground(url);
+    },
+
+    loadLayout() {
+        const pos = localStorage.getItem(this.LAYOUT_KEY) || 'center center';
+        this.applyPosition(pos);
     },
 
     setBackground(url) {
@@ -23,6 +31,42 @@ const Cover = {
             cover.classList.remove('has-cover');
             localStorage.removeItem(this.STORAGE_KEY);
         }
+    },
+
+    applyPosition(position) {
+        const cover = document.getElementById('appCover');
+        if (!cover) return;
+        cover.style.backgroundPosition = position;
+    },
+
+    setupLayoutListeners() {
+        const btn = document.getElementById('coverLayoutBtn');
+        const overlay = document.getElementById('coverLayoutOverlay');
+        const okBtn = document.getElementById('coverLayoutOk');
+        const options = document.querySelectorAll('.cover-layout-option');
+
+        btn?.addEventListener('click', () => {
+            const saved = localStorage.getItem(this.LAYOUT_KEY) || 'center center';
+            options.forEach(o => {
+                o.classList.toggle('active', o.dataset.position === saved);
+            });
+            overlay.style.display = 'flex';
+        });
+
+        okBtn?.addEventListener('click', () => {
+            const active = document.querySelector('.cover-layout-option.active');
+            const pos = active?.dataset.position || 'center center';
+            this.applyPosition(pos);
+            localStorage.setItem(this.LAYOUT_KEY, pos);
+            overlay.style.display = 'none';
+        });
+
+        options.forEach(opt => {
+            opt.addEventListener('click', () => {
+                options.forEach(o => o.classList.remove('active'));
+                opt.classList.add('active');
+            });
+        });
     },
 
     setupEventListeners() {

@@ -161,20 +161,85 @@ body::before {
     background: rgba(0, 255, 136, 0.2);
 }
 
-.cover-left {
-    flex-shrink: 0;
+.cover-layout-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 2.75rem;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.75rem;
+    border: none;
+    background: rgba(0, 0, 0, 0.4);
+    color: var(--neon-green);
+    border-radius: var(--radius-md);
+    cursor: pointer;
     display: flex;
     align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s;
+}
+
+.cover-layout-btn:hover {
+    background: rgba(0, 255, 136, 0.2);
+}
+
+/* Режим выравнивания обложки */
+.cover-layout-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 10;
+    display: flex;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cover-layout-panel {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.cover-layout-panel h4 {
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.cover-layout-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 0.5rem;
-    min-width: 140px;
 }
 
-.cover-left .logo {
-    font-size: 1rem;
-}
-
-.cover-left .logo i {
+.cover-layout-option {
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--border);
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
     font-size: 1.2rem;
+    transition: all 0.2s;
+}
+
+.cover-layout-option:hover,
+.cover-layout-option.active {
+    border-color: var(--neon-green);
+    color: var(--neon-green);
+    background: rgba(0, 255, 136, 0.1);
+}
+
+.cover-layout-ok {
+    width: 100%;
 }
 
 .cover-center {
@@ -212,31 +277,14 @@ body::before {
     font-size: 0.8rem;
 }
 
-.cover-right {
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.2rem;
-    min-width: 130px;
-}
-
-.cover-right .right-panel-title {
-    font-size: 0.75rem;
-    margin-bottom: 0;
-}
-
-.cover-right #rightPanelMonthYear {
-    font-size: 0.75rem;
-}
-
-.cover-right .right-panel-calendar-header {
+.right-panel-month-nav {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 0.5rem;
 }
 
-.cover-right .right-panel-nav {
+.right-panel-month-nav .right-panel-nav {
     background: rgba(255,255,255,0.1);
     border: none;
     color: var(--text-secondary);
@@ -245,9 +293,14 @@ body::before {
     cursor: pointer;
 }
 
-.cover-right .right-panel-nav:hover {
+.right-panel-month-nav .right-panel-nav:hover {
     background: rgba(0, 255, 136, 0.2);
     color: var(--neon-green);
+}
+
+#rightPanelMonthYear {
+    font-size: 0.85rem;
+    font-weight: 500;
 }
 
 /* Layout: sidebar (full height) + main (cover + content) */
@@ -344,12 +397,11 @@ body::before {
     cursor: pointer;
 }
 
-/* Ушко — таб для скрытия/раскрытия панели */
+/* Ушко — таб сверху панели */
 .sidebar-tab {
     position: absolute;
-    top: 50%;
+    top: 0;
     right: 0;
-    transform: translateY(-50%);
     width: 24px;
     height: 48px;
     background: var(--gradient-green-blue);
@@ -394,6 +446,29 @@ body::before {
 
 .sidebar.collapsed .sidebar-tab i {
     transform: rotate(180deg);
+}
+
+.sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 1rem 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    background: var(--gradient-green-blue);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.sidebar-logo i {
+    font-size: 1.25rem;
+    color: var(--neon-green);
+    -webkit-text-fill-color: var(--neon-green);
+}
+
+.sidebar.collapsed .sidebar-logo span {
+    display: none;
 }
 
 .sidebar-header {
@@ -2991,9 +3066,9 @@ body::before {
 
 .right-panel-calendar-header {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
     gap: 0.5rem;
+    margin-bottom: 0.75rem;
 }
 
 .right-panel-nav {
