@@ -3,6 +3,9 @@ const RightPanel = {
     currentDate: null,
     ytPlayer: null,
     currentVideoId: null,
+    currentPlaylistId: null,
+    currentVideoIndex: -1,
+    autoNext: true,
     savePositionInterval: null,
     calendarCollapsed: false,
 
@@ -57,6 +60,7 @@ const RightPanel = {
                     } else if (e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.ENDED) {
                         this.saveCurrentPosition();
                         this.stopSavePosition();
+                        if (e.data === YT.PlayerState.ENDED && this.autoNext) this.playNext();
                     }
                 }
             }
@@ -200,7 +204,7 @@ const RightPanel = {
 
         resumeBtn?.addEventListener('click', () => {
             const h = this.getHistory();
-            if (h.lastVideo) this.playVideo(h.lastVideo.id, false);
+            if (h.lastVideo) this.playVideo(h.lastVideo.id, false, null, -1);
         });
 
         input.addEventListener('keydown', (e) => {
@@ -211,7 +215,7 @@ const RightPanel = {
                     this.addVideoToPlaylist(videoId, playlistId);
                     input.value = '';
                 } else if (videoId) {
-                    this.playVideo(videoId);
+                    this.playVideo(videoId, null, null, -1);
                 }
             }
         });
@@ -224,12 +228,14 @@ const RightPanel = {
                 this.addVideoToPlaylist(videoId, playlistId);
                 input.value = '';
             } else {
-                this.playVideo(videoId);
+                this.playVideo(videoId, null, null, -1);
             }
         });
 
         newPlaylistBtn?.addEventListener('click', () => this.showNewPlaylistModal());
 
+        this.setupPlayerMenu();
+        this.setupPlayerNav();
         document.getElementById('youtubeExpandBtn')?.addEventListener('click', () => this.expandVideo());
         document.getElementById('youtubeExpandClose')?.addEventListener('click', () => this.collapseVideo());
         document.getElementById('youtubeExpandedModal')?.addEventListener('click', (e) => {
@@ -245,7 +251,9 @@ const RightPanel = {
             const playlistHeader = e.target.closest('.youtube-playlist-header');
             if (playBtn) {
                 e.preventDefault();
-                this.playVideo(playBtn.dataset.playVideo);
+                const plId = playBtn.dataset.playlistId;
+                const idx = playBtn.dataset.videoIndex != null ? parseInt(playBtn.dataset.videoIndex, 10) : -1;
+                this.playVideo(playBtn.dataset.playVideo, null, plId, idx);
             } else if (delVideo) {
                 e.preventDefault();
                 this.deleteVideo(delVideo.dataset.playlistId, delVideo.dataset.videoId);
@@ -293,9 +301,9 @@ const RightPanel = {
                         <button type="button" class="youtube-del-playlist" data-delete-playlist data-playlist-id="${p.id}" title="Удалить плейлист"><i class="fas fa-trash-alt"></i></button>
                     </div>
                     <div class="youtube-playlist-videos">
-                        ${p.videos.map(v => `
+                        ${p.videos.map((v, idx) => `
                             <div class="youtube-video-item">
-                                <button type="button" class="youtube-play-btn" data-play-video="${v.id}" title="Играть">
+                                <button type="button" class="youtube-play-btn" data-play-video="${v.id}" data-playlist-id="${p.id}" data-video-index="${idx}" title="Играть">
                                     <i class="fas fa-play"></i> ${this.escapeHtml(v.title || v.id)}
                                 </button>
                                 <button type="button" class="youtube-del-video" data-delete-video data-playlist-id="${p.id}" data-video-id="${v.id}" title="Удалить"><i class="fas fa-times"></i></button>
@@ -353,8 +361,62 @@ const RightPanel = {
         this.renderPlaylists();
     },
 
-    playVideo(videoId, fromStart = null) {
+    setupPlayerMenu() {
+        const btn = document.getElementById('youtubePlayerMenuBtn');
+        const flyout = document.getElementById('youtubePlayerFlyout');
+        const wrap = document.querySelector('.youtube-player-wrap');
+        const mode = localStorage.getItem('sphinx_youtube_mode') || 'normal';
+        wrap?.classList.toggle('vertical-mode', mode === 'vertical');
+        document.querySelectorAll('.youtube-flyout-option').forEach(o => {
+            o.classList.toggle('active', o.dataset.mode === mode);
+        });
+        btn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            flyout?.classList.toggle('open');
+        });
+        document.addEventListener('click', () => flyout?.classList.remove('open'));
+        flyout?.addEventListener('click', (e) => e.stopPropagation());
+        document.querySelectorAll('.youtube-flyout-option').forEach(o => {
+            o.addEventListener('click', () => {
+                const m = o.dataset.mode;
+                localStorage.setItem('sphinx_youtube_mode', m);
+                wrap?.classList.toggle('vertical-mode', m === 'vertical');
+                document.querySelectorAll('.youtube-flyout-option').forEach(x => x.classList.toggle('active', x.dataset.mode === m));
+                flyout?.classList.remove('open');
+            });
+        });
+    },
+
+    setupPlayerNav() {
+        document.getElementById('youtubePrevBtn')?.addEventListener('click', () => this.playPrev());
+        document.getElementById('youtubeNextBtn')?.addEventListener('click', () => this.playNext());
+    },
+
+    getCurrentPlaylistVideos() {
+        if (!this.currentPlaylistId) return [];
+        const data = this.getData();
+        const pl = data.playlists.find(p => p.id === this.currentPlaylistId);
+        return pl ? pl.videos : [];
+    },
+
+    playNext() {
+        const videos = this.getCurrentPlaylistVideos();
+        if (videos.length === 0) return;
+        const nextIdx = (this.currentVideoIndex + 1) % videos.length;
+        this.playVideo(videos[nextIdx].id, null, this.currentPlaylistId, nextIdx);
+    },
+
+    playPrev() {
+        const videos = this.getCurrentPlaylistVideos();
+        if (videos.length === 0) return;
+        const prevIdx = this.currentVideoIndex <= 0 ? videos.length - 1 : this.currentVideoIndex - 1;
+        this.playVideo(videos[prevIdx].id, null, this.currentPlaylistId, prevIdx);
+    },
+
+    playVideo(videoId, fromStart = null, playlistId = null, videoIndex = -1) {
         this.currentVideoId = videoId;
+        this.currentPlaylistId = playlistId !== undefined ? playlistId : this.currentPlaylistId;
+        this.currentVideoIndex = videoIndex >= 0 ? videoIndex : -1;
         const history = this.getHistory();
         let startSeconds = 0;
         if (fromStart === false && history.positions[videoId]?.pos > 5) {

@@ -225,9 +225,24 @@
                 </div>
                 </div>
                 <div class="youtube-player-wrap">
+                    <button type="button" class="youtube-player-menu-btn" id="youtubePlayerMenuBtn" title="Режим просмотра">
+                        <i class="fas fa-sliders-h"></i>
+                    </button>
+                    <div class="youtube-player-flyout" id="youtubePlayerFlyout">
+                        <button type="button" class="youtube-flyout-option active" data-mode="normal">
+                            <i class="fas fa-square"></i> Обычный
+                        </button>
+                        <button type="button" class="youtube-flyout-option" data-mode="vertical">
+                            <i class="fas fa-mobile-alt"></i> Вертикальный
+                        </button>
+                    </div>
                     <button type="button" class="youtube-expand-btn" id="youtubeExpandBtn" title="Развернуть видео" style="display: none;">
                         <i class="fas fa-expand"></i>
                     </button>
+                    <div class="youtube-player-nav">
+                        <button type="button" class="youtube-nav-btn" id="youtubePrevBtn" title="Предыдущее"><i class="fas fa-step-backward"></i></button>
+                        <button type="button" class="youtube-nav-btn" id="youtubeNextBtn" title="Следующее"><i class="fas fa-step-forward"></i></button>
+                    </div>
                     <div id="youtubePlayerContainer"></div>
                 </div>
             </div>

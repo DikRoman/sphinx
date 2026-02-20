@@ -3716,6 +3716,119 @@ body::before {
     width: calc(100% + 3.5rem);
 }
 
+.youtube-player-wrap.vertical-mode #youtubePlayerContainer,
+.youtube-player-wrap.vertical-mode #youtubePlayerContainer iframe {
+    aspect-ratio: 9/16;
+    max-height: 320px;
+}
+
+.youtube-player-menu-btn {
+    position: absolute;
+    top: 0.35rem;
+    left: 0.35rem;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.youtube-player-menu-btn:hover {
+    background: rgba(0, 245, 255, 0.3);
+    color: var(--neon-cyan);
+}
+
+.youtube-player-flyout {
+    position: absolute;
+    top: 2.5rem;
+    left: 0;
+    z-index: 10;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.35rem;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-8px);
+    transition: all 0.2s;
+}
+
+.youtube-player-flyout.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+}
+
+.youtube-flyout-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    text-align: left;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.youtube-flyout-option:hover,
+.youtube-flyout-option.active {
+    background: var(--bg-hover);
+    color: var(--neon-cyan);
+}
+
+.youtube-player-nav {
+    position: absolute;
+    bottom: 0.35rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0.25rem;
+    z-index: 2;
+}
+
+.youtube-nav-btn {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.7rem;
+    transition: all 0.2s;
+}
+
+.youtube-nav-btn:hover {
+    background: rgba(0, 245, 255, 0.3);
+    color: var(--neon-cyan);
+}
+
+.youtube-nav-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
 .youtube-expand-btn {
     position: absolute;
     top: 0.35rem;
