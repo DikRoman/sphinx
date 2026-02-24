@@ -2085,6 +2085,8 @@ body::before {
     flex: 1 1 0;
     padding: 2rem;
     overflow: auto;
+    overflow-x: scroll;
+    overflow-y: scroll;
     position: relative;
     background-color: #121212;
     transition: zoom 0.2s ease, background-color 0.3s;
@@ -2092,6 +2094,32 @@ body::before {
     min-height: 0;
     order: 3;
     z-index: 1;
+    scrollbar-gutter: stable;
+}
+
+/* Всегда видимые ползунки на холсте стикеров */
+.sticky-notes-container::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+.sticky-notes-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 6px;
+}
+.sticky-notes-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+}
+.sticky-notes-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.35);
+}
+
+.sticky-notes-board {
+    position: relative;
+    min-width: 4000px;
+    min-height: 4000px;
+    width: 4000px;
+    height: 4000px;
 }
 
 .sticky-notes-container.sticky-bg-dark {
