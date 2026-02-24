@@ -20,6 +20,14 @@ const StickyNotes = {
     panStart: { x: 0, y: 0 },
     panScrollStart: { x: 0, y: 0 },
     spacePressed: false,
+    currentTool: 'select', // select | frame
+    isDrawingFrame: false,
+    frameTempEl: null,
+    frameStart: { x: 0, y: 0 },
+    pendingBoardClick: null,
+    contextMenuEl: null,
+    contextMenuState: null,
+    gridEnabled: false,
 
     init() {
         this.loadNotes();
@@ -31,6 +39,7 @@ const StickyNotes = {
         this.setupEventListeners();
         this.setupSelection();
         this.setupBackground();
+        this.loadGridState();
         this.updateZoomIndicator();
         // setupDragAndDrop будет вызван в renderNotes когда контейнер будет доступен
         // или при первом показе sticky notes view
@@ -52,6 +61,11 @@ const StickyNotes = {
                     e.preventDefault();
                     e.stopPropagation();
                     this.createNewShape();
+                    break;
+                case 'addFrame':
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.toggleFrameTool();
                     break;
                 case 'stickyZoomIn':
                     e.preventDefault();
@@ -158,8 +172,94 @@ const StickyNotes = {
             if (e.key === 'Escape') {
                 e.preventDefault();
                 this.clearSelection();
+                this.closeContextMenu();
             }
         });
+
+        // Клик вне контекстного меню — закрыть
+        document.addEventListener('click', (e) => {
+            if (!this.contextMenuEl) return;
+            if (this.contextMenuEl.contains(e.target)) return;
+            this.closeContextMenu();
+        });
+    },
+
+    toggleFrameTool() {
+        const btn = document.getElementById('addFrame');
+        const enable = this.currentTool !== 'frame';
+        this.currentTool = enable ? 'frame' : 'select';
+        if (btn) {
+            btn.classList.toggle('active', enable);
+        }
+    },
+
+    ensureContextMenu() {
+        if (this.contextMenuEl) return this.contextMenuEl;
+        const el = document.createElement('div');
+        el.className = 'sticky-context-menu';
+        el.innerHTML = `
+            <button class="sticky-context-item" data-action="create-note">Создать стикер здесь</button>
+            <button class="sticky-context-item" data-action="reset-view">Сбросить вид</button>
+            <button class="sticky-context-item" data-action="toggle-grid">Сетка</button>
+        `;
+        el.addEventListener('click', (e) => {
+            const btn = e.target.closest('.sticky-context-item');
+            if (!btn) return;
+            const action = btn.dataset.action;
+            if (action === 'create-note') {
+                if (this.contextMenuState) {
+                    this.createNewNoteAt(this.contextMenuState.worldX, this.contextMenuState.worldY);
+                }
+            } else if (action === 'reset-view') {
+                this.zoomReset();
+                const container = document.getElementById('stickyNotesContainer');
+                if (container) {
+                    container.scrollLeft = 0;
+                    container.scrollTop = 0;
+                }
+            } else if (action === 'toggle-grid') {
+                this.toggleGrid();
+            }
+            this.closeContextMenu();
+        });
+        document.body.appendChild(el);
+        this.contextMenuEl = el;
+        return el;
+    },
+
+    openContextMenu(state) {
+        const el = this.ensureContextMenu();
+        this.contextMenuState = state;
+        el.style.display = 'block';
+        el.style.left = `${state.sx}px`;
+        el.style.top = `${state.sy}px`;
+    },
+
+    closeContextMenu() {
+        if (this.contextMenuEl) {
+            this.contextMenuEl.style.display = 'none';
+        }
+        this.contextMenuState = null;
+    },
+
+    loadGridState() {
+        const saved = localStorage.getItem('sticky_grid_enabled');
+        this.gridEnabled = saved === 'true';
+        this.applyGrid();
+    },
+
+    applyGrid() {
+        const container = document.getElementById('stickyNotesContainer');
+        if (!container) return;
+        const board = container.querySelector('.sticky-notes-board');
+        if (!board) return;
+        board.classList.toggle('grid', this.gridEnabled);
+    },
+
+    toggleGrid() {
+        this.gridEnabled = !this.gridEnabled;
+        localStorage.setItem('sticky_grid_enabled', this.gridEnabled ? 'true' : 'false');
+        this.applyGrid();
     },
 
     setupSelection() {
@@ -192,18 +292,48 @@ const StickyNotes = {
                 e.target.closest('.resize-handle')) {
                 return;
             }
-            
+
+            const rect = container.getBoundingClientRect();
+            const scrollX = container.scrollLeft;
+            const scrollY = container.scrollTop;
+            const worldX = (e.clientX - rect.left + scrollX) / this.zoomLevel;
+            const worldY = (e.clientY - rect.top + scrollY) / this.zoomLevel;
+
+            // Режим рисования рамки
+            if (this.currentTool === 'frame') {
+                e.preventDefault();
+                this.isDrawingFrame = true;
+                this.frameStart.x = worldX;
+                this.frameStart.y = worldY;
+                if (!this.frameTempEl) {
+                    const board = container.querySelector('.sticky-notes-board') || container;
+                    this.frameTempEl = document.createElement('div');
+                    this.frameTempEl.className = 'sticky-frame-temp';
+                    board.appendChild(this.frameTempEl);
+                }
+                this.frameTempEl.style.display = 'block';
+                this.frameTempEl.style.left = `${worldX}px`;
+                this.frameTempEl.style.top = `${worldY}px`;
+                this.frameTempEl.style.width = '0px';
+                this.frameTempEl.style.height = '0px';
+                return;
+            }
+
+            // Кандидат клика по пустому месту для контекстного меню
+            this.pendingBoardClick = {
+                sx: e.clientX,
+                sy: e.clientY,
+                worldX,
+                worldY,
+                moved: false
+            };
+
             isMouseDown = true;
             this.isSelecting = true;
             hasMoved = false;
             startTime = Date.now();
-            
-            const rect = container.getBoundingClientRect();
-            const scrollX = container.scrollLeft;
-            const scrollY = container.scrollTop;
-            
-            startX = (e.clientX - rect.left + scrollX) / this.zoomLevel;
-            startY = (e.clientY - rect.top + scrollY) / this.zoomLevel;
+            startX = worldX;
+            startY = worldY;
             
             this.selectionStart = { x: startX, y: startY };
             
@@ -227,19 +357,40 @@ const StickyNotes = {
         });
         
         container.addEventListener('mousemove', (e) => {
+            const rect = container.getBoundingClientRect();
+            const scrollX = container.scrollLeft;
+            const scrollY = container.scrollTop;
+            const currentX = (e.clientX - rect.left + scrollX) / this.zoomLevel;
+            const currentY = (e.clientY - rect.top + scrollY) / this.zoomLevel;
+
+            // Обновляем статус клика для контекстного меню
+            if (this.pendingBoardClick) {
+                const dx = e.clientX - this.pendingBoardClick.sx;
+                const dy = e.clientY - this.pendingBoardClick.sy;
+                if (dx * dx + dy * dy > 25) {
+                    this.pendingBoardClick.moved = true;
+                }
+            }
+
+            // Рисование рамки
+            if (this.isDrawingFrame && this.currentTool === 'frame' && this.frameTempEl) {
+                const left = Math.min(this.frameStart.x, currentX);
+                const top = Math.min(this.frameStart.y, currentY);
+                const width = Math.abs(currentX - this.frameStart.x);
+                const height = Math.abs(currentY - this.frameStart.y);
+                this.frameTempEl.style.left = `${left}px`;
+                this.frameTempEl.style.top = `${top}px`;
+                this.frameTempEl.style.width = `${width}px`;
+                this.frameTempEl.style.height = `${height}px`;
+                return;
+            }
+
             if (!isMouseDown || !this.isSelecting) return;
             
             const moved = Math.abs(e.movementX) > 2 || Math.abs(e.movementY) > 2;
             if (moved) {
                 hasMoved = true;
             }
-            
-            const rect = container.getBoundingClientRect();
-            const scrollX = container.scrollLeft;
-            const scrollY = container.scrollTop;
-            
-            const currentX = (e.clientX - rect.left + scrollX) / this.zoomLevel;
-            const currentY = (e.clientY - rect.top + scrollY) / this.zoomLevel;
             
             const left = Math.min(startX, currentX);
             const top = Math.min(startY, currentY);
@@ -260,6 +411,35 @@ const StickyNotes = {
         });
         
         container.addEventListener('mouseup', () => {
+            // Завершение рисования рамки
+            if (this.isDrawingFrame && this.currentTool === 'frame') {
+                this.isDrawingFrame = false;
+                if (this.frameTempEl) {
+                    const width = parseFloat(this.frameTempEl.style.width) || 0;
+                    const height = parseFloat(this.frameTempEl.style.height) || 0;
+                    const left = parseFloat(this.frameTempEl.style.left) || 0;
+                    const top = parseFloat(this.frameTempEl.style.top) || 0;
+                    this.frameTempEl.style.display = 'none';
+                    if (width > 10 && height > 10) {
+                        this.createFrameFromRect(left, top, width, height);
+                    }
+                }
+            }
+
+            // Открытие контекстного меню по клику по пустому месту
+            if (this.pendingBoardClick) {
+                const candidate = this.pendingBoardClick;
+                this.pendingBoardClick = null;
+                if (!candidate.moved) {
+                    this.openContextMenu({
+                        sx: candidate.sx,
+                        sy: candidate.sy,
+                        worldX: candidate.worldX,
+                        worldY: candidate.worldY
+                    });
+                }
+            }
+
             if (isMouseDown) {
                 isMouseDown = false;
                 this.isSelecting = false;
@@ -977,6 +1157,28 @@ const StickyNotes = {
         }
     },
 
+    createFrameFromRect(x, y, width, height) {
+        const id = 'frame_' + Date.now();
+        const shape = {
+            id,
+            type: 'frame',
+            text: '',
+            width,
+            height,
+            position: {
+                x: Math.max(0, x),
+                y: Math.max(0, y)
+            },
+            color: 'transparent',
+            borderColor: '#4caf50',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
+        this.shapes[id] = shape;
+        this.saveShapes();
+        this.renderNotes();
+    },
+
     createNewShape() {
         const id = 'shape_' + Date.now();
         
@@ -1028,7 +1230,8 @@ const StickyNotes = {
     createShapeElement(shape) {
         const container = document.getElementById('stickyNotesContainer');
         const div = document.createElement('div');
-        div.className = 'sticky-shape';
+        const isFrame = shape.type === 'frame';
+        div.className = isFrame ? 'sticky-shape sticky-frame' : 'sticky-shape';
         div.style.left = `${shape.position.x}px`;
         div.style.top = `${shape.position.y}px`;
         div.style.width = `${shape.width}px`;
@@ -1038,7 +1241,16 @@ const StickyNotes = {
         div.dataset.shapeId = shape.id;
         div.dataset.type = 'shape';
 
-        div.innerHTML = `
+        if (isFrame) {
+            div.innerHTML = `
+            <div class="sticky-shape-header">
+                <button class="sticky-shape-btn" onclick="event.stopPropagation(); StickyNotes.deleteShape('${shape.id}')" title="Удалить">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            `;
+        } else {
+            div.innerHTML = `
             <div class="sticky-shape-header">
                 <button class="sticky-shape-btn" onclick="event.stopPropagation(); StickyNotes.deleteShape('${shape.id}')" title="Удалить">
                     <i class="fas fa-times"></i>
@@ -1062,6 +1274,7 @@ const StickyNotes = {
             </div>
             <div class="resize-handle" data-element-id="${shape.id}" data-element-type="shape"></div>
         `;
+        }
 
         // Клик по фигуре для выделения
         div.addEventListener('click', (e) => {

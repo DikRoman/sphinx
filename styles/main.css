@@ -2063,6 +2063,12 @@ body::before {
     white-space: nowrap;
 }
 
+.toolbar-btn.active {
+    background: var(--gradient-green-blue);
+    border-color: transparent;
+    color: #000;
+}
+
 .toolbar-btn:hover {
     background: var(--gradient-green-blue);
     border-color: transparent;
@@ -2122,6 +2128,13 @@ body::before {
     height: 4000px;
 }
 
+.sticky-notes-board.grid {
+    background-image:
+        linear-gradient(to right, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
 .sticky-notes-container.sticky-bg-dark {
     background-color: #121212;
 }
@@ -2165,6 +2178,33 @@ body::before {
 .sticky-note,
 .sticky-shape {
     -webkit-user-drag: element;
+}
+
+.sticky-context-menu {
+    position: fixed;
+    z-index: 2000;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 0.35rem 0.25rem;
+    box-shadow: var(--shadow-md);
+    min-width: 180px;
+}
+
+.sticky-context-item {
+    display: block;
+    width: 100%;
+    padding: 0.35rem 0.6rem;
+    border: none;
+    background: transparent;
+    color: var(--text-primary);
+    text-align: left;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.sticky-context-item:hover {
+    background: var(--bg-hover);
 }
 
 .sticky-note {
@@ -2508,6 +2548,21 @@ body::before {
         0 12px 24px rgba(0, 0, 0, 0.2),
         0 6px 12px rgba(0, 0, 0, 0.15);
     transition: none !important;
+}
+
+.sticky-frame {
+    background: transparent !important;
+    border-style: solid;
+    border-width: 2px;
+    border-color: #4caf50;
+}
+
+.sticky-frame-temp {
+    position: absolute;
+    border: 2px dashed rgba(76, 175, 80, 0.8);
+    background: transparent;
+    pointer-events: none;
+    z-index: 900;
 }
 
 .sticky-shape-header {
