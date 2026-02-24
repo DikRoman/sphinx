@@ -293,57 +293,50 @@ const StickyNotes = {
         
         const right = left + width;
         const bottom = top + height;
-        
-        // Проверяем все стикеры
-        container.querySelectorAll('.sticky-note').forEach(noteEl => {
-            const noteId = noteEl.dataset.noteId;
-            if (!noteId) return;
-            
-            const noteRect = noteEl.getBoundingClientRect();
-            const containerRect = container.getBoundingClientRect();
-            const scrollX = container.scrollLeft;
-            const scrollY = container.scrollTop;
-            
-            const noteLeft = (noteRect.left - containerRect.left + scrollX) / this.zoomLevel;
-            const noteTop = (noteRect.top - containerRect.top + scrollY) / this.zoomLevel;
-            const noteRight = noteLeft + (noteRect.width / this.zoomLevel);
-            const noteBottom = noteTop + (noteRect.height / this.zoomLevel);
-            
-            // Проверяем пересечение
+
+        // Проверяем все стикеры по их логическим координатам (позиция на холсте),
+        // чтобы не зависеть от zoom и scroll.
+        Object.values(this.notes).forEach(note => {
+            const noteEl = container.querySelector(`[data-note-id="${note.id}"]`);
+            if (!noteEl || !note.position) return;
+
+            const elW = note.width || 230;
+            const elH = note.height || 150;
+            const noteLeft = note.position.x;
+            const noteTop = note.position.y;
+            const noteRight = noteLeft + elW;
+            const noteBottom = noteTop + elH;
+
             const isIntersecting = !(noteRight < left || noteLeft > right || noteBottom < top || noteTop > bottom);
-            
+
             if (isIntersecting) {
-                this.selectedElements.add(`note_${noteId}`);
+                this.selectedElements.add(`note_${note.id}`);
                 noteEl.classList.add('selected');
             } else if (!noteEl.classList.contains('dragging')) {
-                this.selectedElements.delete(`note_${noteId}`);
+                this.selectedElements.delete(`note_${note.id}`);
                 noteEl.classList.remove('selected');
             }
         });
-        
-        // Проверяем все фигуры
-        container.querySelectorAll('.sticky-shape').forEach(shapeEl => {
-            const shapeId = shapeEl.dataset.shapeId;
-            if (!shapeId) return;
-            
-            const shapeRect = shapeEl.getBoundingClientRect();
-            const containerRect = container.getBoundingClientRect();
-            const scrollX = container.scrollLeft;
-            const scrollY = container.scrollTop;
-            
-            const shapeLeft = (shapeRect.left - containerRect.left + scrollX) / this.zoomLevel;
-            const shapeTop = (shapeRect.top - containerRect.top + scrollY) / this.zoomLevel;
-            const shapeRight = shapeLeft + (shapeRect.width / this.zoomLevel);
-            const shapeBottom = shapeTop + (shapeRect.height / this.zoomLevel);
-            
-            // Проверяем пересечение
+
+        // Проверяем все фигуры по их логическим координатам
+        Object.values(this.shapes).forEach(shape => {
+            const shapeEl = container.querySelector(`[data-shape-id="${shape.id}"]`);
+            if (!shapeEl || !shape.position) return;
+
+            const elW = shape.width || 250;
+            const elH = shape.height || 150;
+            const shapeLeft = shape.position.x;
+            const shapeTop = shape.position.y;
+            const shapeRight = shapeLeft + elW;
+            const shapeBottom = shapeTop + elH;
+
             const isIntersecting = !(shapeRight < left || shapeLeft > right || shapeBottom < top || shapeTop > bottom);
-            
+
             if (isIntersecting) {
-                this.selectedElements.add(`shape_${shapeId}`);
+                this.selectedElements.add(`shape_${shape.id}`);
                 shapeEl.classList.add('selected');
             } else if (!shapeEl.classList.contains('dragging')) {
-                this.selectedElements.delete(`shape_${shapeId}`);
+                this.selectedElements.delete(`shape_${shape.id}`);
                 shapeEl.classList.remove('selected');
             }
         });
