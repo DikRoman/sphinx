@@ -408,27 +408,37 @@ const StickyNotes = {
                 e.preventDefault();
                 const note = this.notes[this.draggedNote];
                 if (!note) return;
-                
                 const dx = (e.clientX - this.dragStartClient.x) / this.zoomLevel;
                 const dy = (e.clientY - this.dragStartClient.y) / this.zoomLevel;
-                
+                const elW = note.width || 230;
+                const elH = note.height || 150;
+                const maxX = Math.max(0, (container.scrollWidth || 10000) - elW);
+                const maxY = Math.max(0, (container.scrollHeight || 10000) - elH);
+                const x = Math.max(0, Math.min(this.dragStartPosition.x + dx, maxX));
+                const y = Math.max(0, Math.min(this.dragStartPosition.y + dy, maxY));
                 const noteElement = container.querySelector(`[data-note-id="${note.id}"]`);
                 if (noteElement) {
-                    noteElement.style.transform = `translate(${dx}px, ${dy}px) scale(1.05)`;
-                    noteElement.style.willChange = 'transform';
+                    noteElement.style.left = x + 'px';
+                    noteElement.style.top = y + 'px';
+                    noteElement.style.transform = '';
                 }
             } else if (this.draggedShape) {
                 e.preventDefault();
                 const shape = this.shapes[this.draggedShape];
                 if (!shape) return;
-                
                 const dx = (e.clientX - this.dragStartClient.x) / this.zoomLevel;
                 const dy = (e.clientY - this.dragStartClient.y) / this.zoomLevel;
-                
+                const elW = shape.width || 250;
+                const elH = shape.height || 150;
+                const maxX = Math.max(0, (container.scrollWidth || 10000) - elW);
+                const maxY = Math.max(0, (container.scrollHeight || 10000) - elH);
+                const x = Math.max(0, Math.min(this.dragStartPosition.x + dx, maxX));
+                const y = Math.max(0, Math.min(this.dragStartPosition.y + dy, maxY));
                 const shapeElement = container.querySelector(`[data-shape-id="${shape.id}"]`);
                 if (shapeElement) {
-                    shapeElement.style.transform = `translate(${dx}px, ${dy}px) scale(1.05)`;
-                    shapeElement.style.willChange = 'transform';
+                    shapeElement.style.left = x + 'px';
+                    shapeElement.style.top = y + 'px';
+                    shapeElement.style.transform = '';
                 }
             } else if (this.isPanning) {
                 e.preventDefault();
@@ -451,8 +461,8 @@ const StickyNotes = {
                     const moveY = dy / this.zoomLevel;
                     const elW = note.width || 230;
                     const elH = note.height || 150;
-                    const maxX = Math.max(0, container.scrollWidth / this.zoomLevel - elW);
-                    const maxY = Math.max(0, container.scrollHeight / this.zoomLevel - elH);
+                    const maxX = Math.max(0, (container.scrollWidth || 10000) - elW);
+                    const maxY = Math.max(0, (container.scrollHeight || 10000) - elH);
                     note.position.x = Math.max(0, Math.min(this.dragStartPosition.x + moveX, maxX));
                     note.position.y = Math.max(0, Math.min(this.dragStartPosition.y + moveY, maxY));
                     note.updatedAt = new Date().toISOString();
@@ -479,8 +489,8 @@ const StickyNotes = {
                     const moveY = dy / this.zoomLevel;
                     const elW = shape.width || 250;
                     const elH = shape.height || 150;
-                    const maxX = Math.max(0, container.scrollWidth / this.zoomLevel - elW);
-                    const maxY = Math.max(0, container.scrollHeight / this.zoomLevel - elH);
+                    const maxX = Math.max(0, (container.scrollWidth || 10000) - elW);
+                    const maxY = Math.max(0, (container.scrollHeight || 10000) - elH);
                     shape.position.x = Math.max(0, Math.min(this.dragStartPosition.x + moveX, maxX));
                     shape.position.y = Math.max(0, Math.min(this.dragStartPosition.y + moveY, maxY));
                     shape.updatedAt = new Date().toISOString();
@@ -809,8 +819,9 @@ const StickyNotes = {
             this.dragStartClient.y = e.clientY;
             const cr = container.getBoundingClientRect();
             const er = div.getBoundingClientRect();
-            this.dragStartPosition.x = (er.left - cr.left + container.scrollLeft) / this.zoomLevel;
-            this.dragStartPosition.y = (er.top - cr.top + container.scrollTop) / this.zoomLevel;
+            // Правильная формула: scroll уже в координатах контента, смещение экрана делим на zoom
+            this.dragStartPosition.x = container.scrollLeft + (er.left - cr.left) / this.zoomLevel;
+            this.dragStartPosition.y = container.scrollTop + (er.top - cr.top) / this.zoomLevel;
             note.position.x = this.dragStartPosition.x;
             note.position.y = this.dragStartPosition.y;
             
@@ -1123,8 +1134,8 @@ const StickyNotes = {
             this.dragStartClient.y = e.clientY;
             const cr = container.getBoundingClientRect();
             const er = div.getBoundingClientRect();
-            this.dragStartPosition.x = (er.left - cr.left + container.scrollLeft) / this.zoomLevel;
-            this.dragStartPosition.y = (er.top - cr.top + container.scrollTop) / this.zoomLevel;
+            this.dragStartPosition.x = container.scrollLeft + (er.left - cr.left) / this.zoomLevel;
+            this.dragStartPosition.y = container.scrollTop + (er.top - cr.top) / this.zoomLevel;
             shape.position.x = this.dragStartPosition.x;
             shape.position.y = this.dragStartPosition.y;
             
