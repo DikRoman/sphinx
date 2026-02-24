@@ -828,6 +828,31 @@ const StickyNotes = {
         }
     },
 
+    createNewNoteAt(worldX, worldY) {
+        const id = 'note_' + Date.now();
+        const colors = ['yellow', 'pink', 'green', 'blue', 'orange', 'purple'];
+        const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
+        const note = {
+            id,
+            title: 'Новая заметка',
+            content: '',
+            color: randomColor,
+            width: 230,
+            height: 150,
+            position: {
+                x: Math.max(0, worldX - 115),
+                y: Math.max(0, worldY - 75)
+            },
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
+
+        this.notes[id] = note;
+        this.saveNotes();
+        this.renderNotes();
+    },
+
     renderNotes() {
         const container = document.getElementById('stickyNotesContainer');
         if (!container) return;
