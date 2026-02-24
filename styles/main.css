@@ -2122,10 +2122,10 @@ body::before {
 
 .sticky-notes-board {
     position: relative;
-    min-width: 4000px;
-    min-height: 4000px;
-    width: 4000px;
-    height: 4000px;
+    min-width: 20000px;
+    min-height: 20000px;
+    width: 20000px;
+    height: 20000px;
 }
 
 .sticky-notes-board.grid {

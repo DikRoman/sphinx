@@ -1,6 +1,6 @@
 // Sticky Notes Management
 const StickyNotes = {
-    CANVAS_SIZE: 4000,
+    CANVAS_SIZE: 20000,
     notes: {},
     completedNotes: {},
     shapes: {},
@@ -176,12 +176,6 @@ const StickyNotes = {
             }
         });
 
-        // Клик вне контекстного меню — закрыть
-        document.addEventListener('click', (e) => {
-            if (!this.contextMenuEl) return;
-            if (this.contextMenuEl.contains(e.target)) return;
-            this.closeContextMenu();
-        });
     },
 
     toggleFrameTool() {
@@ -265,6 +259,8 @@ const StickyNotes = {
     setupSelection() {
         const container = document.getElementById('stickyNotesContainer');
         if (!container) return;
+        if (container.dataset.selectionSetup === 'true') return;
+        container.dataset.selectionSetup = 'true';
         
         let isMouseDown = false;
         let startX = 0;
@@ -273,6 +269,7 @@ const StickyNotes = {
         let hasMoved = false;
         
         container.addEventListener('mousedown', (e) => {
+            this.closeContextMenu();
             // Pan при правой кнопке мыши или пробеле
             if (e.button === 2 || this.spacePressed) {
                 e.preventDefault();
@@ -431,12 +428,14 @@ const StickyNotes = {
                 const candidate = this.pendingBoardClick;
                 this.pendingBoardClick = null;
                 if (!candidate.moved) {
-                    this.openContextMenu({
-                        sx: candidate.sx,
-                        sy: candidate.sy,
-                        worldX: candidate.worldX,
-                        worldY: candidate.worldY
-                    });
+                    setTimeout(() => {
+                        this.openContextMenu({
+                            sx: candidate.sx,
+                            sy: candidate.sy,
+                            worldX: candidate.worldX,
+                            worldY: candidate.worldY
+                        });
+                    }, 0);
                 }
             }
 
@@ -596,6 +595,20 @@ const StickyNotes = {
                     noteElement.style.top = y + 'px';
                     noteElement.style.transform = '';
                 }
+                // Автопрокрутка, чтобы камера следовала за стикером
+                const EDGE = 80;
+                const SPEED = 30;
+                const rect = container.getBoundingClientRect();
+                if (e.clientX > rect.right - EDGE) {
+                    container.scrollLeft += SPEED;
+                } else if (e.clientX < rect.left + EDGE) {
+                    container.scrollLeft = Math.max(0, container.scrollLeft - SPEED);
+                }
+                if (e.clientY > rect.bottom - EDGE) {
+                    container.scrollTop += SPEED;
+                } else if (e.clientY < rect.top + EDGE) {
+                    container.scrollTop = Math.max(0, container.scrollTop - SPEED);
+                }
             } else if (this.draggedShape) {
                 e.preventDefault();
                 const shape = this.shapes[this.draggedShape];
@@ -613,6 +626,20 @@ const StickyNotes = {
                     shapeElement.style.left = x + 'px';
                     shapeElement.style.top = y + 'px';
                     shapeElement.style.transform = '';
+                }
+                // Автопрокрутка для фигур
+                const EDGE = 80;
+                const SPEED = 30;
+                const rect = container.getBoundingClientRect();
+                if (e.clientX > rect.right - EDGE) {
+                    container.scrollLeft += SPEED;
+                } else if (e.clientX < rect.left + EDGE) {
+                    container.scrollLeft = Math.max(0, container.scrollLeft - SPEED);
+                }
+                if (e.clientY > rect.bottom - EDGE) {
+                    container.scrollTop += SPEED;
+                } else if (e.clientY < rect.top + EDGE) {
+                    container.scrollTop = Math.max(0, container.scrollTop - SPEED);
                 }
             } else if (this.isPanning) {
                 e.preventDefault();
@@ -838,8 +865,10 @@ const StickyNotes = {
 
         // Убедиться что drag and drop настроен
         this.setupDragAndDrop();
+        this.setupSelection();
         this.setupResizeHandles();
         this.applyZoom();
+        this.applyGrid();
         
         // Восстанавливаем выделение после рендеринга
         this.restoreSelection();
