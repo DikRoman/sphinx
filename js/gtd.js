@@ -61,6 +61,7 @@ const GTD = {
 
         document.addEventListener('click', (e) => {
             if (e.target.closest('#quickAddTask')) { e.preventDefault(); this.showTaskModal(null, 'inbox'); }
+            if (e.target.closest('#inboxColumnsSettings')) { e.preventDefault(); this.showInboxColumnsModal(); }
             if (e.target.closest('#addAreaTask')) { e.preventDefault(); this.showTaskModal(this.currentAreaId, 'area'); }
             if (e.target.closest('#addProjectTask')) { e.preventDefault(); this.showTaskModal(this.currentProjectId, 'project'); }
             if (e.target.closest('#editArea')) { e.preventDefault(); this.showAreaModal(this.currentAreaId); }
@@ -331,7 +332,7 @@ const GTD = {
                 startTime: startTime || null,
                 duration: duration,
                 tags: tags,
-                status: task?.status || CONFIG.TASK_STATUSES.NEW,
+                status: task?.status || (contextType === 'inbox' ? (Storage.getInboxColumns()[0]?.id || CONFIG.TASK_STATUSES.NEW) : CONFIG.TASK_STATUSES.NEW),
                 contextId: contextId || task?.contextId,
                 contextType: contextType || task?.contextType || 'inbox'
             });
@@ -367,6 +368,93 @@ const GTD = {
 
     closeTaskModal() {
         document.getElementById('taskModal').classList.remove('active');
+    },
+
+    showInboxColumnsModal() {
+        const modal = document.getElementById('inboxColumnsModal');
+        const body = document.getElementById('inboxColumnsModalBody');
+        let columns = Storage.getInboxColumns().map(c => ({ ...c }));
+
+        const renderList = () => {
+            body.innerHTML = `
+                <h2 style="margin-bottom: 1rem;">Колонки Inbox</h2>
+                <p class="modal-hint" style="margin-bottom: 1rem;">Добавляйте блоки, меняйте порядок, задавайте цвет или картинку для шапки.</p>
+                <div class="inbox-columns-list" id="inboxColumnsList"></div>
+                <div class="form-actions" style="margin-top: 1rem;">
+                    <button type="button" class="btn-secondary" id="inboxColumnAdd">
+                        <i class="fas fa-plus"></i> Добавить колонку
+                    </button>
+                    <button type="button" class="btn-primary" id="inboxColumnsSave">Сохранить</button>
+                </div>
+            `;
+
+            const listEl = document.getElementById('inboxColumnsList');
+            columns.forEach((col, index) => {
+                const row = document.createElement('div');
+                row.className = 'inbox-column-row';
+                row.dataset.index = index;
+                row.innerHTML = `
+                    <div class="inbox-column-order">
+                        <button type="button" class="btn-icon" title="Вверх" ${index === 0 ? 'disabled' : ''} data-move="up"><i class="fas fa-chevron-up"></i></button>
+                        <button type="button" class="btn-icon" title="Вниз" ${index === columns.length - 1 ? 'disabled' : ''} data-move="down"><i class="fas fa-chevron-down"></i></button>
+                    </div>
+                    <input type="text" class="form-input inbox-col-name" placeholder="Название" value="${this.escapeHtml(col.name || '')}" data-field="name">
+                    <input type="color" class="inbox-col-color" value="${col.color || '#00F5FF'}" title="Цвет шапки" data-field="color">
+                    <input type="url" class="form-input inbox-col-image" placeholder="URL картинки для шапки" value="${this.escapeHtml(col.imageUrl || '')}" data-field="imageUrl">
+                    <button type="button" class="btn-icon btn-icon-danger" title="Удалить" data-remove><i class="fas fa-trash"></i></button>
+                `;
+                listEl.appendChild(row);
+            });
+
+            listEl.addEventListener('click', (e) => {
+                const row = e.target.closest('.inbox-column-row');
+                if (!row) return;
+                const i = parseInt(row.dataset.index, 10);
+                if (e.target.closest('[data-move="up"]')) {
+                    if (i > 0) { [columns[i], columns[i - 1]] = [columns[i - 1], columns[i]]; renderList(); }
+                } else if (e.target.closest('[data-move="down"]')) {
+                    if (i < columns.length - 1) { [columns[i], columns[i + 1]] = [columns[i + 1], columns[i]]; renderList(); }
+                } else if (e.target.closest('[data-remove]')) {
+                    if (columns.length <= 1) return;
+                    columns.splice(i, 1);
+                    renderList();
+                }
+            });
+
+            document.getElementById('inboxColumnAdd').addEventListener('click', () => {
+                columns.push({ id: 'inbox_col_' + Date.now(), name: 'Новый блок', color: '#A855F7', imageUrl: '', order: columns.length });
+                renderList();
+            });
+
+            document.getElementById('inboxColumnsSave').addEventListener('click', () => {
+                const rows = body.querySelectorAll('.inbox-column-row');
+                const next = [];
+                rows.forEach((row, idx) => {
+                    const col = columns[idx];
+                    if (!col) return;
+                    col.name = row.querySelector('.inbox-col-name').value.trim() || col.id;
+                    col.color = row.querySelector('.inbox-col-color').value;
+                    col.imageUrl = (row.querySelector('.inbox-col-image').value || '').trim();
+                    col.order = idx;
+                    next.push(col);
+                });
+                const validIds = next.map(c => c.id);
+                const tasks = Storage.getTasks();
+                Object.keys(tasks).forEach(taskId => {
+                    const t = tasks[taskId];
+                    if (t.contextType === 'inbox' && validIds.indexOf(t.status) < 0) {
+                        t.status = next[0] ? next[0].id : CONFIG.TASK_STATUSES.NEW;
+                        Storage.saveTask(taskId, t);
+                    }
+                });
+                Storage.saveInboxColumns(next);
+                modal.classList.remove('active');
+                Kanban.renderKanban('inboxKanban', null, 'inbox');
+            });
+        };
+
+        renderList();
+        modal.classList.add('active');
     },
 
     updateBadges() {

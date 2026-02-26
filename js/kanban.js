@@ -63,9 +63,49 @@ const Kanban = {
         });
     },
 
+    getColumnsForBoard(boardId, contextType) {
+        if (boardId === 'inboxKanban' && contextType === 'inbox') {
+            return Storage.getInboxColumns();
+        }
+        return CONFIG.DEFAULT_INBOX_COLUMNS.map((c, i) => ({ ...c, order: i }));
+    },
+
+    buildBoardColumns(board, contextType) {
+        const boardId = board.id;
+        const columns = this.getColumnsForBoard(boardId, contextType);
+        board.innerHTML = columns.map(col => {
+            let style = '';
+            if (col.imageUrl) {
+                const url = this.escapeHtml(col.imageUrl).replace(/"/g, '&quot;');
+                style = ` style="background-image: url(\"${url}\"); background-size: cover; background-position: center; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.7);"`;
+            } else if (col.color) {
+                style = ` style="background: ${col.color}33; color: ${col.color};"`;
+            }
+            return `
+                <div class="kanban-column" data-column-id="${this.escapeHtml(col.id)}">
+                    <div class="kanban-header kanban-header-custom"${style}>
+                        <h3>${this.escapeHtml(col.name || col.id)}</h3>
+                        <span class="column-count">0</span>
+                    </div>
+                    <div class="kanban-content" data-status="${this.escapeHtml(col.id)}"></div>
+                </div>
+            `;
+        }).join('');
+    },
+
     renderKanban(boardId, contextId, contextType) {
         const board = document.getElementById(boardId);
         if (!board) return;
+
+        const columnsConfig = this.getColumnsForBoard(boardId, contextType);
+        const existingColumns = board.querySelectorAll('.kanban-content');
+        const existingStatuses = Array.from(existingColumns).map(c => c.dataset.status);
+        const needRebuild = existingStatuses.length !== columnsConfig.length ||
+            columnsConfig.some((c, i) => (existingStatuses[i] || '') !== (c.id || ''));
+
+        if (needRebuild) {
+            this.buildBoardColumns(board, contextType);
+        }
 
         const tasks = Storage.getTasks();
         const filteredTasks = Object.values(tasks).filter(task => {
@@ -83,14 +123,10 @@ const Kanban = {
         columns.forEach(column => {
             const status = column.dataset.status;
             const statusTasks = filteredTasks.filter(t => t.status === status);
-            
-            // Update count
-            const header = column.closest('.kanban-column').querySelector('.column-count');
-            if (header) {
-                header.textContent = statusTasks.length;
-            }
 
-            // Render cards
+            const header = column.closest('.kanban-column').querySelector('.column-count');
+            if (header) header.textContent = statusTasks.length;
+
             column.innerHTML = statusTasks.map(task => this.createCard(task)).join('');
         });
     },

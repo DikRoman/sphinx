@@ -222,5 +222,20 @@ const Storage = {
 
     saveYoutubeHistory(data) {
         localStorage.setItem(CONFIG.STORAGE_KEYS.YOUTUBE_HISTORY, JSON.stringify(data));
+    },
+
+    // Inbox columns (custom blocks: name, color, image, order)
+    getInboxColumns() {
+        const raw = localStorage.getItem(CONFIG.STORAGE_KEYS.INBOX_COLUMNS);
+        if (!raw) return CONFIG.DEFAULT_INBOX_COLUMNS.map((c, i) => ({ ...c, order: i }));
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) && parsed.length > 0
+            ? parsed.slice().sort((a, b) => (a.order ?? 999) - (b.order ?? 999))
+            : CONFIG.DEFAULT_INBOX_COLUMNS.map((c, i) => ({ ...c, order: i }));
+    },
+
+    saveInboxColumns(columns) {
+        const withOrder = columns.map((c, i) => ({ ...c, order: i }));
+        localStorage.setItem(CONFIG.STORAGE_KEYS.INBOX_COLUMNS, JSON.stringify(withOrder));
     }
 };

@@ -951,9 +951,11 @@ body::before {
     font-size: 0.75rem;
 }
 
-.header-actions {
+.header-actions,
+.view-header-actions {
     display: flex;
     gap: 0.75rem;
+    align-items: center;
 }
 
 /* Buttons */
@@ -1060,6 +1062,15 @@ body::before {
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--text-muted);
+}
+
+.kanban-header.kanban-header-custom {
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.kanban-header.kanban-header-custom .column-count {
+    background: rgba(0, 0, 0, 0.2);
+    color: inherit;
 }
 
 .column-count {
@@ -1847,6 +1858,10 @@ body::before {
     padding: 1rem 1.25rem;
 }
 
+.modal-content.modal-medium {
+    max-width: 620px;
+}
+
 .modal-content.modal-task .form-group {
     margin-bottom: 0.65rem;
 }
@@ -1976,6 +1991,77 @@ body::before {
     margin-top: 1.5rem;
     padding-top: 1.5rem;
     border-top: 1px solid var(--border);
+}
+
+/* Inbox columns (blocks) settings modal */
+.inbox-columns-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.inbox-column-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.inbox-column-row .inbox-column-order {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.inbox-column-row .inbox-col-name {
+    flex: 1;
+    min-width: 120px;
+}
+
+.inbox-column-row .inbox-col-color {
+    width: 36px;
+    height: 32px;
+    padding: 2px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    background: var(--bg-tertiary);
+}
+
+.inbox-column-row .inbox-col-image {
+    flex: 1;
+    min-width: 140px;
+    font-size: 0.8rem;
+}
+
+.btn-icon {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--border);
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.btn-icon:hover:not(:disabled) {
+    border-color: var(--neon-green);
+    color: var(--neon-green);
+}
+
+.btn-icon:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.btn-icon-danger:hover {
+    border-color: var(--error);
+    color: var(--error);
 }
 
 /* Scrollbar */

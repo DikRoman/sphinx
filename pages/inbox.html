@@ -4,31 +4,16 @@
             <h1><i class="fas fa-inbox"></i> Inbox</h1>
             <p class="view-subtitle">Быстрый захват задач и идей</p>
         </div>
-        <button class="btn-primary" id="quickAddTask">
-            <i class="fas fa-plus"></i> Быстро добавить
-        </button>
+        <div class="view-header-actions">
+            <button class="btn-secondary" id="inboxColumnsSettings" title="Настроить колонки">
+                <i class="fas fa-columns"></i> Колонки
+            </button>
+            <button class="btn-primary" id="quickAddTask">
+                <i class="fas fa-plus"></i> Быстро добавить
+            </button>
+        </div>
     </div>
     <div class="kanban-board" id="inboxKanban">
-        <div class="kanban-column">
-            <div class="kanban-header">
-                <h3>Новые</h3>
-                <span class="column-count">0</span>
-            </div>
-            <div class="kanban-content" data-status="new"></div>
-        </div>
-        <div class="kanban-column">
-            <div class="kanban-header">
-                <h3>В процессе</h3>
-                <span class="column-count">0</span>
-            </div>
-            <div class="kanban-content" data-status="in-progress"></div>
-        </div>
-        <div class="kanban-column">
-            <div class="kanban-header">
-                <h3>Готово</h3>
-                <span class="column-count">0</span>
-            </div>
-            <div class="kanban-content" data-status="done"></div>
-        </div>
+        <!-- Колонки создаются из настроек (Kanban) -->
     </div>
 </div>

@@ -10,8 +10,16 @@ const CONFIG = {
         WISHBOARD: 'sphinx_wishboard',
         WISHBOARD_SETTINGS: 'sphinx_wishboard_settings',
         YOUTUBE_PLAYLISTS: 'sphinx_youtube_playlists',
-        YOUTUBE_HISTORY: 'sphinx_youtube_history'
+        YOUTUBE_HISTORY: 'sphinx_youtube_history',
+        INBOX_COLUMNS: 'sphinx_inbox_columns'
     },
+
+    // Колонки Inbox по умолчанию (порядок, название, цвет шапки, картинка)
+    DEFAULT_INBOX_COLUMNS: [
+        { id: 'new', name: 'Новые', color: '#00F5FF', imageUrl: '', order: 0 },
+        { id: 'in-progress', name: 'В процессе', color: '#FFE135', imageUrl: '', order: 1 },
+        { id: 'done', name: 'Готово', color: '#00FF88', imageUrl: '', order: 2 }
+    ],
     
     // Default Areas
     DEFAULT_AREAS: [
