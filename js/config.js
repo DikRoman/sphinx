@@ -3,7 +3,6 @@ const CONFIG = {
     STORAGE_KEYS: {
         TASKS: 'sphinx_tasks',
         AREAS: 'sphinx_areas',
-        PROJECTS: 'sphinx_projects',
         HABITS: 'sphinx_habits',
         CONTENT: 'sphinx_content',
         NOTES: 'sphinx_notes',

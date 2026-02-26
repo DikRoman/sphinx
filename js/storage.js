@@ -73,33 +73,6 @@ const Storage = {
         this.saveAreas(areas);
     },
 
-    // Projects
-    getProjects() {
-        const projects = localStorage.getItem(CONFIG.STORAGE_KEYS.PROJECTS);
-        return projects ? JSON.parse(projects) : {};
-    },
-
-    saveProjects(projects) {
-        localStorage.setItem(CONFIG.STORAGE_KEYS.PROJECTS, JSON.stringify(projects));
-    },
-
-    saveProject(id, project) {
-        const projects = this.getProjects();
-        projects[id] = {
-            ...project,
-            id,
-            updatedAt: new Date().toISOString()
-        };
-        this.saveProjects(projects);
-        return projects[id];
-    },
-
-    deleteProject(id) {
-        const projects = this.getProjects();
-        delete projects[id];
-        this.saveProjects(projects);
-    },
-
     // Habits
     getHabits() {
         const habits = localStorage.getItem(CONFIG.STORAGE_KEYS.HABITS);

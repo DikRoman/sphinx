@@ -1,6 +1,6 @@
 /**
  * Роутер — навигация и загрузка страниц
- * Hash: #inbox, #today, #calendar, #sticky-notes, #habits, #content, #gantt, #wishboard, #area/ID, #project/ID
+ * Hash: #inbox, #today, #calendar, #sticky-notes, #habits, #content, #gantt, #wishboard, #area/ID
  */
 const Router = {
     container: null,
@@ -16,8 +16,7 @@ const Router = {
         content: { file: 'content.html', init: 'content' },
         gantt: { file: 'gantt.html', init: 'gantt' },
         wishboard: { file: 'wishboard.html', init: 'wishboard' },
-        area: { file: 'area.html', init: 'area' },
-        project: { file: 'project.html', init: 'project' }
+        area: { file: 'area.html', init: 'area' }
     },
 
     init(containerId) {
@@ -70,7 +69,6 @@ const Router = {
             let active = false;
             if (el.dataset.page === page) {
                 if (page === 'area') active = el.dataset.areaId === id;
-                else if (page === 'project') active = el.dataset.projectId === id;
                 else active = true;
             }
             el.classList.toggle('active', active);
@@ -98,8 +96,7 @@ const Router = {
             content: () => { Content.renderContent(); },
             gantt: () => { Gantt.renderGantt(); },
             wishboard: () => { Wishboard.render(); },
-            area: () => { if (id) GTD.openArea(id); },
-            project: () => { if (id) GTD.openProject(id); }
+            area: () => { if (id) GTD.openArea(id); }
         };
         const fn = inits[initName];
         if (fn) fn();

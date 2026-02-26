@@ -111,7 +111,6 @@ const App = {
                 SupabaseSync.init();
                 await SupabaseSync.loadFromSupabase();
                 GTD.renderAreas();
-                GTD.renderProjects();
                 Kanban.renderKanban('inboxKanban', null, 'inbox');
                 Habits.render();
                 Content.render();

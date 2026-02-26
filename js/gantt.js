@@ -11,7 +11,7 @@ const Gantt = {
 
     setupEventListeners() {
         document.addEventListener('change', (e) => {
-            if (e.target.id === 'ganttProjectSelect') this.renderGantt();
+            if (e.target.id === 'ganttAreaSelect') this.renderGantt();
         });
         document.addEventListener('click', (e) => {
             if (e.target.closest('#ganttZoomIn')) { e.preventDefault(); this.scale = Math.min(this.scale * 1.2, 3); this.renderGantt(); }
@@ -21,29 +21,31 @@ const Gantt = {
 
     renderGantt() {
         const container = document.getElementById('ganttContainer');
-        const projectSelect = document.getElementById('ganttProjectSelect');
-        if (!container || !projectSelect) return;
-        const selectedProject = projectSelect.value;
+        const areaSelect = document.getElementById('ganttAreaSelect');
+        if (!container || !areaSelect) return;
+        const selectedArea = areaSelect.value;
 
-        // Update project select
-        const projects = Storage.getProjects();
-        projectSelect.innerHTML = '<option value="all">Все проекты</option>';
-        Object.values(projects).forEach(project => {
+        // Update area select
+        const areas = Storage.getAreas();
+        areaSelect.innerHTML = '<option value="all">Все области</option>';
+        Object.values(areas).forEach(area => {
             const option = document.createElement('option');
-            option.value = project.id;
-            option.textContent = project.name;
-            if (selectedProject === project.id) {
+            option.value = area.id;
+            option.textContent = area.name;
+            if (selectedArea === area.id) {
                 option.selected = true;
             }
-            projectSelect.appendChild(option);
+            areaSelect.appendChild(option);
         });
 
-        // Get tasks for selected project
+        // Get tasks for selected area (areas + inbox with dueDate)
         const tasks = Storage.getTasks();
         let filteredTasks = Object.values(tasks).filter(task => {
-            if (task.contextType !== 'project') return false;
-            if (selectedProject === 'all') return true;
-            return task.contextId === selectedProject;
+            if (task.contextType === 'inbox' || task.contextType === 'area') {
+                if (selectedArea === 'all') return true;
+                return task.contextType === 'area' && task.contextId === selectedArea;
+            }
+            return false;
         });
 
         if (filteredTasks.length === 0) {
@@ -51,7 +53,7 @@ const Gantt = {
                 <div class="empty-state">
                     <i class="fas fa-chart-gantt"></i>
                     <h3>Нет задач для отображения</h3>
-                    <p>Создайте проект и добавьте задачи с датами</p>
+                    <p>Добавьте задачи в область и укажите даты</p>
                 </div>
             `;
             return;
@@ -91,7 +93,7 @@ const Gantt = {
     },
 
     renderTaskRow(task, days, dayWidth) {
-        const project = task.contextId ? Storage.getProjects()[task.contextId] : null;
+        const area = task.contextType === 'area' && task.contextId ? Storage.getAreas()[task.contextId] : null;
         const taskStart = task.dueDate ? new Date(task.dueDate) : new Date();
         const taskEnd = new Date(taskStart);
         taskEnd.setDate(taskEnd.getDate() + (task.duration || 1));
@@ -103,7 +105,7 @@ const Gantt = {
             <div class="gantt-row">
                 <div class="gantt-task-name">
                     ${this.escapeHtml(task.title)}
-                    ${project ? `<div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">${this.escapeHtml(project.name)}</div>` : ''}
+                    ${area ? `<div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">${this.escapeHtml(area.name)}</div>` : ''}
                 </div>
                 <div class="gantt-timeline">
                     <div class="gantt-bar" style="left: ${startOffset}px; width: ${width}px;" 

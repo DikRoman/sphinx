@@ -29,13 +29,6 @@ const SupabaseSync = {
                 localStorage.setItem(CONFIG.STORAGE_KEYS.AREAS, JSON.stringify(out));
             }
 
-            const { data: projects } = await SupabaseAuth.client.from('sphinx_projects').select('id,data').eq('user_id', uid);
-            if (projects?.length) {
-                const out = {};
-                projects.forEach(r => { out[r.id] = r.data; });
-                localStorage.setItem(CONFIG.STORAGE_KEYS.PROJECTS, JSON.stringify(out));
-            }
-
             const { data: habits } = await SupabaseAuth.client.from('sphinx_habits').select('id,data').eq('user_id', uid);
             if (habits?.length) {
                 const out = {};
@@ -77,9 +70,6 @@ const SupabaseSync = {
     },
     async pushAreas(areas) {
         await this.upsertTable('sphinx_areas', areas);
-    },
-    async pushProjects(projects) {
-        await this.upsertTable('sphinx_projects', projects);
     },
     async pushHabits(habits) {
         await this.upsertTable('sphinx_habits', habits);
@@ -138,7 +128,6 @@ const SupabaseSync = {
         };
         Storage.saveTasks = wrap(Storage.saveTasks, this.pushTasks);
         Storage.saveAreas = wrap(Storage.saveAreas, this.pushAreas);
-        Storage.saveProjects = wrap(Storage.saveProjects, this.pushProjects);
         Storage.saveHabits = wrap(Storage.saveHabits, this.pushHabits);
         Storage.saveContent = wrap(Storage.saveContent, this.pushContent);
         Storage.saveNotes = wrap(Storage.saveNotes, this.pushNotes);

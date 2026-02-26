@@ -167,11 +167,7 @@ const Calendar = {
     getTaskCategoryLabel(task) {
         if (task.contextType === 'area' && task.contextId) {
             const area = Storage.getAreas()[task.contextId];
-            return area ? area.name : 'Inbox';
-        }
-        if (task.contextType === 'project' && task.contextId) {
-            const project = Storage.getProjects()[task.contextId];
-            return project ? project.name : 'Проект';
+            return area ? area.name : 'Область';
         }
         return 'Inbox';
     },
@@ -180,10 +176,6 @@ const Calendar = {
         if (task.contextType === 'area' && task.contextId) {
             const area = Storage.getAreas()[task.contextId];
             return (area && area.color) || '#00F5FF';
-        }
-        if (task.contextType === 'project' && task.contextId) {
-            const project = Storage.getProjects()[task.contextId];
-            return (project && project.color) || '#A855F7';
         }
         const p = { high: '#ef4444', medium: '#f59e0b', low: '#00B8FF' };
         return p[task.priority] || '#00F5FF';
