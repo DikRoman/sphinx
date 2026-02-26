@@ -85,6 +85,13 @@ const Kanban = {
             }
             const grip = isInbox ? `<span class="column-drag-handle" draggable="true" title="Перетащить колонку"><i class="fas fa-grip-vertical"></i></span>` : '';
             const clickHint = isInbox ? ' title="Нажмите, чтобы изменить дизайн шапки"' : '';
+            const addBtn = isInbox ? `
+                <div class="kanban-column-add-row">
+                    <button type="button" class="kanban-column-add-btn" data-status="${this.escapeHtml(col.id)}" title="Добавить задачу в эту колонку">
+                        <i class="fas fa-plus"></i> Новая задача
+                    </button>
+                </div>
+            ` : '';
             return `
                 <div class="kanban-column ${isInbox ? 'inbox-column-draggable' : ''}" data-column-id="${this.escapeHtml(col.id)}">
                     <div class="kanban-header kanban-header-custom kanban-header-editable"${style}${clickHint}>
@@ -92,6 +99,7 @@ const Kanban = {
                         <h3>${this.escapeHtml(col.name || col.id)}</h3>
                         <span class="column-count">0</span>
                     </div>
+                    ${addBtn}
                     <div class="kanban-content" data-status="${this.escapeHtml(col.id)}"></div>
                 </div>
             `;
@@ -155,6 +163,14 @@ const Kanban = {
                 if (e.target.closest('.column-drag-handle')) return;
                 const col = header.closest('.kanban-column');
                 if (col) this.showHeaderDesignEditor(col);
+            });
+        });
+
+        board.querySelectorAll('.kanban-column-add-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const status = btn.dataset.status;
+                if (status && typeof GTD !== 'undefined') GTD.showTaskModal(null, 'inbox', null, { status });
             });
         });
     },
@@ -260,38 +276,91 @@ const Kanban = {
             return false;
         });
 
+        const columnsConfig = this.getColumnsForBoard(boardId, contextType);
         const columns = board.querySelectorAll('.kanban-content');
         columns.forEach(column => {
             const status = column.dataset.status;
             const statusTasks = filteredTasks.filter(t => t.status === status);
+            const colConfig = columnsConfig.find(c => c.id === status);
+            const columnColor = colConfig?.color || null;
 
             const header = column.closest('.kanban-column').querySelector('.column-count');
             if (header) header.textContent = statusTasks.length;
 
-            column.innerHTML = statusTasks.map(task => this.createCard(task)).join('');
+            column.innerHTML = statusTasks.map(task => this.createCard(task, columnColor)).join('');
         });
     },
 
-    createCard(task) {
+    getTaskCategoryLabel(task) {
+        if (task.contextType === 'area' && task.contextId) {
+            const area = Storage.getAreas()[task.contextId];
+            return area ? area.name : 'Inbox';
+        }
+        if (task.contextType === 'project' && task.contextId) {
+            const project = Storage.getProjects()[task.contextId];
+            return project ? project.name : 'Проект';
+        }
+        return 'Inbox';
+    },
+
+    getTaskCategoryColor(task) {
+        if (task.contextType === 'area' && task.contextId) {
+            const area = Storage.getAreas()[task.contextId];
+            return (area && area.color) || '#00F5FF';
+        }
+        if (task.contextType === 'project' && task.contextId) {
+            const project = Storage.getProjects()[task.contextId];
+            return (project && project.color) || '#A855F7';
+        }
+        const p = { high: '#ef4444', medium: '#f59e0b', low: '#00B8FF' };
+        return p[task.priority] || '#00F5FF';
+    },
+
+    formatDueText(task) {
+        if (!task.dueDate) return '';
+        const due = new Date(task.dueDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        due.setHours(0, 0, 0, 0);
+        const diffDays = Math.ceil((due - today) / (1000 * 60 * 60 * 24));
+        if (diffDays < 0) return '<i class="fas fa-clock"></i> Просрочено';
+        if (diffDays === 0) return '<i class="fas fa-clock"></i> Сегодня';
+        if (diffDays === 1) return '<i class="fas fa-clock"></i> Завтра';
+        if (diffDays <= 7) return `<i class="fas fa-clock"></i> Через ${diffDays} дн.`;
+        return `<i class="fas fa-clock"></i> ${this.formatDate(task.dueDate)}`;
+    },
+
+    createCard(task, columnColor) {
         const dueDate = task.dueDate ? new Date(task.dueDate) : null;
         const isOverdue = dueDate && dueDate < new Date() && task.status !== CONFIG.TASK_STATUSES.DONE;
-        
+        const category = this.getTaskCategoryLabel(task);
+        const categoryColor = this.getTaskCategoryColor(task);
+        const color = columnColor || categoryColor;
+        const dueHtml = this.formatDueText(task);
+        const desc = task.description ? this.escapeHtml(task.description.substring(0, 100)) + (task.description.length > 100 ? '...' : '') : '';
+        const emojiDisplay = task.emoji ? this.escapeHtml(task.emoji) : '<i class="fas fa-smile"></i>';
         return `
             <div class="kanban-card" draggable="true" data-task-id="${task.id}" 
-                 onclick="Kanban.openTask('${task.id}')">
+                 onclick="Kanban.openTask('${task.id}')" style="--card-color: ${color}">
+                <div class="kanban-card-emoji-wrap" onclick="event.stopPropagation(); Kanban.openEmojiPicker('${task.id}', event)" title="Выбрать эмодзи">
+                    <span class="kanban-card-emoji">${emojiDisplay}</span>
+                </div>
+                <div class="kanban-card-category">
+                    <span class="kanban-card-dot"></span>
+                    <span>${this.escapeHtml(category.toUpperCase())}</span>
+                </div>
                 <div class="card-header">
                     <div class="card-title">${this.escapeHtml(task.title)}</div>
                     <div class="card-priority ${task.priority || 'low'}"></div>
                 </div>
-                ${task.description ? `<div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">${this.escapeHtml(task.description.substring(0, 100))}${task.description.length > 100 ? '...' : ''}</div>` : ''}
+                ${desc ? `<div class="kanban-card-desc">${desc}</div>` : ''}
                 <div class="card-meta">
                     ${task.tags && task.tags.length > 0 ? task.tags.map(tag => 
                         `<span class="card-tag">${this.escapeHtml(tag)}</span>`
                     ).join('') : ''}
-                    ${dueDate ? `<span class="card-due-date ${isOverdue ? 'overdue' : ''}">
-                        <i class="fas fa-calendar"></i> ${this.formatDate(dueDate)}
-                    </span>` : ''}
+                    ${dueHtml ? `<span class="card-due-text ${isOverdue ? 'overdue' : ''}">${dueHtml}</span>` : ''}
                 </div>
+                <div class="kanban-card-bar"></div>
             </div>
         `;
     },
@@ -303,6 +372,23 @@ const Kanban = {
         const contextType = task.contextType || 'inbox';
         const contextId = task.contextId || null;
         GTD.showTaskModal(contextId, contextType, taskId);
+    },
+
+    openEmojiPicker(taskId, event) {
+        const task = Storage.getTask(taskId);
+        if (!task) return;
+        const board = event.target.closest('.kanban-board');
+        const boardId = board?.id;
+        const contextType = task.contextType || 'inbox';
+        const contextId = task.contextId || null;
+        if (typeof GTD !== 'undefined') {
+            GTD.showEmojiPicker(event.currentTarget, task.emoji || '', (emoji) => {
+                task.emoji = emoji;
+                Storage.saveTask(taskId, task);
+                if (boardId) this.renderKanban(boardId, contextId, contextType);
+                if (typeof GTD !== 'undefined') GTD.updateBadges();
+            });
+        }
     },
 
     formatDate(date) {

@@ -16,17 +16,24 @@ const Cover = {
     setupCoverTab() {
         const tab = document.getElementById('coverCollapseTab');
         const cover = document.getElementById('appCover');
-        tab?.addEventListener('click', () => {
+        const expandBar = document.getElementById('coverExpandBar');
+        const toggleCollapsed = () => {
             const collapsed = cover?.classList.toggle('collapsed');
             localStorage.setItem(this.COLLAPSED_KEY, collapsed ? '1' : '0');
+            if (expandBar) expandBar.style.display = collapsed ? 'flex' : 'none';
+        };
+        tab?.addEventListener('click', toggleCollapsed);
+        expandBar?.addEventListener('click', () => {
+            if (cover?.classList.contains('collapsed')) toggleCollapsed();
         });
     },
 
     applyCollapsedState() {
         const cover = document.getElementById('appCover');
-        if (cover && localStorage.getItem(this.COLLAPSED_KEY) === '1') {
-            cover.classList.add('collapsed');
-        }
+        const expandBar = document.getElementById('coverExpandBar');
+        const collapsed = cover && localStorage.getItem(this.COLLAPSED_KEY) === '1';
+        if (cover && collapsed) cover.classList.add('collapsed');
+        if (expandBar) expandBar.style.display = collapsed ? 'flex' : 'none';
     },
 
     loadCover() {

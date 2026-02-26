@@ -265,9 +265,20 @@ const GTD = {
         const modalBody = document.getElementById('taskModalBody');
         const task = taskId ? Storage.getTask(taskId) : null;
 
+        const taskEmoji = (task?.emoji || defaults?.emoji || '').trim();
         modalBody.innerHTML = `
             <h2 style="margin-bottom: 1.5rem;">${taskId ? 'Редактировать' : 'Создать'} задачу</h2>
             <form id="taskForm">
+                <div class="form-group form-group-emoji">
+                    <label class="form-label">Эмодзи</label>
+                    <div class="task-emoji-row">
+                        <span class="task-emoji-preview" id="taskEmojiPreview">${this.escapeHtml(taskEmoji) || '—'}</span>
+                        <input type="hidden" id="taskEmoji" value="${this.escapeHtml(taskEmoji)}">
+                        <button type="button" class="btn-secondary btn-emoji-pick" id="taskEmojiPick" title="Выбрать эмодзи">
+                            <i class="fas fa-smile"></i> Выбрать
+                        </button>
+                    </div>
+                </div>
                 <div class="form-group">
                     <label class="form-label">Название</label>
                     <input type="text" class="form-input" id="taskTitle" value="${task?.title || ''}" required>
@@ -307,6 +318,16 @@ const GTD = {
             </form>
         `;
 
+        document.getElementById('taskEmojiPick')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            const input = document.getElementById('taskEmoji');
+            const preview = document.getElementById('taskEmojiPreview');
+            this.showEmojiPicker(e.currentTarget, input?.value || '', (emoji) => {
+                if (input) input.value = emoji;
+                if (preview) preview.textContent = emoji || '—';
+            });
+        });
+
         document.getElementById('taskForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const id = taskId || 'task_' + Date.now();
@@ -324,6 +345,7 @@ const GTD = {
             if (parsed.time) startTime = startTime || parsed.time;
             const duration = parseFloat(document.getElementById('taskDuration').value) || 1;
 
+            const emoji = (document.getElementById('taskEmoji')?.value || '').trim();
             Storage.saveTask(id, {
                 title,
                 description,
@@ -332,7 +354,8 @@ const GTD = {
                 startTime: startTime || null,
                 duration: duration,
                 tags: tags,
-                status: task?.status || (contextType === 'inbox' ? (Storage.getInboxColumns()[0]?.id || CONFIG.TASK_STATUSES.NEW) : CONFIG.TASK_STATUSES.NEW),
+                emoji: emoji || undefined,
+                status: task?.status || (contextType === 'inbox' ? (defaults?.status || Storage.getInboxColumns()[0]?.id || CONFIG.TASK_STATUSES.NEW) : CONFIG.TASK_STATUSES.NEW),
                 contextId: contextId || task?.contextId,
                 contextType: contextType || task?.contextType || 'inbox'
             });
@@ -368,6 +391,67 @@ const GTD = {
 
     closeTaskModal() {
         document.getElementById('taskModal').classList.remove('active');
+    },
+
+    getOrCreateEmojiPicker() {
+        let el = document.getElementById('emojiPickerPopover');
+        if (el) return el;
+        const regular = CONFIG.TASK_EMOJI || [];
+        const kaomoji = CONFIG.TASK_EMOJI_KAOMOJI || [];
+        el = document.createElement('div');
+        el.id = 'emojiPickerPopover';
+        el.className = 'emoji-picker-popover';
+        el.innerHTML = `
+            <div class="emoji-picker-inner">
+                <div class="emoji-picker-tabs">
+                    <button type="button" class="emoji-picker-tab active" data-tab="regular">Обычные</button>
+                    <button type="button" class="emoji-picker-tab" data-tab="anime">Аниме</button>
+                </div>
+                <div class="emoji-picker-panel active" data-panel="regular">
+                    <div class="emoji-picker-grid">${regular.map(e => `<button type="button" class="emoji-picker-item" data-emoji="${this.escapeHtml(e)}">${e}</button>`).join('')}</div>
+                </div>
+                <div class="emoji-picker-panel" data-panel="anime">
+                    <div class="emoji-picker-grid emoji-picker-grid-kaomoji">${kaomoji.map(e => `<button type="button" class="emoji-picker-item" data-emoji="${this.escapeHtml(e)}">${this.escapeHtml(e)}</button>`).join('')}</div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(el);
+        el.querySelectorAll('.emoji-picker-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                e.stopPropagation();
+                el.querySelectorAll('.emoji-picker-tab').forEach(t => t.classList.remove('active'));
+                el.querySelectorAll('.emoji-picker-panel').forEach(p => p.classList.remove('active'));
+                tab.classList.add('active');
+                el.querySelector(`.emoji-picker-panel[data-panel="${tab.dataset.tab}"]`)?.classList.add('active');
+            });
+        });
+        return el;
+    },
+
+    showEmojiPicker(anchorEl, currentEmoji, onSelect) {
+        const picker = this.getOrCreateEmojiPicker();
+        const rect = anchorEl?.getBoundingClientRect();
+        if (rect) {
+            picker.style.left = Math.max(8, rect.left) + 'px';
+            picker.style.top = (rect.bottom + 4) + 'px';
+        }
+        const closeHandler = (e) => {
+            if (!picker.contains(e.target) && e.target !== anchorEl && !anchorEl?.contains(e.target)) {
+                picker.classList.remove('active');
+                document.removeEventListener('click', closeHandler);
+            }
+        };
+        picker.onclick = (e) => {
+            const item = e.target.closest('.emoji-picker-item');
+            if (item) {
+                const emoji = (item.dataset.emoji != null ? item.dataset.emoji : item.textContent || '').trim();
+                if (typeof onSelect === 'function') onSelect(emoji);
+                picker.classList.remove('active');
+                document.removeEventListener('click', closeHandler);
+            }
+        };
+        setTimeout(() => document.addEventListener('click', closeHandler), 0);
+        picker.classList.add('active');
     },
 
     showInboxColumnsModal() {
