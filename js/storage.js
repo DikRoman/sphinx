@@ -221,5 +221,25 @@ const Storage = {
 
     saveRightPanelBg(data) {
         localStorage.setItem(CONFIG.STORAGE_KEYS.RIGHT_PANEL_BG, JSON.stringify(data));
+    },
+
+    getAppSettings() {
+        const raw = localStorage.getItem(CONFIG.STORAGE_KEYS.APP_SETTINGS);
+        if (!raw) {
+            return {
+                theme: 'dark',
+                nav: { 'sticky-notes': true, 'today': true, 'calendar': true, 'habits': true, 'content': true, 'wishboard': true, 'areas': true }
+            };
+        }
+        const p = JSON.parse(raw);
+        const defaults = { 'sticky-notes': true, 'today': true, 'calendar': true, 'habits': true, 'content': true, 'wishboard': true, 'areas': true };
+        return {
+            theme: p.theme || 'dark',
+            nav: { ...defaults, ...(p.nav || {}) }
+        };
+    },
+
+    saveAppSettings(settings) {
+        localStorage.setItem(CONFIG.STORAGE_KEYS.APP_SETTINGS, JSON.stringify(settings));
     }
 };

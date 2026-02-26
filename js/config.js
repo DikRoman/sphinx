@@ -11,8 +11,19 @@ const CONFIG = {
         YOUTUBE_PLAYLISTS: 'sphinx_youtube_playlists',
         YOUTUBE_HISTORY: 'sphinx_youtube_history',
         INBOX_COLUMNS: 'sphinx_inbox_columns',
-        RIGHT_PANEL_BG: 'sphinx_right_panel_bg'
+        RIGHT_PANEL_BG: 'sphinx_right_panel_bg',
+        APP_SETTINGS: 'sphinx_app_settings'
     },
+
+    NAV_BLOCKS: [
+        { id: 'sticky-notes', label: 'Стикеры' },
+        { id: 'today', label: 'Сегодня' },
+        { id: 'calendar', label: 'Календарь' },
+        { id: 'habits', label: 'Привычки' },
+        { id: 'content', label: 'Контент' },
+        { id: 'wishboard', label: 'Доска желаний' },
+        { id: 'areas', label: 'Области' }
+    ],
 
     // Колонки Inbox по умолчанию (порядок, название, цвет шапки, эмодзи)
     DEFAULT_INBOX_COLUMNS: [

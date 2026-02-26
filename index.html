@@ -57,10 +57,15 @@
             <button class="sidebar-tab" id="sidebarTab" title="Скрыть / Показать панель">
                 <i class="fas fa-chevron-left"></i>
             </button>
-            <a href="landing.html" class="sidebar-logo" id="logoToLanding" title="На главную">
-                <i class="fas fa-sphinx"></i>
-                <span>SPHINX</span>
-            </a>
+            <div class="sidebar-header-row">
+                <a href="landing.html" class="sidebar-logo" id="logoToLanding" title="На главную">
+                    <i class="fas fa-sphinx"></i>
+                    <span>SPHINX</span>
+                </a>
+                <button type="button" class="sidebar-settings-btn" id="sidebarSettingsBtn" title="Настройки">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
             <nav class="nav-menu">
                 <div class="nav-section">
                     <a href="#inbox" class="nav-item active" data-page="inbox" data-icon-color="cyan">
@@ -68,34 +73,34 @@
                         <span>Inbox</span>
                         <span class="badge" id="inboxBadge">0</span>
                     </a>
-                    <a href="#sticky-notes" class="nav-item" data-page="sticky-notes" data-icon-color="pink">
+                    <a href="#sticky-notes" class="nav-item" data-page="sticky-notes" data-nav-block="sticky-notes" data-icon-color="pink">
                         <i class="fas fa-thumbtack"></i>
                         <span>Стикеры</span>
                     </a>
-                    <a href="#today" class="nav-item" data-page="today" data-icon-color="yellow">
+                    <a href="#today" class="nav-item" data-page="today" data-nav-block="today" data-icon-color="yellow">
                         <i class="fas fa-calendar-day"></i>
                         <span>Сегодня</span>
                         <span class="badge" id="todayBadge">0</span>
                     </a>
-                    <a href="#calendar" class="nav-item" data-page="calendar" data-icon-color="green">
+                    <a href="#calendar" class="nav-item" data-page="calendar" data-nav-block="calendar" data-icon-color="green">
                         <i class="fas fa-calendar-alt"></i>
                         <span>Календарь</span>
                     </a>
-                    <a href="#habits" class="nav-item" data-page="habits" data-icon-color="teal">
+                    <a href="#habits" class="nav-item" data-page="habits" data-nav-block="habits" data-icon-color="teal">
                         <i class="fas fa-chart-line"></i>
                         <span>Привычки</span>
                     </a>
-                    <a href="#content" class="nav-item" data-page="content" data-icon-color="purple">
+                    <a href="#content" class="nav-item" data-page="content" data-nav-block="content" data-icon-color="purple">
                         <i class="fas fa-film"></i>
                         <span>Контент</span>
                     </a>
-                    <a href="#wishboard" class="nav-item" data-page="wishboard" data-icon-color="magenta">
+                    <a href="#wishboard" class="nav-item" data-page="wishboard" data-nav-block="wishboard" data-icon-color="magenta">
                         <i class="fas fa-gem"></i>
                         <span>Доска желаний</span>
                     </a>
                 </div>
 
-                <div class="nav-section">
+                <div class="nav-section" data-nav-block="areas">
                     <div class="nav-section-title">Области</div>
                     <div id="areasList">
                         <!-- Areas will be dynamically added -->
@@ -255,6 +260,31 @@
                 <div class="form-actions">
                     <button type="button" class="btn-secondary" id="rightPanelBgRemove">Убрать фон</button>
                     <button type="button" class="btn-primary" id="rightPanelBgSave">Применить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- App settings: theme + nav visibility -->
+    <div class="modal" id="appSettingsModal">
+        <div class="modal-content modal-small">
+            <span class="modal-close" data-close="appSettingsModal">&times;</span>
+            <div class="modal-body">
+                <h3>Настройки</h3>
+                <div class="form-group">
+                    <label class="form-label">Тема</label>
+                    <select class="select-input" id="appSettingsTheme">
+                        <option value="dark">Тёмная</option>
+                        <option value="light">Светлая</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Блоки в меню</label>
+                    <p class="modal-hint">Включите или отключите пункты (Inbox всегда отображается)</p>
+                    <div class="app-settings-nav-toggles" id="appSettingsNavToggles"></div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-primary" id="appSettingsSave">Сохранить</button>
                 </div>
             </div>
         </div>

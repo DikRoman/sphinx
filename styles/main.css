@@ -65,6 +65,19 @@
     --radius-2xl: 40px;
 }
 
+body[data-theme="light"] {
+    --bg-primary: #f0f2f5;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #e8eaed;
+    --bg-card: #ffffff;
+    --bg-hover: #e8eaed;
+    --text-primary: #1a1a2e;
+    --text-secondary: #4a4a5a;
+    --text-muted: #6a6a7a;
+    --border: #d0d2d6;
+    --border-light: #e0e2e6;
+}
+
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: var(--bg-primary);
@@ -625,7 +638,68 @@ body::before {
 }
 
 .nav-section {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.35rem;
+}
+
+.nav-item.nav-hidden,
+.nav-section.nav-hidden {
+    display: none !important;
+}
+
+.sidebar-header-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem 0.4rem;
+    min-height: 0;
+}
+
+.sidebar-header-row .sidebar-logo {
+    flex: 1;
+    min-width: 0;
+    padding: 0.5rem 0 0.35rem;
+}
+
+.sidebar-settings-btn {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.sidebar-settings-btn:hover {
+    background: var(--bg-hover);
+    color: var(--neon-cyan);
+    border-color: var(--neon-cyan);
+}
+
+.app-settings-nav-toggles {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.app-settings-toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.app-settings-toggle-row input[type="checkbox"] {
+    accent-color: var(--neon-green);
 }
 
 /* Области — яркие пилюли как ярлычки в картотеке (нижняя заезжает на верхнюю) */
@@ -710,7 +784,7 @@ body::before {
 
 .nav-item {
     width: 100%;
-    padding: 0.45rem 0.75rem;
+    padding: 0.4rem 0.75rem;
     background: transparent;
     border: none;
     color: var(--text-secondary);
@@ -724,7 +798,7 @@ body::before {
     gap: 0.5rem;
     font-size: 0.8rem;
     font-weight: 500;
-    margin-bottom: 0.12rem;
+    margin-bottom: 0.08rem;
     position: relative;
 }
 
@@ -4106,14 +4180,14 @@ body::before {
     }
 }
 
-/* Right Panel - календарь и YouTube, сворачиваемая */
+/* Right Panel - календарь и YouTube, сворачиваемая, скруглённые углы */
 .right-panel {
     width: 220px;
     min-width: 20px;
     flex-shrink: 0;
     background: var(--bg-secondary);
     border-left: 1px solid var(--border);
-    border-radius: var(--radius-2xl) 0 0 var(--radius-2xl);
+    border-radius: 48px 0 0 48px;
     margin: 0.5rem 0.5rem 0.5rem 0;
     padding: 0;
     display: flex;

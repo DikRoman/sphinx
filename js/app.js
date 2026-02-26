@@ -1,6 +1,7 @@
 // Main Application
 const App = {
     init() {
+        this.applyAppSettings();
         // Initialize modules
         GTD.init();
         Kanban.init();
@@ -35,10 +36,52 @@ const App = {
         // Supabase Auth + Sync
         this.setupSupabase();
 
+        this.setupAppSettings();
+
         // Initial page load via Router (hashchange triggers on load)
         this.moveViewHeaderToCover();
 
         console.log('SPHINX GTD initialized');
+    },
+
+    applyAppSettings() {
+        const s = Storage.getAppSettings();
+        document.body.setAttribute('data-theme', s.theme || 'dark');
+        document.querySelectorAll('[data-nav-block]').forEach(el => {
+            const key = el.getAttribute('data-nav-block');
+            el.classList.toggle('nav-hidden', !s.nav[key]);
+        });
+    },
+
+    setupAppSettings() {
+        const btn = document.getElementById('sidebarSettingsBtn');
+        const modal = document.getElementById('appSettingsModal');
+        const themeSelect = document.getElementById('appSettingsTheme');
+        const togglesEl = document.getElementById('appSettingsNavToggles');
+        const saveBtn = document.getElementById('appSettingsSave');
+
+        btn?.addEventListener('click', () => {
+            const s = Storage.getAppSettings();
+            themeSelect.value = s.theme || 'dark';
+            togglesEl.innerHTML = (CONFIG.NAV_BLOCKS || []).map(b => `
+                <label class="app-settings-toggle-row">
+                    <input type="checkbox" data-nav-block="${b.id}" ${s.nav[b.id] !== false ? 'checked' : ''}>
+                    <span>${b.label}</span>
+                </label>
+            `).join('');
+            modal?.classList.add('active');
+        });
+
+        saveBtn?.addEventListener('click', () => {
+            const nav = {};
+            (CONFIG.NAV_BLOCKS || []).forEach(b => { nav[b.id] = togglesEl.querySelector(`[data-nav-block="${b.id}"]`)?.checked !== false; });
+            Storage.saveAppSettings({ theme: themeSelect.value, nav });
+            this.applyAppSettings();
+            modal?.classList.remove('active');
+        });
+
+        document.querySelector('[data-close="appSettingsModal"]')?.addEventListener('click', () => modal?.classList.remove('active'));
+        modal?.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('active'); });
     },
 
     setupPanelControls() {
