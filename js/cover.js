@@ -3,11 +3,24 @@ const Cover = {
     STORAGE_KEY: 'sphinx_cover_image',
     LAYOUT_KEY: 'sphinx_cover_position',
 
+    PRESET_TO_PERCENT: {
+        'top left': '0% 0%',
+        'top center': '50% 0%',
+        'top right': '100% 0%',
+        'center left': '0% 50%',
+        'center center': '50% 50%',
+        'center right': '100% 50%',
+        'bottom left': '0% 100%',
+        'bottom center': '50% 100%',
+        'bottom right': '100% 100%'
+    },
+
     init() {
         this.loadCover();
         this.loadLayout();
         this.setupEventListeners();
         this.setupLayoutListeners();
+        this.setupCoverDrag();
     },
 
     loadCover() {
@@ -16,8 +29,15 @@ const Cover = {
     },
 
     loadLayout() {
-        const pos = localStorage.getItem(this.LAYOUT_KEY) || 'center center';
+        const pos = localStorage.getItem(this.LAYOUT_KEY) || '50% 50%';
         this.applyPosition(pos);
+    },
+
+    normalizePosition(pos) {
+        const preset = this.PRESET_TO_PERCENT[pos];
+        if (preset) return preset;
+        if (typeof pos === 'string' && pos.includes('%')) return pos;
+        return '50% 50%';
     },
 
     setBackground(url) {
@@ -36,37 +56,86 @@ const Cover = {
     applyPosition(position) {
         const cover = document.getElementById('appCover');
         if (!cover) return;
-        cover.style.backgroundPosition = position;
+        const pos = this.normalizePosition(position);
+        cover.style.backgroundPosition = pos;
+    },
+
+    getPositionXY() {
+        const pos = this.normalizePosition(localStorage.getItem(this.LAYOUT_KEY) || '50% 50%');
+        const m = pos.match(/(\d+(?:\.\d+)?)\s*%\s*(\d+(?:\.\d+)?)\s*%/);
+        return m ? [parseFloat(m[1]), parseFloat(m[2])] : [50, 50];
+    },
+
+    savePositionXY(x, y) {
+        const clampedX = Math.max(0, Math.min(100, x));
+        const clampedY = Math.max(0, Math.min(100, y));
+        const pos = `${clampedX}% ${clampedY}%`;
+        this.applyPosition(pos);
+        localStorage.setItem(this.LAYOUT_KEY, pos);
     },
 
     setupLayoutListeners() {
         const btn = document.getElementById('coverLayoutBtn');
         const overlay = document.getElementById('coverLayoutOverlay');
         const okBtn = document.getElementById('coverLayoutOk');
-        const options = document.querySelectorAll('.cover-layout-option');
+        const cover = document.getElementById('appCover');
 
         btn?.addEventListener('click', () => {
-            const saved = localStorage.getItem(this.LAYOUT_KEY) || 'center center';
-            options.forEach(o => {
-                o.classList.toggle('active', o.dataset.position === saved);
-            });
             overlay.style.display = 'flex';
+            if (cover?.classList.contains('has-cover')) cover.classList.add('cover-drag-mode');
         });
 
         okBtn?.addEventListener('click', () => {
-            const active = document.querySelector('.cover-layout-option.active');
-            const pos = active?.dataset.position || 'center center';
-            this.applyPosition(pos);
-            localStorage.setItem(this.LAYOUT_KEY, pos);
             overlay.style.display = 'none';
+            cover?.classList.remove('cover-drag-mode');
         });
+    },
 
-        options.forEach(opt => {
-            opt.addEventListener('click', () => {
-                options.forEach(o => o.classList.remove('active'));
-                opt.classList.add('active');
-            });
-        });
+    setupCoverDrag() {
+        const cover = document.getElementById('appCover');
+        const overlay = document.getElementById('coverLayoutOverlay');
+        const resizeHandle = document.getElementById('coverResizeHandle');
+
+        if (!cover || !overlay) return;
+
+        let isDragging = false;
+        let startX = 0, startY = 0;
+        let startPosX = 0, startPosY = 0;
+
+        const onMouseDown = (e) => {
+            if (!cover.classList.contains('has-cover')) return;
+            if (overlay.style.display !== 'flex') return;
+            if (e.target.closest('.cover-settings-btn') || e.target.closest('.cover-layout-btn') || 
+                e.target.closest('.cover-layout-panel') || e.target === resizeHandle) return;
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            [startPosX, startPosY] = this.getPositionXY();
+            cover.classList.add('cover-dragging');
+            e.preventDefault();
+        };
+
+        const onMouseMove = (e) => {
+            if (!isDragging) return;
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            const k = 0.15;
+            const newX = startPosX - dx * k;
+            const newY = startPosY - dy * k;
+            this.savePositionXY(newX, newY);
+            e.preventDefault();
+        };
+
+        const onMouseUp = () => {
+            if (isDragging) {
+                isDragging = false;
+                cover.classList.remove('cover-dragging');
+            }
+        };
+
+        cover.addEventListener('mousedown', onMouseDown);
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
     },
 
     setupEventListeners() {
