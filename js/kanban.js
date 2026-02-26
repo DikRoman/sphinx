@@ -276,7 +276,6 @@ const Kanban = {
             return false;
         });
 
-        const columnsConfig = this.getColumnsForBoard(boardId, contextType);
         const columns = board.querySelectorAll('.kanban-content');
         columns.forEach(column => {
             const status = column.dataset.status;
