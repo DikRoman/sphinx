@@ -15,8 +15,6 @@ const RightPanel = {
         this.renderCalendar();
         this.setupCalendarTab();
         this.setupCalendarNav();
-        this.setupYouTubePlayer();
-        this.initYouTubeAPI();
     },
 
     setupCalendarTab() {

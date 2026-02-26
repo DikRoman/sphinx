@@ -3,6 +3,51 @@ const GTD = {
     currentAreaId: null,
     currentProjectId: null,
 
+    /** Распознавание даты и времени из текста задачи (сегодня, завтра, 14:00 и т.д.) */
+    parseNaturalDate(text) {
+        if (!text || typeof text !== 'string') return { date: null, time: null };
+        const t = text.toLowerCase().trim();
+        const now = new Date();
+        let date = null;
+        let time = null;
+
+        // Время: 14:00, 9:30, 14 00
+        const timeMatch = t.match(/\b(\d{1,2})[:\s](\d{2})\b/);
+        if (timeMatch) {
+            const h = parseInt(timeMatch[1], 10);
+            const m = parseInt(timeMatch[2], 10);
+            if (h >= 0 && h <= 23 && m >= 0 && m <= 59) {
+                time = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+            }
+        }
+
+        // Слова даты
+        if (/\bсегодня\b/.test(t)) {
+            date = now.toISOString().split('T')[0];
+        } else if (/\bзавтра\b/.test(t)) {
+            const d = new Date(now);
+            d.setDate(d.getDate() + 1);
+            date = d.toISOString().split('T')[0];
+        } else if (/\bпослезавтра\b/.test(t)) {
+            const d = new Date(now);
+            d.setDate(d.getDate() + 2);
+            date = d.toISOString().split('T')[0];
+        } else if (/\bчерез неделю\b/.test(t) || /\bчерез 1 неделю\b/.test(t)) {
+            const d = new Date(now);
+            d.setDate(d.getDate() + 7);
+            date = d.toISOString().split('T')[0];
+        } else if (/\bчерез (\d+)\s*дн/.test(t)) {
+            const match = t.match(/через\s*(\d+)\s*дн/);
+            if (match) {
+                const d = new Date(now);
+                d.setDate(d.getDate() + parseInt(match[1], 10));
+                date = d.toISOString().split('T')[0];
+            }
+        }
+
+        return { date, time };
+    },
+
     init() {
         this.renderAreas();
         this.renderProjects();
@@ -29,19 +74,33 @@ const GTD = {
         const areas = Storage.getAreas();
         areasList.innerHTML = '';
 
+        const tasks = Storage.getTasks();
+        const taskList = Object.values(tasks);
+
         const areaColors = ['#00F5FF', '#FF3D7F', '#FFE135', '#00FF88', '#A855F7', '#00B8FF'];
+        areasList.className = 'areas-cards';
+
         Object.values(areas).forEach((area, i) => {
             const color = area.color || areaColors[i % areaColors.length];
-            const item = document.createElement('a');
-            item.href = `#area/${area.id}`;
-            item.className = 'nav-item';
-            item.dataset.page = 'area';
-            item.dataset.areaId = area.id;
-            item.innerHTML = `
-                <i class="fas fa-${area.icon || 'folder'}" style="color: ${color}"></i>
-                <span>${this.escapeHtml(area.name)}</span>
+            const areaTasks = taskList.filter(t => t.contextType === 'area' && t.contextId === area.id);
+            const total = areaTasks.length;
+            const completed = areaTasks.filter(t => t.status === CONFIG.TASK_STATUSES.DONE).length;
+            const pastelBg = color + '22';
+
+            const card = document.createElement('a');
+            card.href = `#area/${area.id}`;
+            card.className = 'nav-item nav-area-card';
+            card.dataset.page = 'area';
+            card.dataset.areaId = area.id;
+            card.style.setProperty('--area-color', color);
+            card.style.background = pastelBg;
+            card.innerHTML = `
+                <span class="nav-area-card-badge">${completed} выполнено</span>
+                <span class="nav-area-card-title">${this.escapeHtml(area.name)}</span>
+                <span class="nav-area-card-meta">${total} задач</span>
+                <i class="nav-area-card-icon fas fa-external-link-alt"></i>
             `;
-            areasList.appendChild(item);
+            areasList.appendChild(card);
         });
     },
 
@@ -250,18 +309,23 @@ const GTD = {
         document.getElementById('taskForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const id = taskId || 'task_' + Date.now();
+            const title = document.getElementById('taskTitle').value;
+            const description = document.getElementById('taskDescription').value;
             const tags = document.getElementById('taskTags').value
                 .split(',')
                 .map(t => t.trim())
                 .filter(t => t);
 
-            const dueDate = document.getElementById('taskDueDate').value;
-            const startTime = document.getElementById('taskStartTime').value;
+            let dueDate = document.getElementById('taskDueDate').value;
+            let startTime = document.getElementById('taskStartTime').value;
+            const parsed = this.parseNaturalDate(title + ' ' + description);
+            if (parsed.date) dueDate = dueDate || parsed.date;
+            if (parsed.time) startTime = startTime || parsed.time;
             const duration = parseFloat(document.getElementById('taskDuration').value) || 1;
 
             Storage.saveTask(id, {
-                title: document.getElementById('taskTitle').value,
-                description: document.getElementById('taskDescription').value,
+                title,
+                description,
                 priority: document.getElementById('taskPriority').value,
                 dueDate: dueDate || null,
                 startTime: startTime || null,
