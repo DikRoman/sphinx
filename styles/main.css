@@ -746,15 +746,15 @@ body::before {
 
 .nav-area-card .nav-area-card-title {
     display: block;
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-size: 0.8rem;
+    font-weight: 500;
     margin-bottom: 0.15rem;
     color: rgba(0, 0, 0, 0.9);
 }
 
 .nav-area-card .nav-area-card-meta {
     display: block;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: 500;
     color: rgba(0, 0, 0, 0.7);
 }
@@ -763,7 +763,7 @@ body::before {
     position: absolute;
     bottom: 0.5rem;
     right: 0.65rem;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: var(--text-muted);
     opacity: 0.9;
 }
@@ -1475,7 +1475,8 @@ body::before {
 }
 
 /* Tasks List */
-.tasks-list {
+.tasks-list,
+.all-tasks-list {
     padding: 1.5rem 2rem;
     overflow-y: auto;
 }

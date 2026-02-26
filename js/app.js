@@ -292,6 +292,70 @@ const App = {
         container.innerHTML = todayTasks.map(task => this.createTaskItem(task)).join('');
     },
 
+    renderAllTasksView() {
+        const container = document.getElementById('allTasksList');
+        if (!container) return;
+        const tasks = Storage.getTasks();
+        const areas = Storage.getAreas();
+        const allTasks = Object.values(tasks);
+
+        const getContextTag = (task) => {
+            if (task.contextType === 'area' && task.contextId && areas[task.contextId]) {
+                return areas[task.contextId].name;
+            }
+            return 'Inbox';
+        };
+
+        if (allTasks.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-tasks"></i>
+                    <h3>Нет задач</h3>
+                    <p>Добавьте задачи в Inbox или области</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = allTasks.map(task => this.createAllTaskItem(task, getContextTag(task))).join('');
+    },
+
+    createAllTaskItem(task, contextTag) {
+        const priorityColors = {
+            high: 'var(--error)',
+            medium: 'var(--warning)',
+            low: 'var(--info)'
+        };
+
+        const dueDate = task.dueDate ? new Date(task.dueDate) : null;
+        const formattedDate = dueDate ? dueDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }) : '';
+
+        const allTags = [contextTag, ...(task.tags || [])].filter(Boolean);
+        const tagsHtml = allTags.map(tag =>
+            `<span class="card-tag">${this.escapeHtml(tag)}</span>`
+        ).join('');
+
+        return `
+            <div class="task-item" onclick="GTD.showTaskModal('${task.contextId || null}', '${task.contextType || 'inbox'}', '${task.id}')">
+                <input type="checkbox" class="task-checkbox" ${task.status === CONFIG.TASK_STATUSES.DONE ? 'checked' : ''}
+                       onchange="event.stopPropagation(); App.toggleTask('${task.id}', this.checked)">
+                <div class="task-content">
+                    <div class="task-title ${task.status === CONFIG.TASK_STATUSES.DONE ? 'completed' : ''}">
+                        ${this.escapeHtml(task.title)}
+                    </div>
+                    ${task.description ? `<div class="task-description">${this.escapeHtml(task.description)}</div>` : ''}
+                    <div class="task-meta">
+                        ${tagsHtml ? `<span class="task-tags">${tagsHtml}</span>` : ''}
+                        ${task.priority ? `<span class="task-priority" style="color: ${priorityColors[task.priority]}">
+                            <i class="fas fa-flag"></i> ${task.priority === 'high' ? 'Высокий' : task.priority === 'medium' ? 'Средний' : 'Низкий'}
+                        </span>` : ''}
+                        ${formattedDate ? `<span class="task-date"><i class="fas fa-calendar"></i> ${formattedDate}</span>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
     createTaskItem(task) {
         const priorityColors = {
             high: 'var(--error)',
@@ -332,6 +396,7 @@ const App = {
             Storage.saveTask(taskId, task);
             Kanban.renderKanban('inboxKanban', null, 'inbox');
             this.renderTodayView();
+            this.renderAllTasksView();
             Calendar.render();
             GTD.updateBadges();
         }

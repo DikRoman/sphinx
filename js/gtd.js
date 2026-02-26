@@ -273,6 +273,7 @@ const GTD = {
             }
             if (typeof App !== 'undefined') {
                 App.renderTodayView();
+                App.renderAllTasksView();
             }
             this.updateBadges();
             this.closeTaskModal();

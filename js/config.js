@@ -16,6 +16,7 @@ const CONFIG = {
     },
 
     NAV_BLOCKS: [
+        { id: 'all-tasks', label: 'Все задачи' },
         { id: 'sticky-notes', label: 'Стикеры' },
         { id: 'today', label: 'Сегодня' },
         { id: 'calendar', label: 'Календарь' },

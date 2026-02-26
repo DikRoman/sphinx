@@ -9,6 +9,7 @@ const Router = {
 
     PAGE_MAP: {
         inbox: { file: 'inbox.html', init: 'inbox' },
+        'all-tasks': { file: 'all-tasks.html', init: 'allTasks' },
         today: { file: 'today.html', init: 'today' },
         calendar: { file: 'calendar.html', init: 'calendar' },
         'sticky-notes': { file: 'sticky-notes.html', init: 'stickyNotes' },
@@ -78,6 +79,7 @@ const Router = {
     runPageInit(initName, id) {
         const inits = {
             inbox: () => { Kanban.renderKanban('inboxKanban', null, 'inbox'); },
+            allTasks: () => { App.renderAllTasksView(); },
             today: () => { App.renderTodayView(); },
             calendar: () => { Calendar.render(); },
             stickyNotes: () => {
