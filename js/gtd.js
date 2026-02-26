@@ -214,7 +214,8 @@ const GTD = {
                     <label class="form-label">Теги (через запятую)</label>
                     <input type="text" class="form-input" id="taskTags" value="${task?.tags?.join(', ') || ''}">
                 </div>
-                <div class="form-actions">
+                <div class="form-actions form-actions-task">
+                    ${taskId ? `<button type="button" class="btn-danger" id="taskDeleteBtn"><i class="fas fa-trash"></i> Удалить</button>` : ''}
                     <button type="button" class="btn-secondary" onclick="GTD.closeTaskModal()">Отмена</button>
                     <button type="submit" class="btn-primary">Сохранить</button>
                 </div>
@@ -278,6 +279,23 @@ const GTD = {
             this.updateBadges();
             this.closeTaskModal();
         });
+
+        const deleteBtn = document.getElementById('taskDeleteBtn');
+        if (deleteBtn && taskId) {
+            deleteBtn.addEventListener('click', () => {
+                if (!confirm('Удалить задачу?')) return;
+                Storage.deleteTask(taskId);
+                Kanban.renderKanban('inboxKanban', null, 'inbox');
+                if (this.currentAreaId) Kanban.renderKanban('areaKanban', this.currentAreaId, 'area');
+                if (typeof Calendar !== 'undefined') Calendar.render();
+                if (typeof App !== 'undefined') {
+                    App.renderTodayView();
+                    App.renderAllTasksView();
+                }
+                this.updateBadges();
+                this.closeTaskModal();
+            });
+        }
 
         modal.classList.add('active');
     },
