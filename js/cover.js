@@ -20,7 +20,10 @@ const Cover = {
         const toggleCollapsed = () => {
             const collapsed = cover?.classList.toggle('collapsed');
             localStorage.setItem(this.COLLAPSED_KEY, collapsed ? '1' : '0');
-            if (expandBar) expandBar.style.display = collapsed ? 'flex' : 'none';
+            if (expandBar) {
+                expandBar.style.display = 'flex';
+                expandBar.classList.toggle('visible', !!collapsed);
+            }
         };
         tab?.addEventListener('click', toggleCollapsed);
         expandBar?.addEventListener('click', () => {
@@ -33,7 +36,10 @@ const Cover = {
         const expandBar = document.getElementById('coverExpandBar');
         const collapsed = cover && localStorage.getItem(this.COLLAPSED_KEY) === '1';
         if (cover && collapsed) cover.classList.add('collapsed');
-        if (expandBar) expandBar.style.display = collapsed ? 'flex' : 'none';
+        if (expandBar) {
+            expandBar.style.display = 'flex';
+            expandBar.classList.toggle('visible', !!collapsed);
+        }
     },
 
     loadCover() {

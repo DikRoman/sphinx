@@ -120,11 +120,11 @@ body::before {
     z-index: 1;
 }
 
-/* Cover Bar - обложка блока */
+/* Cover Bar - обложка блока (высота на 25% меньше, плавное сворачивание) */
 .app-cover {
     flex-shrink: 0;
-    height: 180px;
-    min-height: 180px;
+    height: 135px;
+    min-height: 135px;
     display: flex;
     align-items: flex-end;
     padding: 0 1.25rem 0.75rem;
@@ -134,6 +134,8 @@ body::before {
     position: relative;
     background-size: cover;
     background-position: center top;
+    overflow: hidden;
+    transition: height 0.4s ease, min-height 0.4s ease, padding 0.35s ease, opacity 0.35s ease, border-color 0.3s ease;
 }
 
 .app-cover.has-cover {
@@ -141,11 +143,11 @@ body::before {
 }
 
 .app-cover.collapsed {
-    height: 0 !important;
-    min-height: 0 !important;
+    height: 0;
+    min-height: 0;
     padding: 0;
-    overflow: hidden;
-    border: none;
+    opacity: 0;
+    border-color: transparent;
 }
 
 .app-cover.collapsed .cover-settings-btn,
@@ -187,6 +189,11 @@ body::before {
 
 .app-cover.collapsed .cover-collapse-tab i {
     transform: rotate(180deg);
+    transition: transform 0.3s ease;
+}
+
+.cover-collapse-tab i {
+    transition: transform 0.3s ease;
 }
 
 /* Кнопка «Развернуть обложку» — видна в тёмной теме, когда обложка свёрнута */
@@ -205,7 +212,17 @@ body::before {
     color: var(--text-secondary);
     font-size: 0.8rem;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: opacity 0.3s ease, background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+
+.cover-expand-bar {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.cover-expand-bar.visible {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .cover-expand-bar:hover {
@@ -507,6 +524,11 @@ body::before {
 .sidebar.collapsed {
     width: var(--sidebar-collapsed);
     min-width: var(--sidebar-collapsed);
+}
+
+.sidebar .nav-menu,
+.sidebar .sidebar-footer {
+    transition: opacity 0.3s ease;
 }
 
 .sidebar.collapsed .nav-menu,
@@ -938,10 +960,13 @@ body::before {
     overflow: hidden;
     flex-direction: column;
     min-height: 0; /* Важно для правильной работы flex */
+    opacity: 0;
+    transition: opacity 0.25s ease;
 }
 
 .view-panel.active {
     display: flex;
+    opacity: 1;
 }
 
 .view-header {
@@ -1140,15 +1165,23 @@ body::before {
 
 /* Поповер «Дизайн шапки» по клику на шапку */
 .column-header-editor-popover {
-    display: none;
+    display: block;
     position: fixed;
     z-index: 1000;
     min-width: 280px;
     max-width: 320px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-6px);
+    transition: opacity 0.25s ease, visibility 0.25s ease, transform 0.25s ease;
 }
 
 .column-header-editor-popover.active {
-    display: block;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
 }
 
 .column-header-editor-inner {
@@ -2013,9 +2046,9 @@ body::before {
     opacity: 0.9;
 }
 
-/* Modal */
+/* Modal — плавное появление и исчезновение */
 .modal {
-    display: none;
+    display: flex;
     position: fixed;
     z-index: 1000;
     left: 0;
@@ -2026,10 +2059,16 @@ body::before {
     backdrop-filter: blur(4px);
     align-items: center;
     justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .modal.active {
-    display: flex;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
 }
 
 .modal-content {
@@ -2043,6 +2082,14 @@ body::before {
     position: relative;
     border: 1px solid var(--border);
     box-shadow: var(--shadow-lg);
+    transform: scale(0.96);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.modal.active .modal-content {
+    transform: scale(1);
+    opacity: 1;
 }
 
 .modal-content.modal-large {
@@ -2228,15 +2275,23 @@ body::before {
 
 /* Пикер эмодзи */
 .emoji-picker-popover {
-    display: none;
+    display: block;
     position: fixed;
     z-index: 1000;
     min-width: 260px;
     max-width: 320px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-4px);
+    transition: opacity 0.25s ease, visibility 0.25s ease, transform 0.25s ease;
 }
 
 .emoji-picker-popover.active {
-    display: block;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
 }
 
 .emoji-picker-inner {

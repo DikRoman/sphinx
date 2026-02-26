@@ -43,7 +43,7 @@ const App = {
 
     setupPanelControls() {
         const COVER_HEIGHT_KEY = 'sphinx_cover_height';
-        const DEFAULT_COVER = 180;
+        const DEFAULT_COVER = 135;
 
         const cover = document.getElementById('appCover');
         const resizeHandle = document.getElementById('rightPanelResizeHandle');
