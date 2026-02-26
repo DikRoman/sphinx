@@ -2,44 +2,12 @@
 const Cover = {
     STORAGE_KEY: 'sphinx_cover_image',
     LAYOUT_KEY: 'sphinx_cover_position',
-    COLLAPSED_KEY: 'sphinx_cover_collapsed',
 
     init() {
         this.loadCover();
         this.loadLayout();
-        this.applyCollapsedState();
-        this.setupCoverTab();
         this.setupEventListeners();
         this.setupLayoutListeners();
-    },
-
-    setupCoverTab() {
-        const tab = document.getElementById('coverCollapseTab');
-        const cover = document.getElementById('appCover');
-        const expandBar = document.getElementById('coverExpandBar');
-        const toggleCollapsed = () => {
-            const collapsed = cover?.classList.toggle('collapsed');
-            localStorage.setItem(this.COLLAPSED_KEY, collapsed ? '1' : '0');
-            if (expandBar) {
-                expandBar.style.display = 'flex';
-                expandBar.classList.toggle('visible', !!collapsed);
-            }
-        };
-        tab?.addEventListener('click', toggleCollapsed);
-        expandBar?.addEventListener('click', () => {
-            if (cover?.classList.contains('collapsed')) toggleCollapsed();
-        });
-    },
-
-    applyCollapsedState() {
-        const cover = document.getElementById('appCover');
-        const expandBar = document.getElementById('coverExpandBar');
-        const collapsed = cover && localStorage.getItem(this.COLLAPSED_KEY) === '1';
-        if (cover && collapsed) cover.classList.add('collapsed');
-        if (expandBar) {
-            expandBar.style.display = 'flex';
-            expandBar.classList.toggle('visible', !!collapsed);
-        }
     },
 
     loadCover() {

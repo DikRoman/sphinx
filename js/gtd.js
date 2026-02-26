@@ -86,7 +86,7 @@ const GTD = {
             const areaTasks = taskList.filter(t => t.contextType === 'area' && t.contextId === area.id);
             const total = areaTasks.length;
             const completed = areaTasks.filter(t => t.status === CONFIG.TASK_STATUSES.DONE).length;
-            const pastelBg = color + '22';
+            const pastelBg = color + '55';
 
             const card = document.createElement('a');
             card.href = `#area/${area.id}`;
@@ -477,6 +477,7 @@ const GTD = {
                 const row = document.createElement('div');
                 row.className = 'inbox-column-row';
                 row.dataset.index = index;
+                const colEmoji = (col.emoji != null ? col.emoji : '').toString().trim();
                 row.innerHTML = `
                     <div class="inbox-column-order">
                         <button type="button" class="btn-icon" title="Вверх" ${index === 0 ? 'disabled' : ''} data-move="up"><i class="fas fa-chevron-up"></i></button>
@@ -484,10 +485,21 @@ const GTD = {
                     </div>
                     <input type="text" class="form-input inbox-col-name" placeholder="Название" value="${this.escapeHtml(col.name || '')}" data-field="name">
                     <input type="color" class="inbox-col-color" value="${col.color || '#00F5FF'}" title="Цвет шапки" data-field="color">
-                    <input type="url" class="form-input inbox-col-image" placeholder="URL картинки для шапки" value="${this.escapeHtml(col.imageUrl || '')}" data-field="imageUrl">
+                    <span class="inbox-col-emoji-preview">${this.escapeHtml(colEmoji) || '—'}</span>
+                    <input type="hidden" class="inbox-col-emoji" value="${this.escapeHtml(colEmoji)}">
+                    <button type="button" class="btn-icon inbox-col-emoji-pick" title="Эмодзи шапки"><i class="fas fa-smile"></i></button>
                     <button type="button" class="btn-icon btn-icon-danger" title="Удалить" data-remove><i class="fas fa-trash"></i></button>
                 `;
                 listEl.appendChild(row);
+                const emojiInput = row.querySelector('.inbox-col-emoji');
+                const emojiPreview = row.querySelector('.inbox-col-emoji-preview');
+                row.querySelector('.inbox-col-emoji-pick').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.showEmojiPicker(e.currentTarget, emojiInput?.value || '', (emoji) => {
+                        if (emojiInput) emojiInput.value = emoji;
+                        if (emojiPreview) emojiPreview.textContent = emoji || '—';
+                    });
+                });
             });
 
             listEl.addEventListener('click', (e) => {
@@ -506,7 +518,7 @@ const GTD = {
             });
 
             document.getElementById('inboxColumnAdd').addEventListener('click', () => {
-                columns.push({ id: 'inbox_col_' + Date.now(), name: 'Новый блок', color: '#A855F7', imageUrl: '', order: columns.length });
+                columns.push({ id: 'inbox_col_' + Date.now(), name: 'Новый блок', color: '#A855F7', emoji: '', order: columns.length });
                 renderList();
             });
 
@@ -518,7 +530,8 @@ const GTD = {
                     if (!col) return;
                     col.name = row.querySelector('.inbox-col-name').value.trim() || col.id;
                     col.color = row.querySelector('.inbox-col-color').value;
-                    col.imageUrl = (row.querySelector('.inbox-col-image').value || '').trim();
+                    col.emoji = (row.querySelector('.inbox-col-emoji')?.value || '').trim();
+                    if (col.imageUrl !== undefined) delete col.imageUrl;
                     col.order = idx;
                     next.push(col);
                 });

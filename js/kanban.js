@@ -76,13 +76,10 @@ const Kanban = {
         const isInbox = boardId === 'inboxKanban' && contextType === 'inbox';
         const columns = this.getColumnsForBoard(boardId, contextType);
         board.innerHTML = columns.map(col => {
-            let style = '';
-            if (col.imageUrl) {
-                const url = this.escapeHtml(col.imageUrl).replace(/"/g, '&quot;');
-                style = ` style="background-image: url(\"${url}\"); background-size: cover; background-position: center; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.7);"`;
-            } else if (col.color) {
-                style = ` style="background: ${col.color}33; color: ${col.color};"`;
-            }
+            const color = col.color || '#00F5FF';
+            const bgOpacity = '99';
+            const style = ` style="background: ${color}${bgOpacity}; color: ${color};"`;
+            const emojiSpan = col.emoji ? `<span class="kanban-header-emoji">${this.escapeHtml(col.emoji)}</span>` : '';
             const grip = isInbox ? `<span class="column-drag-handle" draggable="true" title="Перетащить колонку"><i class="fas fa-grip-vertical"></i></span>` : '';
             const clickHint = isInbox ? ' title="Нажмите, чтобы изменить дизайн шапки"' : '';
             const addBtn = isInbox ? `
@@ -96,6 +93,7 @@ const Kanban = {
                 <div class="kanban-column ${isInbox ? 'inbox-column-draggable' : ''}" data-column-id="${this.escapeHtml(col.id)}">
                     <div class="kanban-header kanban-header-custom kanban-header-editable"${style}${clickHint}>
                         ${grip}
+                        ${emojiSpan}
                         <h3>${this.escapeHtml(col.name || col.id)}</h3>
                         <span class="column-count">0</span>
                     </div>
@@ -193,8 +191,12 @@ const Kanban = {
                     <input type="color" class="form-input header-editor-color" id="headerEditorColor" title="Цвет">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Картинка для шапки (URL)</label>
-                    <input type="url" class="form-input" id="headerEditorImage" placeholder="https://...">
+                    <label class="form-label">Эмодзи</label>
+                    <div class="header-editor-emoji-row">
+                        <span class="header-editor-emoji-preview" id="headerEditorEmojiPreview">—</span>
+                        <input type="hidden" id="headerEditorEmoji">
+                        <button type="button" class="btn-secondary" id="headerEditorEmojiPick" title="Выбрать эмодзи"><i class="fas fa-smile"></i> Выбрать</button>
+                    </div>
                 </div>
                 <div class="form-actions" style="margin-top: 0.75rem; border: none; padding: 0;">
                     <button type="button" class="btn-secondary" id="headerEditorCancel">Отмена</button>
@@ -205,6 +207,17 @@ const Kanban = {
         document.body.appendChild(el);
 
         el.querySelector('#headerEditorCancel').addEventListener('click', () => this.hideHeaderDesignEditor());
+        el.querySelector('#headerEditorEmojiPick').addEventListener('click', (e) => {
+            e.preventDefault();
+            const input = document.getElementById('headerEditorEmoji');
+            const preview = document.getElementById('headerEditorEmojiPreview');
+            if (typeof GTD !== 'undefined') {
+                GTD.showEmojiPicker(e.currentTarget, input?.value || '', (emoji) => {
+                    if (input) input.value = emoji;
+                    if (preview) preview.textContent = emoji || '—';
+                });
+            }
+        });
         el.querySelector('#headerEditorSave').addEventListener('click', () => {
             const columnId = el.dataset.columnId;
             if (!columnId) return;
@@ -213,7 +226,8 @@ const Kanban = {
             if (col) {
                 col.name = document.getElementById('headerEditorName').value.trim() || col.name;
                 col.color = document.getElementById('headerEditorColor').value;
-                col.imageUrl = (document.getElementById('headerEditorImage').value || '').trim();
+                col.emoji = (document.getElementById('headerEditorEmoji')?.value || '').trim();
+                if (col.imageUrl !== undefined) delete col.imageUrl;
                 Storage.saveInboxColumns(columns);
                 this.renderKanban('inboxKanban', null, 'inbox');
             }
@@ -237,7 +251,9 @@ const Kanban = {
         popover.dataset.columnId = columnId;
         document.getElementById('headerEditorName').value = col.name || '';
         document.getElementById('headerEditorColor').value = col.color || '#00F5FF';
-        document.getElementById('headerEditorImage').value = col.imageUrl || '';
+        const headerEmoji = (col.emoji != null ? col.emoji : (col.imageUrl !== undefined ? '' : '')).toString().trim();
+        document.getElementById('headerEditorEmoji').value = headerEmoji;
+        document.getElementById('headerEditorEmojiPreview').textContent = headerEmoji || '—';
         const header = columnEl.querySelector('.kanban-header');
         const rect = header.getBoundingClientRect();
         popover.style.left = Math.max(8, rect.left) + 'px';

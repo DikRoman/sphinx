@@ -46,26 +46,27 @@ const App = {
         const DEFAULT_COVER = 135;
 
         const cover = document.getElementById('appCover');
-        const resizeHandle = document.getElementById('rightPanelResizeHandle');
+        const coverResizeHandle = document.getElementById('coverResizeHandle');
         const musicTab = document.getElementById('musicCollapseTab');
         const musicPlayer = document.getElementById('rightPanelPlayer');
 
-        if (resizeHandle && cover) {
+        if (coverResizeHandle && cover) {
             let dragging = false;
             let startY = 0, startHeight = 0;
-            const minCover = 0, maxCover = 280;
+            const minCover = 60, maxCover = 200;
 
-            resizeHandle.addEventListener('mousedown', (e) => {
+            coverResizeHandle.addEventListener('mousedown', (e) => {
                 e.preventDefault();
                 dragging = true;
-                resizeHandle.classList.add('dragging');
+                coverResizeHandle.classList.add('dragging');
+                cover.classList.add('cover-resizing');
                 startY = e.clientY;
                 startHeight = parseInt(cover.style.height) || DEFAULT_COVER;
             });
             document.addEventListener('mousemove', (e) => {
                 if (!dragging) return;
-                const dy = startY - e.clientY;
-                let h = Math.max(minCover, Math.min(maxCover, startHeight - dy));
+                const dy = e.clientY - startY;
+                let h = Math.max(minCover, Math.min(maxCover, startHeight + dy));
                 cover.style.height = h + 'px';
                 cover.style.minHeight = h + 'px';
                 localStorage.setItem(COVER_HEIGHT_KEY, String(h));
@@ -73,13 +74,14 @@ const App = {
             document.addEventListener('mouseup', () => {
                 if (dragging) {
                     dragging = false;
-                    resizeHandle.classList.remove('dragging');
+                    coverResizeHandle.classList.remove('dragging');
+                    cover.classList.remove('cover-resizing');
                 }
             });
             const saved = localStorage.getItem(COVER_HEIGHT_KEY);
             if (saved) {
                 const h = parseInt(saved);
-                if (h >= 0 && h <= 400) {
+                if (h >= minCover && h <= maxCover) {
                     cover.style.height = h + 'px';
                     cover.style.minHeight = h + 'px';
                 }

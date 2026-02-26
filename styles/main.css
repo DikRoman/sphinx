@@ -142,97 +142,43 @@ body::before {
     background-color: transparent;
 }
 
-.app-cover.collapsed {
-    height: 0;
-    min-height: 0;
-    padding: 0;
-    opacity: 0;
-    border-color: transparent;
+.app-cover.cover-resizing {
+    transition: none;
 }
 
-.app-cover.collapsed .cover-settings-btn,
-.app-cover.collapsed .cover-layout-btn,
-.app-cover.collapsed .cover-center {
-    display: none;
-}
-
-.cover-collapse-tab {
+/* Ручка ресайза обложки — тянуть вверх/вниз, картинка масштабируется с высотой */
+.cover-resize-handle {
     position: absolute;
-    bottom: -12px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 24px;
-    height: 24px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border);
-    border-radius: 50%;
-    color: var(--text-muted);
-    font-size: 0.6rem;
-    cursor: pointer;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 12px;
+    cursor: ns-resize;
     z-index: 5;
-    transition: all 0.2s;
+    background: linear-gradient(to top, rgba(0,0,0,0.2) 0%, transparent 100%);
+    transition: background 0.2s ease;
 }
 
-.cover-collapse-tab:hover {
-    background: var(--bg-hover);
-    color: var(--neon-cyan);
+.cover-resize-handle:hover,
+.cover-resize-handle.dragging {
+    background: linear-gradient(to top, rgba(0,0,0,0.35) 0%, transparent 100%);
 }
 
-.app-cover.collapsed .cover-collapse-tab {
-    bottom: auto;
-    top: 0.25rem;
+.cover-resize-handle::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 4px;
+    transform: translateX(-50%);
+    width: 32px;
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.4);
 }
 
-.app-cover.collapsed .cover-collapse-tab i {
-    transform: rotate(180deg);
-    transition: transform 0.3s ease;
-}
-
-.cover-collapse-tab i {
-    transition: transform 0.3s ease;
-}
-
-/* Кнопка «Развернуть обложку» — видна в тёмной теме, когда обложка свёрнута */
-.cover-expand-bar {
-    display: none;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    width: 100%;
-    padding: 0.5rem 1rem;
-    flex-shrink: 0;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border);
-    border-top: none;
-    border-radius: 0 0 var(--radius-md) var(--radius-md);
-    color: var(--text-secondary);
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition: opacity 0.3s ease, background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
-}
-
-.cover-expand-bar {
-    opacity: 0;
-    pointer-events: none;
-}
-
-.cover-expand-bar.visible {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-.cover-expand-bar:hover {
-    background: var(--bg-hover);
-    color: var(--neon-cyan);
-    border-color: var(--neon-green);
-}
-
-.cover-expand-bar i {
-    font-size: 0.7rem;
+.cover-resize-handle:hover::after,
+.cover-resize-handle.dragging::after {
+    background: rgba(255,255,255,0.6);
 }
 
 .cover-settings-btn {
@@ -681,60 +627,78 @@ body::before {
     margin-bottom: 1.5rem;
 }
 
-/* Области — карточки с пастельным фоном и hover-анимацией */
+/* Области — яркие пилюли как ярлычки в картотеке (нижняя заезжает на верхнюю) */
 .areas-cards {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0;
 }
 
 .nav-area-card {
     display: block;
-    padding: 1rem 1rem 1.25rem;
+    padding: 0.75rem 1rem;
     border-radius: var(--radius-xl);
     text-decoration: none;
     color: var(--text-primary);
     position: relative;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-    min-height: 72px;
+    min-height: auto;
     box-sizing: border-box;
+    margin-top: 0;
 }
+
+.nav-area-card + .nav-area-card {
+    margin-top: -10px;
+    z-index: 1;
+}
+
+.areas-cards .nav-area-card:nth-child(1) { z-index: 1; }
+.areas-cards .nav-area-card:nth-child(2) { z-index: 2; }
+.areas-cards .nav-area-card:nth-child(3) { z-index: 3; }
+.areas-cards .nav-area-card:nth-child(4) { z-index: 4; }
+.areas-cards .nav-area-card:nth-child(5) { z-index: 5; }
+.areas-cards .nav-area-card:nth-child(6) { z-index: 6; }
+.areas-cards .nav-area-card:nth-child(7) { z-index: 7; }
+.areas-cards .nav-area-card:nth-child(8) { z-index: 8; }
+.areas-cards .nav-area-card:nth-child(9) { z-index: 9; }
+.areas-cards .nav-area-card:nth-child(10) { z-index: 10; }
 
 .nav-area-card:hover {
     transform: translate(-2px, -4px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    z-index: 11;
 }
 
 .nav-area-card .nav-area-card-title {
     display: block;
-    font-size: 1rem;
-    font-weight: 700;
-    margin-bottom: 0.2rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.15rem;
 }
 
 .nav-area-card .nav-area-card-meta {
     display: block;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: var(--text-muted);
 }
 
 .nav-area-card .nav-area-card-badge {
     position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
-    font-size: 0.7rem;
+    top: 0.5rem;
+    right: 0.65rem;
+    font-size: 0.65rem;
     font-weight: 600;
     color: var(--text-secondary);
-    background: rgba(255, 255, 255, 0.35);
-    padding: 0.2rem 0.5rem;
+    background: rgba(255, 255, 255, 0.4);
+    padding: 0.15rem 0.4rem;
     border-radius: 999px;
 }
 
 .nav-area-card .nav-area-card-icon {
     position: absolute;
-    bottom: 0.75rem;
-    right: 0.75rem;
-    font-size: 0.85rem;
+    bottom: 0.5rem;
+    right: 0.65rem;
+    font-size: 0.75rem;
     color: var(--text-muted);
     opacity: 0.9;
 }
@@ -1122,6 +1086,12 @@ body::before {
     border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 
+.kanban-header-emoji {
+    font-size: 1rem;
+    line-height: 1;
+    margin-right: 0.35rem;
+}
+
 .kanban-header.kanban-header-custom .column-count {
     background: rgba(0, 0, 0, 0.2);
     color: inherit;
@@ -1216,6 +1186,24 @@ body::before {
     padding: 2px;
     border-radius: var(--radius-sm);
     cursor: pointer;
+}
+
+.header-editor-emoji-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.header-editor-emoji-preview {
+    min-width: 2rem;
+    font-size: 1.25rem;
+    line-height: 1;
+}
+
+.inbox-column-row .inbox-col-emoji-preview {
+    min-width: 1.5rem;
+    font-size: 1.1rem;
+    text-align: center;
 }
 
 .column-count {
