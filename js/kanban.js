@@ -45,6 +45,7 @@ const Kanban = {
 
         document.addEventListener('drop', (e) => {
             e.preventDefault();
+            if (e.dataTransfer.getData('application/x-inbox-column')) return;
             const column = e.target.closest('.kanban-content');
             if (column && this.draggedElement && this.draggedData) {
                 const newStatus = column.dataset.status;
@@ -72,6 +73,7 @@ const Kanban = {
 
     buildBoardColumns(board, contextType) {
         const boardId = board.id;
+        const isInbox = boardId === 'inboxKanban' && contextType === 'inbox';
         const columns = this.getColumnsForBoard(boardId, contextType);
         board.innerHTML = columns.map(col => {
             let style = '';
@@ -81,9 +83,12 @@ const Kanban = {
             } else if (col.color) {
                 style = ` style="background: ${col.color}33; color: ${col.color};"`;
             }
+            const grip = isInbox ? `<span class="column-drag-handle" draggable="true" title="Перетащить колонку"><i class="fas fa-grip-vertical"></i></span>` : '';
+            const clickHint = isInbox ? ' title="Нажмите, чтобы изменить дизайн шапки"' : '';
             return `
-                <div class="kanban-column" data-column-id="${this.escapeHtml(col.id)}">
-                    <div class="kanban-header kanban-header-custom"${style}>
+                <div class="kanban-column ${isInbox ? 'inbox-column-draggable' : ''}" data-column-id="${this.escapeHtml(col.id)}">
+                    <div class="kanban-header kanban-header-custom kanban-header-editable"${style}${clickHint}>
+                        ${grip}
                         <h3>${this.escapeHtml(col.name || col.id)}</h3>
                         <span class="column-count">0</span>
                     </div>
@@ -91,6 +96,142 @@ const Kanban = {
                 </div>
             `;
         }).join('');
+        if (isInbox) this.setupInboxColumnDragAndEdit(board);
+    },
+
+    draggedColumnId: null,
+
+    setupInboxColumnDragAndEdit(board) {
+        if (!board || board.id !== 'inboxKanban') return;
+
+        board.querySelectorAll('.column-drag-handle').forEach(handle => {
+            handle.addEventListener('dragstart', (e) => {
+                e.stopPropagation();
+                const col = e.target.closest('.kanban-column');
+                if (col) {
+                    this.draggedColumnId = col.dataset.columnId;
+                    e.dataTransfer.setData('application/x-inbox-column', this.draggedColumnId);
+                    e.dataTransfer.effectAllowed = 'move';
+                    col.classList.add('column-dragging');
+                }
+            });
+            handle.addEventListener('dragend', (e) => {
+                board.querySelectorAll('.kanban-column').forEach(c => c.classList.remove('column-drag-over'));
+                this.draggedColumnId = null;
+                const col = e.target.closest('.kanban-column');
+                if (col) col.classList.remove('column-dragging');
+            });
+        });
+
+        board.querySelectorAll('.kanban-column').forEach(columnEl => {
+            columnEl.addEventListener('dragover', (e) => {
+                if (!this.draggedColumnId || this.draggedColumnId === columnEl.dataset.columnId) return;
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                columnEl.classList.add('column-drag-over');
+            });
+            columnEl.addEventListener('dragleave', (e) => {
+                if (!columnEl.contains(e.relatedTarget)) columnEl.classList.remove('column-drag-over');
+            });
+            columnEl.addEventListener('drop', (e) => {
+                e.preventDefault();
+                columnEl.classList.remove('column-drag-over');
+                const movedId = e.dataTransfer.getData('application/x-inbox-column');
+                if (!movedId || movedId === columnEl.dataset.columnId) return;
+                const columns = Storage.getInboxColumns();
+                const fromIdx = columns.findIndex(c => c.id === movedId);
+                const toIdx = columns.findIndex(c => c.id === columnEl.dataset.columnId);
+                if (fromIdx < 0 || toIdx < 0) return;
+                const [removed] = columns.splice(fromIdx, 1);
+                columns.splice(toIdx, 0, removed);
+                Storage.saveInboxColumns(columns);
+                this.renderKanban('inboxKanban', null, 'inbox');
+                this.draggedColumnId = null;
+            });
+        });
+
+        board.querySelectorAll('.kanban-header-editable').forEach(header => {
+            header.addEventListener('click', (e) => {
+                if (e.target.closest('.column-drag-handle')) return;
+                const col = header.closest('.kanban-column');
+                if (col) this.showHeaderDesignEditor(col);
+            });
+        });
+    },
+
+    getOrCreateHeaderEditorPopover() {
+        let el = document.getElementById('columnHeaderEditorPopover');
+        if (el) return el;
+        el = document.createElement('div');
+        el.id = 'columnHeaderEditorPopover';
+        el.className = 'column-header-editor-popover';
+        el.innerHTML = `
+            <div class="column-header-editor-inner">
+                <div class="column-header-editor-title"><i class="fas fa-palette"></i> Дизайн шапки</div>
+                <div class="form-group">
+                    <label class="form-label">Название</label>
+                    <input type="text" class="form-input" id="headerEditorName" placeholder="Название блока">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Цвет шапки</label>
+                    <input type="color" class="form-input header-editor-color" id="headerEditorColor" title="Цвет">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Картинка для шапки (URL)</label>
+                    <input type="url" class="form-input" id="headerEditorImage" placeholder="https://...">
+                </div>
+                <div class="form-actions" style="margin-top: 0.75rem; border: none; padding: 0;">
+                    <button type="button" class="btn-secondary" id="headerEditorCancel">Отмена</button>
+                    <button type="button" class="btn-primary" id="headerEditorSave">Сохранить</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(el);
+
+        el.querySelector('#headerEditorCancel').addEventListener('click', () => this.hideHeaderDesignEditor());
+        el.querySelector('#headerEditorSave').addEventListener('click', () => {
+            const columnId = el.dataset.columnId;
+            if (!columnId) return;
+            const columns = Storage.getInboxColumns();
+            const col = columns.find(c => c.id === columnId);
+            if (col) {
+                col.name = document.getElementById('headerEditorName').value.trim() || col.name;
+                col.color = document.getElementById('headerEditorColor').value;
+                col.imageUrl = (document.getElementById('headerEditorImage').value || '').trim();
+                Storage.saveInboxColumns(columns);
+                this.renderKanban('inboxKanban', null, 'inbox');
+            }
+            this.hideHeaderDesignEditor();
+        });
+        document.addEventListener('click', (e) => {
+            if (!el.classList.contains('active')) return;
+            if (el.contains(e.target)) return;
+            if (e.target.closest('.kanban-header-editable')) return;
+            this.hideHeaderDesignEditor();
+        });
+        return el;
+    },
+
+    showHeaderDesignEditor(columnEl) {
+        const columnId = columnEl.dataset.columnId;
+        const columns = Storage.getInboxColumns();
+        const col = columns.find(c => c.id === columnId);
+        if (!col) return;
+        const popover = this.getOrCreateHeaderEditorPopover();
+        popover.dataset.columnId = columnId;
+        document.getElementById('headerEditorName').value = col.name || '';
+        document.getElementById('headerEditorColor').value = col.color || '#00F5FF';
+        document.getElementById('headerEditorImage').value = col.imageUrl || '';
+        const header = columnEl.querySelector('.kanban-header');
+        const rect = header.getBoundingClientRect();
+        popover.style.left = Math.max(8, rect.left) + 'px';
+        popover.style.top = (rect.bottom + 4) + 'px';
+        popover.classList.add('active');
+    },
+
+    hideHeaderDesignEditor() {
+        const el = document.getElementById('columnHeaderEditorPopover');
+        if (el) el.classList.remove('active');
     },
 
     renderKanban(boardId, contextId, contextType) {

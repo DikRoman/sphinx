@@ -176,6 +176,8 @@
 
         <!-- Right Panel: Calendar + YouTube -->
         <aside class="right-panel" id="rightPanel">
+            <div class="right-panel-bg" id="rightPanelBg"></div>
+            <button type="button" class="right-panel-bg-btn" id="rightPanelBgBtn" title="Фон панели"><i class="fas fa-image"></i></button>
             <div class="right-panel-resize-handle" id="rightPanelResizeHandle" title="Тянуть вверх для растягивания"></div>
             <div class="right-panel-calendar" id="rightPanelCalendar">
                 <button type="button" class="calendar-tab" id="calendarTab" title="Свернуть / Развернуть">
@@ -241,6 +243,32 @@
         <div class="modal-content modal-large">
             <span class="modal-close">&times;</span>
             <div class="modal-body" id="noteModalBody"></div>
+        </div>
+    </div>
+
+    <!-- Right panel background -->
+    <div class="modal" id="rightPanelBgModal">
+        <div class="modal-content modal-small">
+            <span class="modal-close" data-close="rightPanelBgModal">&times;</span>
+            <div class="modal-body">
+                <h3>Фон правой панели</h3>
+                <p class="modal-hint">Вставьте ссылку на картинку. Она будет отображаться с прозрачностью поверх фона.</p>
+                <div class="form-group">
+                    <label class="form-label">URL картинки</label>
+                    <input type="url" class="form-input" id="rightPanelBgUrl" placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Прозрачность картинки</label>
+                    <div class="form-range-row">
+                        <input type="range" class="form-range" id="rightPanelBgOpacity" min="0.1" max="0.9" step="0.05" value="0.35">
+                        <span id="rightPanelBgOpacityValue">35%</span>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" id="rightPanelBgRemove">Убрать фон</button>
+                    <button type="button" class="btn-primary" id="rightPanelBgSave">Применить</button>
+                </div>
+            </div>
         </div>
     </div>
 

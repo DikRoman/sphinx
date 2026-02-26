@@ -12,9 +12,62 @@ const RightPanel = {
     init() {
         this.currentDate = new Date();
         this.calendarCollapsed = localStorage.getItem('sphinx_calendar_collapsed') === 'true';
+        this.applyRightPanelBg();
+        this.setupRightPanelBgModal();
         this.renderCalendar();
         this.setupCalendarTab();
         this.setupCalendarNav();
+    },
+
+    applyRightPanelBg() {
+        const bgEl = document.getElementById('rightPanelBg');
+        if (!bgEl) return;
+        const { imageUrl, opacity } = Storage.getRightPanelBg();
+        if (imageUrl) {
+            bgEl.style.backgroundImage = `url(${imageUrl.replace(/"/g, '%22')})`;
+            bgEl.style.opacity = String(opacity);
+            bgEl.classList.add('active');
+        } else {
+            bgEl.style.backgroundImage = '';
+            bgEl.style.opacity = '';
+            bgEl.classList.remove('active');
+        }
+    },
+
+    setupRightPanelBgModal() {
+        const btn = document.getElementById('rightPanelBgBtn');
+        const modal = document.getElementById('rightPanelBgModal');
+        const urlInput = document.getElementById('rightPanelBgUrl');
+        const opacityRange = document.getElementById('rightPanelBgOpacity');
+        const opacityValue = document.getElementById('rightPanelBgOpacityValue');
+        const saveBtn = document.getElementById('rightPanelBgSave');
+        const removeBtn = document.getElementById('rightPanelBgRemove');
+
+        btn?.addEventListener('click', () => {
+            const { imageUrl, opacity } = Storage.getRightPanelBg();
+            urlInput.value = imageUrl || '';
+            opacityRange.value = String(opacity);
+            opacityValue.textContent = Math.round(opacity * 100) + '%';
+            modal?.classList.add('active');
+        });
+
+        opacityRange?.addEventListener('input', () => {
+            opacityValue.textContent = Math.round(parseFloat(opacityRange.value) * 100) + '%';
+        });
+
+        saveBtn?.addEventListener('click', () => {
+            const imageUrl = (urlInput.value || '').trim();
+            const opacity = parseFloat(opacityRange.value) || 0.35;
+            Storage.saveRightPanelBg({ imageUrl, opacity });
+            this.applyRightPanelBg();
+            modal?.classList.remove('active');
+        });
+
+        removeBtn?.addEventListener('click', () => {
+            Storage.saveRightPanelBg({ imageUrl: '', opacity: 0.35 });
+            this.applyRightPanelBg();
+            modal?.classList.remove('active');
+        });
     },
 
     setupCalendarTab() {

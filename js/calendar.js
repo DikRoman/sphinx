@@ -147,39 +147,154 @@ const Calendar = {
         }
     },
 
+    DAY_VIEW_START_HOUR: 8,
+    DAY_VIEW_END_HOUR: 22,
+    HOUR_HEIGHT: 56,
+
+    parseTimeToMinutes(timeStr) {
+        if (!timeStr) return 0;
+        if (timeStr.includes('T')) timeStr = new Date(timeStr).toTimeString().slice(0, 5);
+        const [h, m] = (timeStr + ':0').split(':').map(s => parseInt(s, 10) || 0);
+        return h * 60 + m;
+    },
+
+    minutesToTime(minutes) {
+        const h = Math.floor(minutes / 60) % 24;
+        const m = minutes % 60;
+        return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    },
+
+    getTaskCategoryLabel(task) {
+        if (task.contextType === 'area' && task.contextId) {
+            const area = Storage.getAreas()[task.contextId];
+            return area ? area.name : 'Inbox';
+        }
+        if (task.contextType === 'project' && task.contextId) {
+            const project = Storage.getProjects()[task.contextId];
+            return project ? project.name : 'Проект';
+        }
+        return 'Inbox';
+    },
+
+    getTaskCategoryColor(task) {
+        if (task.contextType === 'area' && task.contextId) {
+            const area = Storage.getAreas()[task.contextId];
+            return (area && area.color) || '#00F5FF';
+        }
+        if (task.contextType === 'project' && task.contextId) {
+            const project = Storage.getProjects()[task.contextId];
+            return (project && project.color) || '#A855F7';
+        }
+        const p = { high: '#ef4444', medium: '#f59e0b', low: '#00B8FF' };
+        return p[task.priority] || '#00F5FF';
+    },
+
     renderDayView() {
         const date = new Date(this.currentDate);
-        const hours = Array.from({ length: 24 }, (_, i) => i);
+        const startH = this.DAY_VIEW_START_HOUR;
+        const endH = this.DAY_VIEW_END_HOUR;
+        const hours = Array.from({ length: endH - startH }, (_, i) => startH + i);
         const tasks = this.getTasksForDate(date);
+        const trackHeight = (endH - startH) * this.HOUR_HEIGHT;
+        const now = new Date();
+        const isToday = this.isToday(date);
+        const currentMinutes = isToday ? now.getHours() * 60 + now.getMinutes() : null;
+        const currentTop = currentMinutes != null && currentMinutes >= startH * 60 && currentMinutes <= endH * 60
+            ? (currentMinutes - startH * 60) / 60 * this.HOUR_HEIGHT
+            : null;
+
+        const dayStripStart = new Date(date);
+        dayStripStart.setDate(dayStripStart.getDate() - 2);
+        const dayStrip = Array.from({ length: 5 }, (_, i) => {
+            const d = new Date(dayStripStart);
+            d.setDate(d.getDate() + i);
+            return d;
+        });
+
+        const taskBlocksHtml = tasks.map(task => {
+            let startMin = this.parseTimeToMinutes(task.startTime);
+            if (startMin === 0 && !task.startTime) startMin = startH * 60;
+            const duration = Math.max(parseFloat(task.duration) || 1, 0.25);
+            const endMin = startMin + Math.round(duration * 60);
+            const top = Math.max(0, (startMin / 60 - startH) * this.HOUR_HEIGHT);
+            const height = Math.max(duration * this.HOUR_HEIGHT, 36);
+            const color = this.getTaskCategoryColor(task);
+            const category = this.getTaskCategoryLabel(task);
+            const startTimeFmt = this.formatTime12(this.minutesToTime(startMin));
+            const endTimeFmt = this.formatTime12(this.minutesToTime(endMin));
+            return this.renderDayViewTaskBlock(task, top, height, color, category, startTimeFmt, endTimeFmt);
+        }).join('');
 
         return `
-            <div class="calendar-day-view">
-                <div class="calendar-day-header">
-                    <h2>${date.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</h2>
+            <div class="calendar-day-view" data-date="${date.toISOString().split('T')[0]}">
+                <div class="calendar-day-dates">
+                    ${dayStrip.map(d => `
+                        <button type="button" class="calendar-day-date-card ${this.isToday(d) ? 'active' : ''}" 
+                                data-date="${d.toISOString().split('T')[0]}" 
+                                onclick="Calendar.setDayViewDate('${d.toISOString().split('T')[0]}')">
+                            <span class="calendar-day-date-num">${d.getDate()}</span>
+                            <span class="calendar-day-date-weekday">${d.toLocaleDateString('ru-RU', { weekday: 'short' })}</span>
+                        </button>
+                    `).join('')}
                 </div>
-                <div class="calendar-day-hours">
-                    ${hours.map(hour => {
-                        const hourTasks = tasks.filter(t => {
-                            if (!t.startTime) return false;
-                            let timeStr = t.startTime;
-                            if (timeStr.includes('T')) {
-                                timeStr = new Date(timeStr).toTimeString().slice(0, 5);
-                            }
-                            const taskHour = parseInt(timeStr.split(':')[0]);
-                            return taskHour === hour;
-                        });
-                        return `
-                            <div class="calendar-hour-row" data-hour="${hour}">
-                                <div class="calendar-hour-label">${hour.toString().padStart(2, '0')}:00</div>
-                                <div class="calendar-hour-content" data-hour="${hour}">
-                                    ${hourTasks.map(task => this.renderTaskBlock(task)).join('')}
-                                    <div class="calendar-hour-add" onclick="Calendar.addTaskAtHour(${hour})">
-                                        <i class="fas fa-plus"></i>
-                                    </div>
-                                </div>
+                <div class="calendar-day-timeline">
+                    <div class="calendar-day-times">
+                        ${hours.map(h => `
+                            <div class="calendar-day-time-label" style="height: ${this.HOUR_HEIGHT}px">${this.formatHourLabel(h)}</div>
+                        `).join('')}
+                    </div>
+                    <div class="calendar-day-track" 
+                         style="height: ${trackHeight}px;" 
+                         data-start-hour="${startH}"
+                         data-hour-height="${this.HOUR_HEIGHT}">
+                        ${currentTop != null ? `
+                            <div class="calendar-day-now-line" style="top: ${currentTop}px">
+                                <span class="calendar-day-now-dot"></span>
                             </div>
-                        `;
-                    }).join('')}
+                        ` : ''}
+                        ${taskBlocksHtml}
+                        <div class="calendar-day-add-hint" onclick="Calendar.addTaskAtHour(${startH})">
+                            <i class="fas fa-plus"></i> Добавить задачу
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    formatTime12(timeStr) {
+        if (!timeStr) return '';
+        if (timeStr.includes('T')) timeStr = new Date(timeStr).toTimeString().slice(0, 5);
+        const [h, m] = timeStr.split(':').map(s => parseInt(s, 10) || 0);
+        const h12 = h % 12 || 12;
+        const ampm = h < 12 ? 'am' : 'pm';
+        return `${h12}:${String(m).padStart(2, '0')} ${ampm}`;
+    },
+
+    formatHourLabel(hour) {
+        if (hour === 0) return '12 am';
+        if (hour < 12) return `${hour} am`;
+        if (hour === 12) return '12 pm';
+        return `${hour - 12} pm`;
+    },
+
+    setDayViewDate(dateStr) {
+        this.currentDate = new Date(dateStr + 'T12:00:00');
+        this.setView(CONFIG.CALENDAR_VIEWS.DAY);
+    },
+
+    renderDayViewTaskBlock(task, top, height, color, category, startTimeFmt, endTimeFmt) {
+        return `
+            <div class="calendar-day-task-card" 
+                 draggable="true"
+                 data-task-id="${task.id}"
+                 style="top: ${top}px; height: ${height}px; --task-color: ${color};"
+                 onclick="Calendar.openTask('${task.id}')">
+                <div class="calendar-day-task-bar"></div>
+                <div class="calendar-day-task-body">
+                    <div class="calendar-day-task-category">${this.escapeHtml(category.toUpperCase())}</div>
+                    <div class="calendar-day-task-title">${this.escapeHtml(task.title)}</div>
+                    <div class="calendar-day-task-time">${startTimeFmt} - ${endTimeFmt}</div>
                 </div>
             </div>
         `;
@@ -354,7 +469,10 @@ const Calendar = {
         `;
     },
 
+    _justDragged: false,
+
     openTask(taskId) {
+        if (this._justDragged) return;
         const task = Storage.getTask(taskId);
         if (task) {
             GTD.showTaskModal(task.contextId, task.contextType, taskId);
@@ -379,23 +497,64 @@ const Calendar = {
     },
 
     attachTaskEvents() {
-        // Drag and drop для задач в календаре
-        document.querySelectorAll('.calendar-task-block').forEach(block => {
+        const self = this;
+
+        document.querySelectorAll('.calendar-task-block, .calendar-day-task-card').forEach(block => {
             block.addEventListener('dragstart', (e) => {
                 e.dataTransfer.setData('taskId', block.dataset.taskId);
+                e.dataTransfer.effectAllowed = 'move';
+                block.classList.add('calendar-task-dragging');
+            });
+            block.addEventListener('dragend', () => {
+                block.classList.remove('calendar-task-dragging');
+                self._justDragged = true;
+                setTimeout(() => { self._justDragged = false; }, 50);
+            });
+        });
+
+        document.querySelectorAll('.calendar-day-track').forEach(track => {
+            track.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                track.classList.add('calendar-track-drag-over');
+            });
+            track.addEventListener('dragleave', (e) => {
+                if (!track.contains(e.relatedTarget)) track.classList.remove('calendar-track-drag-over');
+            });
+            track.addEventListener('drop', (e) => {
+                e.preventDefault();
+                track.classList.remove('calendar-track-drag-over');
+                const taskId = e.dataTransfer.getData('taskId');
+                if (!taskId) return;
+                const rect = track.getBoundingClientRect();
+                const y = e.clientY - rect.top + track.scrollTop;
+                const startHour = parseInt(track.dataset.startHour || '8');
+                const endHour = self.DAY_VIEW_END_HOUR || 22;
+                const hourHeight = parseFloat(track.dataset.hourHeight || '56');
+                const minutesFromTop = (y / hourHeight) * 60;
+                let newMinutes = startHour * 60 + Math.max(0, Math.round(minutesFromTop / 15) * 15);
+                newMinutes = Math.min(newMinutes, endHour * 60 - 15);
+                const startTime = self.minutesToTime(newMinutes);
+                const dateStr = track.closest('.calendar-day-view').dataset.date;
+                const task = Storage.getTask(taskId);
+                if (task) {
+                    task.dueDate = dateStr || task.dueDate;
+                    task.startTime = startTime;
+                    Storage.saveTask(taskId, task);
+                    self.render();
+                }
             });
         });
 
         document.querySelectorAll('.calendar-hour-content, .calendar-week-cell').forEach(cell => {
+            if (cell.closest('.calendar-day-view')) return;
             cell.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 cell.style.backgroundColor = 'var(--bg-hover)';
             });
-
             cell.addEventListener('dragleave', () => {
                 cell.style.backgroundColor = '';
             });
-
             cell.addEventListener('drop', (e) => {
                 e.preventDefault();
                 cell.style.backgroundColor = '';
@@ -403,7 +562,6 @@ const Calendar = {
                 const date = cell.dataset.date || this.currentDate.toISOString().split('T')[0];
                 const hour = parseInt(cell.dataset.hour || '0');
                 const startTime = `${hour.toString().padStart(2, '0')}:00`;
-                
                 const task = Storage.getTask(taskId);
                 if (task) {
                     task.dueDate = date;

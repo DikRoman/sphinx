@@ -237,5 +237,16 @@ const Storage = {
     saveInboxColumns(columns) {
         const withOrder = columns.map((c, i) => ({ ...c, order: i }));
         localStorage.setItem(CONFIG.STORAGE_KEYS.INBOX_COLUMNS, JSON.stringify(withOrder));
+    },
+
+    getRightPanelBg() {
+        const raw = localStorage.getItem(CONFIG.STORAGE_KEYS.RIGHT_PANEL_BG);
+        if (!raw) return { imageUrl: '', opacity: 0.35 };
+        const p = JSON.parse(raw);
+        return { imageUrl: p.imageUrl || '', opacity: typeof p.opacity === 'number' ? p.opacity : 0.35 };
+    },
+
+    saveRightPanelBg(data) {
+        localStorage.setItem(CONFIG.STORAGE_KEYS.RIGHT_PANEL_BG, JSON.stringify(data));
     }
 };

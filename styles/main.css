@@ -1073,6 +1073,89 @@ body::before {
     color: inherit;
 }
 
+.kanban-header-editable {
+    cursor: pointer;
+}
+
+.kanban-header-editable h3 {
+    flex: 1;
+    min-width: 0;
+}
+
+.column-drag-handle {
+    cursor: grab;
+    padding: 0.2rem 0.25rem;
+    opacity: 0.7;
+    margin-right: 0.25rem;
+    border-radius: var(--radius-sm);
+}
+
+.column-drag-handle:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.column-drag-handle:active {
+    cursor: grabbing;
+}
+
+.kanban-column.column-dragging {
+    opacity: 0.85;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.kanban-column.column-drag-over {
+    outline: 2px dashed var(--neon-green);
+    outline-offset: 2px;
+}
+
+/* Поповер «Дизайн шапки» по клику на шапку */
+.column-header-editor-popover {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    min-width: 280px;
+    max-width: 320px;
+}
+
+.column-header-editor-popover.active {
+    display: block;
+}
+
+.column-header-editor-inner {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+    box-shadow: var(--shadow-lg);
+}
+
+.column-header-editor-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-primary);
+}
+
+.column-header-editor-title i {
+    color: var(--neon-green);
+}
+
+.column-header-editor-popover .form-group {
+    margin-bottom: 0.75rem;
+}
+
+.column-header-editor-popover .header-editor-color {
+    width: 100%;
+    height: 36px;
+    padding: 2px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+
 .column-count {
     background: var(--bg-tertiary);
     color: var(--text-primary);
@@ -1993,6 +2076,24 @@ body::before {
     border-top: 1px solid var(--border);
 }
 
+.form-range-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.form-range {
+    flex: 1;
+    height: 6px;
+    accent-color: var(--neon-green);
+}
+
+.form-range-row span {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    min-width: 2.5rem;
+}
+
 /* Inbox columns (blocks) settings modal */
 .inbox-columns-list {
     display: flex;
@@ -2875,6 +2976,195 @@ body::before {
     margin: 0 auto;
 }
 
+/* Полоска дат (день: число + день недели) */
+.calendar-day-dates {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.calendar-day-date-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.6rem 0.5rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.calendar-day-date-card:hover {
+    border-color: var(--neon-green);
+    color: var(--text-primary);
+}
+
+.calendar-day-date-card.active {
+    background: var(--neon-cyan);
+    border-color: var(--neon-green);
+    color: #000;
+}
+
+.calendar-day-date-num {
+    font-size: 1.1rem;
+    font-weight: 700;
+    display: block;
+}
+
+.calendar-day-date-weekday {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    opacity: 0.9;
+}
+
+/* Таймлайн дня */
+.calendar-day-timeline {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--bg-card);
+}
+
+.calendar-day-times {
+    flex-shrink: 0;
+    width: 52px;
+    border-right: 1px solid var(--border);
+    background: var(--bg-tertiary);
+}
+
+.calendar-day-time-label {
+    display: flex;
+    align-items: flex-start;
+    padding: 0.2rem 0.4rem;
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+}
+
+.calendar-day-track {
+    flex: 1;
+    position: relative;
+    min-height: 200px;
+    transition: background 0.2s;
+}
+
+.calendar-day-track.calendar-track-drag-over {
+    background: rgba(0, 255, 136, 0.06);
+}
+
+/* Линия текущего времени */
+.calendar-day-now-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 0;
+    border-top: 2px solid var(--neon-cyan);
+    z-index: 5;
+    pointer-events: none;
+}
+
+.calendar-day-now-dot {
+    position: absolute;
+    left: 0;
+    top: -5px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--neon-cyan);
+    box-shadow: 0 0 8px var(--neon-cyan);
+}
+
+/* Карточка задачи в дневном виде */
+.calendar-day-task-card {
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    display: flex;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+    z-index: 2;
+}
+
+.calendar-day-task-card:hover {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.calendar-day-task-card.calendar-task-dragging {
+    opacity: 0.9;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.calendar-day-task-bar {
+    width: 4px;
+    flex-shrink: 0;
+    background: var(--task-color, var(--neon-green));
+}
+
+.calendar-day-task-body {
+    flex: 1;
+    padding: 0.4rem 0.6rem;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.15rem;
+}
+
+.calendar-day-task-category {
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--task-color, var(--neon-green));
+}
+
+.calendar-day-task-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.calendar-day-task-time {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+}
+
+.calendar-day-add-hint {
+    position: absolute;
+    bottom: 0.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.35rem 0.75rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-sm);
+    transition: all 0.2s;
+}
+
+.calendar-day-add-hint:hover {
+    color: var(--neon-green);
+    border-color: var(--neon-green);
+}
+
 .calendar-day-header {
     padding: 0.4rem 0.6rem;
     background: var(--bg-card);
@@ -3564,6 +3854,54 @@ body::before {
     flex-direction: column;
     gap: 1.5rem;
     overflow-y: auto;
+}
+
+.right-panel-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-size: cover;
+    background-position: center;
+    border-radius: inherit;
+    opacity: 0.35;
+    transition: opacity 0.2s;
+}
+
+.right-panel-bg.active {
+    display: block;
+}
+
+.right-panel-bg-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    z-index: 2;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.right-panel-bg-btn:hover {
+    color: var(--neon-cyan);
+    border-color: var(--neon-cyan);
+}
+
+.right-panel-resize-handle,
+.right-panel-calendar,
+.right-panel-player {
+    position: relative;
+    z-index: 1;
 }
 
 .right-panel-resize-handle {

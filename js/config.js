@@ -11,7 +11,8 @@ const CONFIG = {
         WISHBOARD_SETTINGS: 'sphinx_wishboard_settings',
         YOUTUBE_PLAYLISTS: 'sphinx_youtube_playlists',
         YOUTUBE_HISTORY: 'sphinx_youtube_history',
-        INBOX_COLUMNS: 'sphinx_inbox_columns'
+        INBOX_COLUMNS: 'sphinx_inbox_columns',
+        RIGHT_PANEL_BG: 'sphinx_right_panel_bg'
     },
 
     // Колонки Inbox по умолчанию (порядок, название, цвет шапки, картинка)
