@@ -4182,14 +4182,14 @@ body::before {
     }
 }
 
-/* Right Panel - календарь и YouTube, сворачиваемая, скруглённые углы */
+/* Right Panel - календарь и YouTube, сжимаемая, полукруглые края */
 .right-panel {
     width: 220px;
-    min-width: 20px;
+    min-width: 160px;
     flex-shrink: 0;
     background: var(--bg-secondary);
     border-left: 1px solid var(--border);
-    border-radius: 48px 0 0 48px;
+    border-radius: 56px 0 0 56px;
     margin: 0.5rem 0.5rem 0.5rem 0;
     padding: 0;
     display: flex;
@@ -4198,6 +4198,10 @@ body::before {
     overflow: visible;
     transition: width 0.25s ease, min-width 0.25s ease;
     position: relative;
+}
+
+.right-panel.right-panel-resizing {
+    transition: none;
 }
 
 .right-panel-inner {
@@ -4211,62 +4215,39 @@ body::before {
     position: relative;
 }
 
-.right-panel-toggle {
+/* Ручка ресайза — левый край, тянуть влево/вправо */
+.right-panel-resize-handle {
     position: absolute;
-    left: -10px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 20px;
-    height: 36px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border);
-    border-radius: 6px 0 0 6px;
-    color: var(--text-muted);
-    font-size: 0.6rem;
-    cursor: pointer;
-    z-index: 10;
-    transition: all 0.2s ease;
-    box-shadow: -2px 0 6px rgba(0,0,0,0.15);
-}
-
-.right-panel-toggle:hover {
-    background: var(--bg-hover);
-    color: var(--neon-cyan);
-    border-color: var(--neon-cyan);
-    left: -11px;
-}
-
-.right-panel.collapsed {
-    width: 20px;
-    min-width: 20px;
-    padding: 0;
-}
-
-.right-panel.collapsed .right-panel-inner {
-    display: none;
-}
-
-.right-panel.collapsed .right-panel-toggle {
     left: 0;
+    top: 0;
+    bottom: 0;
+    width: 10px;
+    cursor: ew-resize;
+    z-index: 5;
+    background: linear-gradient(to right, rgba(0,0,0,0.15) 0%, transparent 100%);
+    transition: background 0.2s ease;
+}
+
+.right-panel-resize-handle:hover,
+.right-panel-resize-handle.dragging {
+    background: linear-gradient(to right, rgba(0,255,136,0.2) 0%, transparent 100%);
+}
+
+.right-panel-resize-handle::after {
+    content: '';
+    position: absolute;
+    left: 3px;
     top: 50%;
     transform: translateY(-50%);
-    border-radius: 4px;
-    box-shadow: none;
+    width: 3px;
+    height: 36px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.35);
 }
 
-.right-panel.collapsed .right-panel-toggle i {
-    transform: rotate(180deg);
-}
-
-/* При наведении на свёрнутую панель — кнопка заметнее */
-.right-panel.collapsed:hover .right-panel-toggle {
-    background: var(--bg-hover);
-    color: var(--neon-cyan);
-    border-color: var(--neon-cyan);
+.right-panel-resize-handle:hover::after,
+.right-panel-resize-handle.dragging::after {
+    background: rgba(0,255,136,0.6);
 }
 
 .right-panel-bg {
@@ -4310,29 +4291,10 @@ body::before {
     border-color: var(--neon-cyan);
 }
 
-.right-panel-inner .right-panel-resize-handle,
 .right-panel-inner .right-panel-calendar,
 .right-panel-inner .right-panel-player {
     position: relative;
     z-index: 1;
-}
-
-.right-panel-resize-handle {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 8px;
-    cursor: ns-resize;
-    z-index: 3;
-    background: linear-gradient(to bottom, rgba(0,245,255,0.2), transparent);
-    opacity: 0;
-    transition: opacity 0.2s;
-}
-
-.right-panel-resize-handle:hover,
-.right-panel-resize-handle.dragging {
-    opacity: 1;
 }
 
 .right-panel-calendar {

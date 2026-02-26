@@ -12,29 +12,11 @@ const RightPanel = {
     init() {
         this.currentDate = new Date();
         this.calendarCollapsed = localStorage.getItem('sphinx_calendar_collapsed') === 'true';
-        this.applyRightPanelCollapsed();
-        this.setupRightPanelToggle();
         this.applyRightPanelBg();
         this.setupRightPanelBgModal();
         this.renderCalendar();
         this.setupCalendarTab();
         this.setupCalendarNav();
-    },
-
-    applyRightPanelCollapsed() {
-        const panel = document.getElementById('rightPanel');
-        const collapsed = localStorage.getItem('sphinx_right_panel_collapsed') === '1';
-        if (panel) panel.classList.toggle('collapsed', collapsed);
-    },
-
-    setupRightPanelToggle() {
-        const btn = document.getElementById('rightPanelToggle');
-        const panel = document.getElementById('rightPanel');
-        if (!btn || !panel) return;
-        btn.addEventListener('click', () => {
-            const collapsed = panel.classList.toggle('collapsed');
-            localStorage.setItem('sphinx_right_panel_collapsed', collapsed ? '1' : '0');
-        });
     },
 
     applyRightPanelBg() {

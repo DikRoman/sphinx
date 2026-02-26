@@ -86,12 +86,53 @@ const App = {
 
     setupPanelControls() {
         const COVER_HEIGHT_KEY = 'sphinx_cover_height';
+        const RIGHT_PANEL_WIDTH_KEY = 'sphinx_right_panel_width';
         const DEFAULT_COVER = 135;
+        const DEFAULT_RIGHT_PANEL = 220;
 
         const cover = document.getElementById('appCover');
         const coverResizeHandle = document.getElementById('coverResizeHandle');
+        const rightPanel = document.getElementById('rightPanel');
+        const rightPanelResizeHandle = document.getElementById('rightPanelResizeHandle');
         const musicTab = document.getElementById('musicCollapseTab');
         const musicPlayer = document.getElementById('rightPanelPlayer');
+
+        if (rightPanelResizeHandle && rightPanel) {
+            let dragging = false;
+            let startX = 0, startWidth = 0;
+            const minW = 160, maxW = 360;
+            rightPanelResizeHandle.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                dragging = true;
+                rightPanelResizeHandle.classList.add('dragging');
+                rightPanel.classList.add('right-panel-resizing');
+                startX = e.clientX;
+                startWidth = parseInt(rightPanel.style.width) || DEFAULT_RIGHT_PANEL;
+            });
+            document.addEventListener('mousemove', (e) => {
+                if (!dragging) return;
+                const dx = e.clientX - startX;
+                let w = Math.max(minW, Math.min(maxW, startWidth + dx));
+                rightPanel.style.width = w + 'px';
+                rightPanel.style.minWidth = w + 'px';
+                localStorage.setItem(RIGHT_PANEL_WIDTH_KEY, String(w));
+            });
+            document.addEventListener('mouseup', () => {
+                if (dragging) {
+                    dragging = false;
+                    rightPanelResizeHandle.classList.remove('dragging');
+                    rightPanel.classList.remove('right-panel-resizing');
+                }
+            });
+            const savedW = localStorage.getItem(RIGHT_PANEL_WIDTH_KEY);
+            if (savedW) {
+                const w = parseInt(savedW);
+                if (w >= minW && w <= maxW) {
+                    rightPanel.style.width = w + 'px';
+                    rightPanel.style.minWidth = w + 'px';
+                }
+            }
+        }
 
         if (coverResizeHandle && cover) {
             let dragging = false;

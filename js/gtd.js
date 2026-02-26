@@ -80,15 +80,13 @@ const GTD = {
             const color = area.color || areaColors[i % areaColors.length];
             const areaTasks = taskList.filter(t => t.contextType === 'area' && t.contextId === area.id);
             const total = areaTasks.length;
-            const pillBg = color + '88';
-
             const card = document.createElement('a');
             card.href = `#area/${area.id}`;
             card.className = 'nav-item nav-area-card';
             card.dataset.page = 'area';
             card.dataset.areaId = area.id;
             card.style.setProperty('--area-color', color);
-            card.style.background = pillBg;
+            card.style.background = color;
             card.innerHTML = `
                 <span class="nav-area-card-title">${this.escapeHtml(area.name)}</span>
                 <span class="nav-area-card-meta">${total} задач</span>
