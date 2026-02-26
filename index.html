@@ -81,6 +81,18 @@
                         <i class="fas fa-calendar-alt"></i>
                         <span>Календарь</span>
                     </a>
+                    <a href="#habits" class="nav-item" data-page="habits" data-icon-color="teal">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Привычки</span>
+                    </a>
+                    <a href="#content" class="nav-item" data-page="content" data-icon-color="purple">
+                        <i class="fas fa-film"></i>
+                        <span>Контент</span>
+                    </a>
+                    <a href="#wishboard" class="nav-item" data-page="wishboard" data-icon-color="magenta">
+                        <i class="fas fa-gem"></i>
+                        <span>Доска желаний</span>
+                    </a>
                 </div>
 
                 <div class="nav-section">
@@ -96,24 +108,7 @@
 
             </nav>
 
-            <!-- Bottom Menu -->
             <div class="sidebar-footer">
-                <a href="#habits" class="nav-item" data-page="habits" data-icon-color="teal">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Привычки</span>
-                </a>
-                <a href="#content" class="nav-item" data-page="content" data-icon-color="purple">
-                    <i class="fas fa-film"></i>
-                    <span>Контент</span>
-                </a>
-                <a href="#gantt" class="nav-item" data-page="gantt" data-icon-color="blue">
-                    <i class="fas fa-chart-gantt"></i>
-                    <span>Ганта</span>
-                </a>
-                <a href="#wishboard" class="nav-item" data-page="wishboard" data-icon-color="magenta">
-                    <i class="fas fa-gem"></i>
-                    <span>Доска желаний</span>
-                </a>
                 <div class="auth-block" id="authBlock">
                     <div class="auth-logged-out" id="authLoggedOut">
                         <button type="button" class="auth-btn" id="authGoogle" title="Войти через Google"><i class="fab fa-google"></i> Google</button>
@@ -164,6 +159,10 @@
 
         <!-- Right Panel: Calendar + YouTube -->
         <aside class="right-panel" id="rightPanel">
+            <button type="button" class="right-panel-toggle" id="rightPanelToggle" title="Скрыть / Показать панель">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+            <div class="right-panel-inner">
             <div class="right-panel-bg" id="rightPanelBg"></div>
             <button type="button" class="right-panel-bg-btn" id="rightPanelBgBtn" title="Фон панели"><i class="fas fa-image"></i></button>
             <div class="right-panel-resize-handle" id="rightPanelResizeHandle" title="Тянуть вверх для растягивания"></div>
@@ -187,6 +186,7 @@
                 </div>
                 <div class="right-panel-days" id="rightPanelDays"></div>
                 <div class="right-panel-week-strip" id="rightPanelWeekStrip"></div>
+            </div>
             </div>
         </aside>
         </div>

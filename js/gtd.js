@@ -58,7 +58,7 @@ const GTD = {
 
         document.addEventListener('click', (e) => {
             if (e.target.closest('#quickAddTask')) { e.preventDefault(); this.showTaskModal(null, 'inbox'); }
-            if (e.target.closest('#inboxColumnsSettings')) { e.preventDefault(); this.showInboxColumnsModal(); }
+            if (e.target.closest('#inboxColumnsSettings') || e.target.closest('#areaColumnsSettings')) { e.preventDefault(); this.showInboxColumnsModal(); }
             if (e.target.closest('#addAreaTask')) { e.preventDefault(); this.showTaskModal(this.currentAreaId, 'area'); }
             if (e.target.closest('#editArea')) { e.preventDefault(); this.showAreaModal(this.currentAreaId); }
             if (e.target.closest('#viewGantt')) { e.preventDefault(); if (typeof Router !== 'undefined') Router.navigate('#gantt'); }
@@ -435,16 +435,18 @@ const GTD = {
                 });
                 const validIds = next.map(c => c.id);
                 const tasks = Storage.getTasks();
+                const firstId = next[0] ? next[0].id : CONFIG.TASK_STATUSES.NEW;
                 Object.keys(tasks).forEach(taskId => {
                     const t = tasks[taskId];
-                    if (t.contextType === 'inbox' && validIds.indexOf(t.status) < 0) {
-                        t.status = next[0] ? next[0].id : CONFIG.TASK_STATUSES.NEW;
+                    if (validIds.indexOf(t.status) < 0) {
+                        t.status = firstId;
                         Storage.saveTask(taskId, t);
                     }
                 });
                 Storage.saveInboxColumns(next);
                 modal.classList.remove('active');
                 Kanban.renderKanban('inboxKanban', null, 'inbox');
+                if (this.currentAreaId) Kanban.renderKanban('areaKanban', this.currentAreaId, 'area');
             });
         };
 

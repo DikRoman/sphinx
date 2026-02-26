@@ -54,9 +54,12 @@ const Kanban = {
                     if (task) {
                         task.status = newStatus;
                         Storage.saveTask(this.draggedData.taskId, task);
-                        this.renderKanban(column.closest('.kanban-board').id, 
-                            task.contextId, task.contextType);
-                        GTD.updateBadges();
+                        const board = column.closest('.kanban-board');
+                        const bid = board ? board.id : null;
+                        if (bid === 'inboxKanban') this.renderKanban('inboxKanban', null, 'inbox');
+                        else if (bid === 'areaKanban' && typeof GTD !== 'undefined' && GTD.currentAreaId) this.renderKanban('areaKanban', GTD.currentAreaId, 'area');
+                        else if (bid) this.renderKanban(bid, task.contextId, task.contextType);
+                        if (typeof GTD !== 'undefined' && GTD.updateBadges) GTD.updateBadges();
                     }
                 }
                 column.style.backgroundColor = '';
@@ -65,15 +68,15 @@ const Kanban = {
     },
 
     getColumnsForBoard(boardId, contextType) {
-        if (boardId === 'inboxKanban' && contextType === 'inbox') {
+        if ((boardId === 'inboxKanban' && contextType === 'inbox') || (boardId === 'areaKanban' && contextType === 'area')) {
             return Storage.getInboxColumns();
         }
         return CONFIG.DEFAULT_INBOX_COLUMNS.map((c, i) => ({ ...c, order: i }));
     },
 
-    buildBoardColumns(board, contextType) {
+    buildBoardColumns(board, contextType, contextId) {
         const boardId = board.id;
-        const isInbox = boardId === 'inboxKanban' && contextType === 'inbox';
+        const isInbox = (boardId === 'inboxKanban' && contextType === 'inbox') || (boardId === 'areaKanban' && contextType === 'area');
         const columns = this.getColumnsForBoard(boardId, contextType);
         board.innerHTML = columns.map(col => {
             const color = col.color || '#00F5FF';
@@ -102,13 +105,13 @@ const Kanban = {
                 </div>
             `;
         }).join('');
-        if (isInbox) this.setupInboxColumnDragAndEdit(board);
+        if (isInbox) this.setupInboxColumnDragAndEdit(board, contextType, contextId || null);
     },
 
     draggedColumnId: null,
 
-    setupInboxColumnDragAndEdit(board) {
-        if (!board || board.id !== 'inboxKanban') return;
+    setupInboxColumnDragAndEdit(board, contextType, contextId) {
+        if (!board || (board.id !== 'inboxKanban' && board.id !== 'areaKanban')) return;
 
         board.querySelectorAll('.column-drag-handle').forEach(handle => {
             handle.addEventListener('dragstart', (e) => {
@@ -152,6 +155,9 @@ const Kanban = {
                 columns.splice(toIdx, 0, removed);
                 Storage.saveInboxColumns(columns);
                 this.renderKanban('inboxKanban', null, 'inbox');
+                if (typeof GTD !== 'undefined' && GTD.currentAreaId) {
+                    this.renderKanban('areaKanban', GTD.currentAreaId, 'area');
+                }
                 this.draggedColumnId = null;
             });
         });
@@ -168,7 +174,12 @@ const Kanban = {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const status = btn.dataset.status;
-                if (status && typeof GTD !== 'undefined') GTD.showTaskModal(null, 'inbox', null, { status });
+                if (!status || typeof GTD === 'undefined') return;
+                if (contextType === 'area' && contextId) {
+                    GTD.showTaskModal(contextId, 'area', null, { status });
+                } else {
+                    GTD.showTaskModal(null, 'inbox', null, { status });
+                }
             });
         });
     },
@@ -230,6 +241,9 @@ const Kanban = {
                 if (col.imageUrl !== undefined) delete col.imageUrl;
                 Storage.saveInboxColumns(columns);
                 this.renderKanban('inboxKanban', null, 'inbox');
+                if (typeof GTD !== 'undefined' && GTD.currentAreaId) {
+                    this.renderKanban('areaKanban', GTD.currentAreaId, 'area');
+                }
             }
             this.hideHeaderDesignEditor();
         });
@@ -277,7 +291,7 @@ const Kanban = {
             columnsConfig.some((c, i) => (existingStatuses[i] || '') !== (c.id || ''));
 
         if (needRebuild) {
-            this.buildBoardColumns(board, contextType);
+            this.buildBoardColumns(board, contextType, contextId);
         }
 
         const tasks = Storage.getTasks();
