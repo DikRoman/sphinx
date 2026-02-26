@@ -672,26 +672,16 @@ body::before {
 .nav-area-card .nav-area-card-title {
     display: block;
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: 600;
     margin-bottom: 0.15rem;
+    color: rgba(0, 0, 0, 0.9);
 }
 
 .nav-area-card .nav-area-card-meta {
     display: block;
     font-size: 0.75rem;
-    color: var(--text-muted);
-}
-
-.nav-area-card .nav-area-card-badge {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.65rem;
-    font-size: 0.65rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    background: rgba(255, 255, 255, 0.4);
-    padding: 0.15rem 0.4rem;
-    border-radius: 999px;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.7);
 }
 
 .nav-area-card .nav-area-card-icon {

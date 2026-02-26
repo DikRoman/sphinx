@@ -1,7 +1,6 @@
 // GTD System Management
 const GTD = {
     currentAreaId: null,
-    currentProjectId: null,
 
     /** Распознавание даты и времени из текста задачи (сегодня, завтра, 14:00 и т.д.) */
     parseNaturalDate(text) {
@@ -50,22 +49,18 @@ const GTD = {
 
     init() {
         this.renderAreas();
-        this.renderProjects();
         this.updateBadges();
         this.setupEventListeners();
     },
 
     setupEventListeners() {
         document.getElementById('addArea').addEventListener('click', () => this.showAreaModal());
-        document.getElementById('addProject').addEventListener('click', () => this.showProjectModal());
 
         document.addEventListener('click', (e) => {
             if (e.target.closest('#quickAddTask')) { e.preventDefault(); this.showTaskModal(null, 'inbox'); }
             if (e.target.closest('#inboxColumnsSettings')) { e.preventDefault(); this.showInboxColumnsModal(); }
             if (e.target.closest('#addAreaTask')) { e.preventDefault(); this.showTaskModal(this.currentAreaId, 'area'); }
-            if (e.target.closest('#addProjectTask')) { e.preventDefault(); this.showTaskModal(this.currentProjectId, 'project'); }
             if (e.target.closest('#editArea')) { e.preventDefault(); this.showAreaModal(this.currentAreaId); }
-            if (e.target.closest('#editProject')) { e.preventDefault(); this.showProjectModal(this.currentProjectId); }
             if (e.target.closest('#viewGantt')) { e.preventDefault(); if (typeof Router !== 'undefined') Router.navigate('#gantt'); }
         });
     },
@@ -85,8 +80,7 @@ const GTD = {
             const color = area.color || areaColors[i % areaColors.length];
             const areaTasks = taskList.filter(t => t.contextType === 'area' && t.contextId === area.id);
             const total = areaTasks.length;
-            const completed = areaTasks.filter(t => t.status === CONFIG.TASK_STATUSES.DONE).length;
-            const pastelBg = color + '55';
+            const pillBg = color + '88';
 
             const card = document.createElement('a');
             card.href = `#area/${area.id}`;
@@ -94,35 +88,13 @@ const GTD = {
             card.dataset.page = 'area';
             card.dataset.areaId = area.id;
             card.style.setProperty('--area-color', color);
-            card.style.background = pastelBg;
+            card.style.background = pillBg;
             card.innerHTML = `
-                <span class="nav-area-card-badge">${completed} выполнено</span>
                 <span class="nav-area-card-title">${this.escapeHtml(area.name)}</span>
                 <span class="nav-area-card-meta">${total} задач</span>
                 <i class="nav-area-card-icon fas fa-external-link-alt"></i>
             `;
             areasList.appendChild(card);
-        });
-    },
-
-    renderProjects() {
-        const projectsList = document.getElementById('projectsList');
-        const projects = Storage.getProjects();
-        projectsList.innerHTML = '';
-
-        const projectColors = ['#00D4AA', '#FF00E5', '#00F5FF', '#FFE135', '#A855F7'];
-        Object.values(projects).forEach((project, i) => {
-            const color = projectColors[i % projectColors.length];
-            const item = document.createElement('a');
-            item.href = `#project/${project.id}`;
-            item.className = 'nav-item';
-            item.dataset.page = 'project';
-            item.dataset.projectId = project.id;
-            item.innerHTML = `
-                <i class="fas fa-project-diagram" style="color: ${color}"></i>
-                <span>${this.escapeHtml(project.name)}</span>
-            `;
-            projectsList.appendChild(item);
         });
     },
 
@@ -140,23 +112,6 @@ const GTD = {
 
         // Render kanban for area tasks
         Kanban.renderKanban('areaKanban', areaId, 'area');
-        if (typeof App !== 'undefined' && App.moveViewHeaderToCover) App.moveViewHeaderToCover();
-    },
-
-    openProject(projectId) {
-        this.currentProjectId = projectId;
-        const project = Storage.getProjects()[projectId];
-        if (!project) return;
-
-        const titleEl = document.getElementById('projectViewTitle');
-        const subtitleEl = document.getElementById('projectViewSubtitle');
-        if (titleEl) titleEl.innerHTML = `
-            <i class="fas fa-project-diagram"></i> ${this.escapeHtml(project.name)}
-        `;
-        if (subtitleEl) subtitleEl.textContent = project.description || '';
-
-        // Render kanban for project tasks
-        Kanban.renderKanban('projectKanban', projectId, 'project');
         if (typeof App !== 'undefined' && App.moveViewHeaderToCover) App.moveViewHeaderToCover();
     },
 
@@ -204,56 +159,6 @@ const GTD = {
             this.closeAreaModal();
             if (this.currentAreaId === id) {
                 this.openArea(id);
-            }
-        });
-
-        modal.classList.add('active');
-    },
-
-    showProjectModal(projectId = null) {
-        const modal = document.getElementById('areaModal');
-        const modalBody = document.getElementById('areaModalBody');
-        const project = projectId ? Storage.getProjects()[projectId] : null;
-
-        modalBody.innerHTML = `
-            <h2 style="margin-bottom: 1.5rem;">${projectId ? 'Редактировать' : 'Создать'} проект</h2>
-            <form id="projectForm">
-                <div class="form-group">
-                    <label class="form-label">Название</label>
-                    <input type="text" class="form-input" id="projectName" value="${project?.name || ''}" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Описание</label>
-                    <textarea class="form-textarea" id="projectDescription">${project?.description || ''}</textarea>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Дата начала</label>
-                    <input type="date" class="form-input" id="projectStartDate" value="${project?.startDate || ''}">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Дата окончания</label>
-                    <input type="date" class="form-input" id="projectEndDate" value="${project?.endDate || ''}">
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn-secondary" onclick="GTD.closeProjectModal()">Отмена</button>
-                    <button type="submit" class="btn-primary">Сохранить</button>
-                </div>
-            </form>
-        `;
-
-        document.getElementById('projectForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const id = projectId || 'project_' + Date.now();
-            Storage.saveProject(id, {
-                name: document.getElementById('projectName').value,
-                description: document.getElementById('projectDescription').value,
-                startDate: document.getElementById('projectStartDate').value,
-                endDate: document.getElementById('projectEndDate').value
-            });
-            this.renderProjects();
-            this.closeProjectModal();
-            if (this.currentProjectId === id) {
-                this.openProject(id);
             }
         });
 
@@ -365,9 +270,6 @@ const GTD = {
             if (this.currentAreaId) {
                 Kanban.renderKanban('areaKanban', this.currentAreaId, 'area');
             }
-            if (this.currentProjectId) {
-                Kanban.renderKanban('projectKanban', this.currentProjectId, 'project');
-            }
             if (typeof Calendar !== 'undefined') {
                 Calendar.render();
             }
@@ -382,10 +284,6 @@ const GTD = {
     },
 
     closeAreaModal() {
-        document.getElementById('areaModal').classList.remove('active');
-    },
-
-    closeProjectModal() {
         document.getElementById('areaModal').classList.remove('active');
     },
 
