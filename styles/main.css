@@ -2875,7 +2875,6 @@ body::before {
     font-family: 'Comic Sans MS', 'Marker Felt', cursive;
     border: none;
     border-radius: 2px;
-    position: relative;
     user-select: none;
     transform-origin: center;
     animation: fadeInScale 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -3158,7 +3157,6 @@ body::before {
     background: #ffffff;
     display: flex;
     flex-direction: column;
-    position: relative;
     user-select: none;
     transform-origin: center;
     animation: fadeInScale 0.3s cubic-bezier(0.4, 0, 0.2, 1);

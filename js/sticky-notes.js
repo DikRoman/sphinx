@@ -62,11 +62,6 @@ const StickyNotes = {
                     e.stopPropagation();
                     this.createNewShape();
                     break;
-                case 'addFrame':
-                    e.preventDefault();
-                    e.stopPropagation();
-                    this.toggleFrameTool();
-                    break;
                 case 'stickyZoomIn':
                     e.preventDefault();
                     this.zoomInCentered();
@@ -178,13 +173,9 @@ const StickyNotes = {
 
     },
 
+    // Рамки отключены
     toggleFrameTool() {
-        const btn = document.getElementById('addFrame');
-        const enable = this.currentTool !== 'frame';
-        this.currentTool = enable ? 'frame' : 'select';
-        if (btn) {
-            btn.classList.toggle('active', enable);
-        }
+        this.currentTool = 'select';
     },
 
     ensureContextMenu() {
@@ -750,7 +741,18 @@ const StickyNotes = {
     loadShapes() {
         const saved = localStorage.getItem('sphinx_sticky_shapes');
         if (saved) {
-            this.shapes = JSON.parse(saved);
+            const raw = JSON.parse(saved);
+            this.shapes = {};
+            Object.values(raw).forEach(shape => {
+                if (shape && shape.type === 'frame') {
+                    return; // старые рамки игнорируем
+                }
+                if (shape && shape.id) {
+                    this.shapes[shape.id] = shape;
+                }
+            });
+            // Перезаписываем без рамок, чтобы они больше не появлялись
+            this.saveShapes();
         }
     },
 
@@ -882,10 +884,11 @@ const StickyNotes = {
             board.appendChild(noteElement);
         });
 
-        // Рендерим фигуры на холст
+        // Рендерим фигуры на холст (без устаревших рамок)
         Object.values(this.shapes).forEach(shape => {
+            if (shape.type === 'frame') return;
             const shapeElement = this.createShapeElement(shape);
-            board.appendChild(shapeElement);
+            if (shapeElement) board.appendChild(shapeElement);
         });
 
         // Убедиться что drag and drop настроен
@@ -1283,9 +1286,13 @@ const StickyNotes = {
 
     createShapeElement(shape) {
         const container = document.getElementById('stickyNotesContainer');
+        if (shape.type === 'frame') {
+            // Рамки больше не поддерживаются
+            return null;
+        }
         const div = document.createElement('div');
-        const isFrame = shape.type === 'frame';
-        div.className = isFrame ? 'sticky-shape sticky-frame' : 'sticky-shape';
+        const isFrame = false;
+        div.className = 'sticky-shape';
         div.style.left = `${shape.position.x}px`;
         div.style.top = `${shape.position.y}px`;
         div.style.width = `${shape.width}px`;
