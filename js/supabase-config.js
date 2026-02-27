@@ -4,6 +4,6 @@
  * Вставь URL и anon key из Settings → API
  */
 const SUPABASE_CONFIG = {
-    url: 'YOUR_SUPABASE_URL',      // https://xxxx.supabase.co
-    anonKey: 'YOUR_SUPABASE_ANON_KEY'
+    url: 'https://msgtyotqnspdpobsguge.supabase.co',
+    anonKey: 'sb_publishable_MXGni0_2GHV5nC9gpY9z_Q_-7D5S0Hq'
 };
