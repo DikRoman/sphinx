@@ -40,14 +40,29 @@ const SupabaseAuth = {
         return this._session?.user?.id ?? null;
     },
 
+    getRedirectUrl() {
+        try {
+            const origin = window.location.origin || '';
+            return origin + '/index.html';
+        } catch (e) {
+            return undefined;
+        }
+    },
+
     async signInWithGoogle() {
         if (!this.client) return;
-        await this.client.auth.signInWithOAuth({ provider: 'google' });
+        await this.client.auth.signInWithOAuth({
+            provider: 'google',
+            options: { redirectTo: this.getRedirectUrl() }
+        });
     },
 
     async signInWithGithub() {
         if (!this.client) return;
-        await this.client.auth.signInWithOAuth({ provider: 'github' });
+        await this.client.auth.signInWithOAuth({
+            provider: 'github',
+            options: { redirectTo: this.getRedirectUrl() }
+        });
     },
 
     async signOut() {
