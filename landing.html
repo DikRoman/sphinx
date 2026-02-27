@@ -12,89 +12,88 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
-<body class="landing-page">
-    <div class="landing-container">
-        <!-- Hero -->
-        <header class="landing-hero">
-            <div class="landing-logo">
-                <i class="fas fa-sphinx"></i>
-                <span>SPHINX</span>
+<body class="landing-auth-page">
+    <div class="landing-auth-wrapper">
+        <div class="landing-auth-card">
+            <div class="landing-auth-header">
+                <div class="landing-logo">
+                    <i class="fas fa-sphinx"></i>
+                    <span>SPHINX</span>
+                </div>
+                <h1 class="landing-auth-title">Создайте бесплатный аккаунт</h1>
+                <p class="landing-auth-subtitle">
+                    Доставайте цели из головы: GTD, календарь, привычки и заметки в одном месте.
+                </p>
             </div>
-            <h1 class="landing-title">Система продуктивности</h1>
-            <p class="landing-subtitle">GTD, календарь, привычки, заметки и стикеры в одном месте</p>
-            <a href="index.html" class="landing-btn landing-btn-main">
-                <i class="fas fa-arrow-right"></i>
-                Открыть приложение
-            </a>
-            <div class="landing-cta">
-                <button type="button" class="landing-btn landing-btn-register" id="btnRegister">
-                    <i class="fas fa-user-plus"></i>
-                    Регистрация
-                </button>
-                <button type="button" class="landing-btn landing-btn-login" id="btnLogin">
-                    <i class="fas fa-sign-in-alt"></i>
-                    Вход
-                </button>
-            </div>
-        </header>
 
-        <!-- Features -->
-        <section class="landing-features">
-            <div class="landing-feature">
-                <i class="fas fa-inbox"></i>
-                <span>Inbox и задачи</span>
+            <div class="landing-auth-social">
+                <button type="button" class="landing-social-btn landing-social-google" id="landingGoogle">
+                    <i class="fab fa-google"></i>
+                    <span>Войти через Google</span>
+                </button>
+                <button type="button" class="landing-social-btn landing-social-github" id="landingGithub">
+                    <i class="fab fa-github"></i>
+                    <span>Войти через GitHub</span>
+                </button>
             </div>
-            <div class="landing-feature">
-                <i class="fas fa-thumbtack"></i>
-                <span>Стикеры</span>
-            </div>
-            <div class="landing-feature">
-                <i class="fas fa-calendar-alt"></i>
-                <span>Календарь</span>
-            </div>
-            <div class="landing-feature">
-                <i class="fas fa-chart-line"></i>
-                <span>Привычки</span>
-            </div>
-            <div class="landing-feature">
-                <i class="fas fa-gem"></i>
-                <span>Доска желаний</span>
-            </div>
-        </section>
-    </div>
 
-    <!-- Modal: Регистрация -->
-    <div class="modal landing-modal" id="modalRegister">
-        <div class="modal-content landing-modal-content">
-            <span class="modal-close" data-modal="modalRegister">&times;</span>
-            <div class="modal-body">
-                <h3>Регистрация</h3>
-                <p class="landing-modal-hint">Создайте аккаунт для синхронизации данных</p>
-                <form id="formRegister" class="landing-form">
-                    <input type="email" id="regEmail" class="form-input" placeholder="Email" required autocomplete="email">
-                    <input type="password" id="regPassword" class="form-input" placeholder="Пароль (мин. 6 символов)" required minlength="6" autocomplete="new-password">
+            <div class="landing-auth-divider">
+                <span>или по email</span>
+            </div>
+
+            <div class="landing-auth-forms" data-mode="register">
+                <!-- Регистрация -->
+                <form id="formRegister" class="landing-form landing-form-active">
+                    <label class="landing-field-label" for="regName">Имя</label>
+                    <input type="text" id="regName" class="form-input" placeholder="Ваше имя" autocomplete="name">
+
+                    <label class="landing-field-label" for="regEmail">Email</label>
+                    <input type="email" id="regEmail" class="form-input" placeholder="you@example.com" required autocomplete="email">
+
+                    <label class="landing-field-label" for="regPassword">Пароль</label>
+                    <input type="password" id="regPassword" class="form-input" placeholder="Минимум 6 символов" required minlength="6" autocomplete="new-password">
+
                     <p class="landing-form-error" id="regError"></p>
-                    <button type="submit" class="btn-primary landing-submit">Зарегистрироваться</button>
-                </form>
-            </div>
-        </div>
-    </div>
 
-    <!-- Modal: Вход -->
-    <div class="modal landing-modal" id="modalLogin">
-        <div class="modal-content landing-modal-content">
-            <span class="modal-close" data-modal="modalLogin">&times;</span>
-            <div class="modal-body">
-                <h3>Вход</h3>
-                <p class="landing-modal-hint">Только для уже зарегистрированных пользователей</p>
-                <form id="formLogin" class="landing-form">
-                    <input type="email" id="loginEmail" class="form-input" placeholder="Email" required autocomplete="email">
-                    <input type="password" id="loginPassword" class="form-input" placeholder="Пароль" required autocomplete="current-password">
+                    <button type="submit" class="btn-primary landing-submit">Создать аккаунт</button>
+
+                    <p class="landing-auth-switch">
+                        Уже есть аккаунт?
+                        <button type="button" class="landing-link" id="toLogin">Войти</button>
+                    </p>
+                </form>
+
+                <!-- Вход -->
+                <form id="formLogin" class="landing-form landing-form-hidden">
+                    <label class="landing-field-label" for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" class="form-input" placeholder="you@example.com" required autocomplete="email">
+
+                    <label class="landing-field-label" for="loginPassword">Пароль</label>
+                    <input type="password" id="loginPassword" class="form-input" placeholder="Ваш пароль" required autocomplete="current-password">
+
                     <p class="landing-form-error" id="loginError"></p>
+
                     <button type="submit" class="btn-primary landing-submit">Войти</button>
+
+                    <p class="landing-auth-switch">
+                        Нет аккаунта?
+                        <button type="button" class="landing-link" id="toRegister">Создать аккаунт</button>
+                    </p>
                 </form>
             </div>
         </div>
+
+        <aside class="landing-auth-visual">
+            <div class="landing-visual-gradient"></div>
+            <div class="landing-visual-content">
+                <span class="landing-visual-label">Smarter focus</span>
+                <h2 class="landing-visual-title">Ваш цифровой шеф по продуктивности</h2>
+                <p class="landing-visual-text">
+                    Собирайте Inbox, планируйте неделю, отслеживайте привычки и двигайтесь к целям
+                    без ощущения перегруза.
+                </p>
+            </div>
+        </aside>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
