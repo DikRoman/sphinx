@@ -2,6 +2,7 @@
 const Cover = {
     STORAGE_KEY: 'sphinx_cover_image',
     LAYOUT_KEY: 'sphinx_cover_position',
+    ZOOM_KEY: 'sphinx_cover_zoom',
 
     PRESET_TO_PERCENT: {
         'top left': '0% 0%',
@@ -31,6 +32,8 @@ const Cover = {
     loadLayout() {
         const pos = localStorage.getItem(this.LAYOUT_KEY) || '50% 50%';
         this.applyPosition(pos);
+        const zoom = this.getZoom();
+        this.applyZoom(zoom);
     },
 
     normalizePosition(pos) {
@@ -46,6 +49,7 @@ const Cover = {
         if (url) {
             cover.style.backgroundImage = `linear-gradient(to bottom, transparent 0%, rgba(5,5,8,0.1) 60%, rgba(5,5,8,0.35) 100%), url("${url}")`;
             cover.classList.add('has-cover');
+            this.applyZoom(this.getZoom());
         } else {
             cover.style.backgroundImage = '';
             cover.classList.remove('has-cover');
@@ -58,6 +62,20 @@ const Cover = {
         if (!cover) return;
         const pos = this.normalizePosition(position);
         cover.style.backgroundPosition = pos;
+    },
+
+    getZoom() {
+        const raw = localStorage.getItem(this.ZOOM_KEY);
+        const num = raw ? parseFloat(raw) : 100;
+        if (Number.isNaN(num)) return 100;
+        return Math.max(60, Math.min(220, num));
+    },
+
+    applyZoom(zoom) {
+        const cover = document.getElementById('appCover');
+        if (!cover || !cover.classList.contains('has-cover')) return;
+        const z = Math.max(60, Math.min(220, zoom || 100));
+        cover.style.backgroundSize = `auto ${z}%`;
     },
 
     getPositionXY() {
@@ -79,15 +97,30 @@ const Cover = {
         const overlay = document.getElementById('coverLayoutOverlay');
         const okBtn = document.getElementById('coverLayoutOk');
         const cover = document.getElementById('appCover');
+        const zoomRange = document.getElementById('coverZoomRange');
+        const zoomValue = document.getElementById('coverZoomValue');
 
         btn?.addEventListener('click', () => {
             overlay.style.display = 'flex';
             if (cover?.classList.contains('has-cover')) cover.classList.add('cover-drag-mode');
+
+            const currentZoom = this.getZoom();
+            if (zoomRange) zoomRange.value = String(currentZoom);
+            if (zoomValue) zoomValue.textContent = `${currentZoom}%`;
         });
 
         okBtn?.addEventListener('click', () => {
             overlay.style.display = 'none';
             cover?.classList.remove('cover-drag-mode');
+        });
+
+        zoomRange?.addEventListener('input', (e) => {
+            const target = e.target;
+            const value = parseFloat(target.value);
+            const z = Number.isNaN(value) ? 100 : value;
+            localStorage.setItem(this.ZOOM_KEY, String(z));
+            this.applyZoom(z);
+            if (zoomValue) zoomValue.textContent = `${Math.round(z)}%`;
         });
     },
 

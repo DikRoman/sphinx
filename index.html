@@ -144,7 +144,12 @@
             <div class="cover-layout-overlay" id="coverLayoutOverlay" style="display: none;">
                 <div class="cover-layout-panel">
                     <h4>Расположение обложки</h4>
-                    <p class="cover-drag-hint">Перетащите обложку мышью, чтобы выбрать нужную область</p>
+                    <p class="cover-drag-hint">Перетащите обложку мышью и настройте масштаб</p>
+                    <div class="cover-zoom-row">
+                        <span class="cover-zoom-label">Масштаб</span>
+                        <input type="range" id="coverZoomRange" min="60" max="220" step="5">
+                        <span class="cover-zoom-value" id="coverZoomValue">100%</span>
+                    </div>
                     <button type="button" class="btn-primary cover-layout-ok" id="coverLayoutOk">Готово</button>
                 </div>
             </div>
