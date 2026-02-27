@@ -152,17 +152,20 @@ const SupabaseSync = {
 
     async upsertTable(table, obj) {
         const uid = SupabaseAuth.getUserId();
-        if (!uid || !SupabaseAuth.client || !obj || typeof obj !== 'object') return;
+        if (!uid || !SupabaseAuth.client) return;
+        if (!obj || typeof obj !== 'object' || Object.keys(obj).length === 0) return;
         try {
             const rows = Object.entries(obj).map(([id, data]) => ({
                 user_id: uid,
                 id,
                 data: typeof data === 'object' ? data : {}
             }));
-            if (rows.length === 0) return;
-            await SupabaseAuth.client.from(table).upsert(rows, { onConflict: 'user_id,id' });
+            const { error } = await SupabaseAuth.client.from(table).upsert(rows, { onConflict: 'user_id,id' });
+            if (error) {
+                console.error('SupabaseSync upsert error', table, error.message, error);
+            }
         } catch (e) {
-            console.error('SupabaseSync upsert', table, e);
+            console.error('SupabaseSync upsert exception', table, e);
         }
     },
 
