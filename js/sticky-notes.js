@@ -1,6 +1,6 @@
 // Sticky Notes Management
 const StickyNotes = {
-    CANVAS_SIZE: 20000,
+    CANVAS_SIZE: 4000,
     notes: {},
     completedNotes: {},
     shapes: {},
@@ -28,6 +28,7 @@ const StickyNotes = {
     contextMenuEl: null,
     contextMenuState: null,
     gridEnabled: false,
+    rightPanStart: null, // Для pan правой кнопкой (при удержании)
 
     init() {
         this.loadNotes();
@@ -98,19 +99,19 @@ const StickyNotes = {
                 btn.classList.add('active');
             }
         });
-        // Поддержка колесика мыши для масштабирования с центрированием
-        const container = document.getElementById('stickyNotesContainer');
-        if (container) {
-            container.addEventListener('wheel', (e) => {
-                if (e.ctrlKey || e.metaKey) {
-                    e.preventDefault();
-                    if (e.deltaY < 0) {
-                        this.zoomInCentered();
-                    } else {
-                        this.zoomOutCentered();
-                    }
+        // Масштабирование колесом мыши (без Ctrl) — capture чтобы ловить над любым элементом
+        const stickyView = document.getElementById('stickyNotesView');
+        if (stickyView) {
+            stickyView.addEventListener('wheel', (e) => {
+                const container = document.getElementById('stickyNotesContainer');
+                if (!container || !container.contains(e.target)) return;
+                e.preventDefault();
+                if (e.deltaY < 0) {
+                    this.zoomInCentered();
+                } else {
+                    this.zoomOutCentered();
                 }
-            }, { passive: false });
+            }, { passive: false, capture: true });
         }
         // Горячие клавиши для масштабирования и pan
         document.addEventListener('keydown', (e) => {
@@ -253,16 +254,19 @@ const StickyNotes = {
         if (container.dataset.selectionSetup === 'true') return;
         container.dataset.selectionSetup = 'true';
         
+        let rightButtonPanned = false; // Правой кнопкой делали pan — не показывать меню
         let isMouseDown = false;
         let startX = 0;
         let startY = 0;
-        let startTime = 0;
         let hasMoved = false;
-        
+
         container.addEventListener('mousedown', (e) => {
             this.closeContextMenu();
-            // Pan при правой кнопке мыши или пробеле
-            if (e.button === 2 || this.spacePressed) {
+            
+            const onEmpty = !e.target.closest('.sticky-note') && !e.target.closest('.sticky-shape') && !e.target.closest('button') && !e.target.closest('.resize-handle');
+            
+            // Колесо (средняя кнопка) или пробел — pan
+            if (e.button === 1 || this.spacePressed) {
                 e.preventDefault();
                 this.isPanning = true;
                 this.panStart.x = e.clientX;
@@ -273,186 +277,121 @@ const StickyNotes = {
                 return;
             }
             
-            // Не начинаем выделение если кликнули на элемент или кнопку
-            if (e.target.closest('.sticky-note') || 
-                e.target.closest('.sticky-shape') || 
-                e.target.closest('button') ||
-                e.target.closest('.resize-handle')) {
+            // Правая кнопка на холсте — возможен pan при удержании (обрабатывается в mousemove)
+            if (e.button === 2 && onEmpty) {
+                e.preventDefault();
+                this.rightPanStart = { x: e.clientX, y: e.clientY, scrollX: container.scrollLeft, scrollY: container.scrollTop };
+                rightButtonPanned = false;
                 return;
             }
+            
+            // Левая на стикере/фигуре — drag (setupDragAndDrop)
+            if (!onEmpty && e.button === 0) return;
+            
+            // Левая на пустом месте — выделение объектов
+            if (e.button === 0 && onEmpty) {
+                e.preventDefault();
+                const rect = container.getBoundingClientRect();
+                const scrollX = container.scrollLeft;
+                const scrollY = container.scrollTop;
+                const worldX = (e.clientX - rect.left + scrollX) / this.zoomLevel;
+                const worldY = (e.clientY - rect.top + scrollY) / this.zoomLevel;
+                isMouseDown = true;
+                hasMoved = false;
+                startX = worldX;
+                startY = worldY;
+                this.selectionStart = { x: startX, y: startY };
+                if (!e.shiftKey) this.clearSelection();
+                if (!this.selectionBox) {
+                    this.selectionBox = document.createElement('div');
+                    this.selectionBox.className = 'selection-box';
+                    container.appendChild(this.selectionBox);
+                }
+                this.selectionBox.style.display = 'block';
+                this.selectionBox.style.left = startX + 'px';
+                this.selectionBox.style.top = startY + 'px';
+                this.selectionBox.style.width = '0px';
+                this.selectionBox.style.height = '0px';
+                this.isSelecting = true;
+            }
+        });
 
+        // mousemove для правой кнопки (pan) и selection box — в setupDragAndDrop общий mousemove
+        // Добавим проверку rightPanStart в setupDragAndDrop. Но setupDragAndDrop вызывается позже.
+        // Лучше добавить отдельный mousemove сюда или расширить глобальный.
+        document.addEventListener('mousemove', (e) => {
+            if (!container) return;
+            // Правая кнопка: при движении начинаем pan
+            if (this.rightPanStart) {
+                const dx = e.clientX - this.rightPanStart.x;
+                const dy = e.clientY - this.rightPanStart.y;
+                if (dx * dx + dy * dy > 16) {
+                    rightButtonPanned = true;
+                    this.isPanning = true;
+                    this.panStart.x = e.clientX;
+                    this.panStart.y = e.clientY;
+                    this.panScrollStart.x = this.rightPanStart.scrollX;
+                    this.panScrollStart.y = this.rightPanStart.scrollY;
+                    this.rightPanStart = null;
+                    container.style.cursor = 'grabbing';
+                }
+            }
+            // Selection box
+            if (isMouseDown && this.isSelecting && this.selectionBox) {
+                const rect = container.getBoundingClientRect();
+                const scrollX = container.scrollLeft;
+                const scrollY = container.scrollTop;
+                const currentX = (e.clientX - rect.left + scrollX) / this.zoomLevel;
+                const currentY = (e.clientY - rect.top + scrollY) / this.zoomLevel;
+                if (Math.abs(e.movementX) > 2 || Math.abs(e.movementY) > 2) hasMoved = true;
+                const left = Math.min(startX, currentX);
+                const top = Math.min(startY, currentY);
+                const width = Math.abs(currentX - startX);
+                const height = Math.abs(currentY - startY);
+                this.selectionBox.style.left = left + 'px';
+                this.selectionBox.style.top = top + 'px';
+                this.selectionBox.style.width = width + 'px';
+                this.selectionBox.style.height = height + 'px';
+                if (hasMoved && width > 5 && height > 5) this.selectElementsInBox(left, top, width, height);
+            }
+        });
+
+        document.addEventListener('mouseup', (e) => {
+            if (e.button === 2) {
+                this.rightPanStart = null;
+            }
+            if (e.button === 0 && isMouseDown) {
+                isMouseDown = false;
+                this.isSelecting = false;
+                if (this.selectionBox) {
+                    setTimeout(() => {
+                        if (this.selectionBox && !this.isSelecting) this.selectionBox.style.display = 'none';
+                    }, 100);
+                }
+            }
+        });
+
+        // Правая кнопка — контекстное меню (простое нажатие, без удержания)
+        container.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            if (rightButtonPanned) {
+                rightButtonPanned = false;
+                return;
+            }
             const rect = container.getBoundingClientRect();
             const scrollX = container.scrollLeft;
             const scrollY = container.scrollTop;
             const worldX = (e.clientX - rect.left + scrollX) / this.zoomLevel;
             const worldY = (e.clientY - rect.top + scrollY) / this.zoomLevel;
-
-            // Режим рисования рамки
-            if (this.currentTool === 'frame') {
-                e.preventDefault();
-                this.isDrawingFrame = true;
-                this.frameStart.x = worldX;
-                this.frameStart.y = worldY;
-                if (!this.frameTempEl) {
-                    const board = container.querySelector('.sticky-notes-board') || container;
-                    this.frameTempEl = document.createElement('div');
-                    this.frameTempEl.className = 'sticky-frame-temp';
-                    board.appendChild(this.frameTempEl);
-                }
-                this.frameTempEl.style.display = 'block';
-                this.frameTempEl.style.left = `${worldX}px`;
-                this.frameTempEl.style.top = `${worldY}px`;
-                this.frameTempEl.style.width = '0px';
-                this.frameTempEl.style.height = '0px';
-                return;
-            }
-
-            // Кандидат клика по пустому месту для контекстного меню
-            this.pendingBoardClick = {
-                sx: e.clientX,
-                sy: e.clientY,
-                worldX,
-                worldY,
-                moved: false
-            };
-
-            isMouseDown = true;
-            this.isSelecting = true;
-            hasMoved = false;
-            startTime = Date.now();
-            startX = worldX;
-            startY = worldY;
-            
-            this.selectionStart = { x: startX, y: startY };
-            
-            // Создаем selection box
-            if (!this.selectionBox) {
-                this.selectionBox = document.createElement('div');
-                this.selectionBox.className = 'selection-box';
-                container.appendChild(this.selectionBox);
-            }
-            
-            this.selectionBox.style.display = 'block';
-            this.selectionBox.style.left = `${startX}px`;
-            this.selectionBox.style.top = `${startY}px`;
-            this.selectionBox.style.width = '0px';
-            this.selectionBox.style.height = '0px';
-            
-            // Снимаем выделение если не зажат Shift
-            if (!e.shiftKey) {
-                this.clearSelection();
-            }
+            this.openContextMenu({ sx: e.clientX, sy: e.clientY, worldX, worldY });
         });
         
-        container.addEventListener('mousemove', (e) => {
-            const rect = container.getBoundingClientRect();
-            const scrollX = container.scrollLeft;
-            const scrollY = container.scrollTop;
-            const currentX = (e.clientX - rect.left + scrollX) / this.zoomLevel;
-            const currentY = (e.clientY - rect.top + scrollY) / this.zoomLevel;
-
-            // Обновляем статус клика для контекстного меню
-            if (this.pendingBoardClick) {
-                const dx = e.clientX - this.pendingBoardClick.sx;
-                const dy = e.clientY - this.pendingBoardClick.sy;
-                if (dx * dx + dy * dy > 25) {
-                    this.pendingBoardClick.moved = true;
-                }
-            }
-
-            // Рисование рамки
-            if (this.isDrawingFrame && this.currentTool === 'frame' && this.frameTempEl) {
-                const left = Math.min(this.frameStart.x, currentX);
-                const top = Math.min(this.frameStart.y, currentY);
-                const width = Math.abs(currentX - this.frameStart.x);
-                const height = Math.abs(currentY - this.frameStart.y);
-                this.frameTempEl.style.left = `${left}px`;
-                this.frameTempEl.style.top = `${top}px`;
-                this.frameTempEl.style.width = `${width}px`;
-                this.frameTempEl.style.height = `${height}px`;
-                return;
-            }
-
-            if (!isMouseDown || !this.isSelecting) return;
-            
-            const moved = Math.abs(e.movementX) > 2 || Math.abs(e.movementY) > 2;
-            if (moved) {
-                hasMoved = true;
-            }
-            
-            const left = Math.min(startX, currentX);
-            const top = Math.min(startY, currentY);
-            const width = Math.abs(currentX - startX);
-            const height = Math.abs(currentY - startY);
-            
-            if (this.selectionBox && hasMoved) {
-                this.selectionBox.style.left = `${left}px`;
-                this.selectionBox.style.top = `${top}px`;
-                this.selectionBox.style.width = `${width}px`;
-                this.selectionBox.style.height = `${height}px`;
-            }
-            
-            // Выделяем элементы внутри selection box только если мышь двигалась
-            if (hasMoved && width > 5 && height > 5) {
-                this.selectElementsInBox(left, top, width, height);
-            }
-        });
-        
-        container.addEventListener('mouseup', () => {
-            // Завершение рисования рамки
-            if (this.isDrawingFrame && this.currentTool === 'frame') {
-                this.isDrawingFrame = false;
-                if (this.frameTempEl) {
-                    const width = parseFloat(this.frameTempEl.style.width) || 0;
-                    const height = parseFloat(this.frameTempEl.style.height) || 0;
-                    const left = parseFloat(this.frameTempEl.style.left) || 0;
-                    const top = parseFloat(this.frameTempEl.style.top) || 0;
-                    this.frameTempEl.style.display = 'none';
-                    if (width > 10 && height > 10) {
-                        this.createFrameFromRect(left, top, width, height);
-                    }
-                }
-            }
-
-            // Открытие контекстного меню по клику по пустому месту
-            if (this.pendingBoardClick) {
-                const candidate = this.pendingBoardClick;
-                this.pendingBoardClick = null;
-                if (!candidate.moved) {
-                    setTimeout(() => {
-                        this.openContextMenu({
-                            sx: candidate.sx,
-                            sy: candidate.sy,
-                            worldX: candidate.worldX,
-                            worldY: candidate.worldY
-                        });
-                    }, 0);
-                }
-            }
-
-            if (isMouseDown) {
-                isMouseDown = false;
-                this.isSelecting = false;
-                
-                if (this.selectionBox) {
-                    // Не скрываем сразу, чтобы пользователь видел что выделено
-                    setTimeout(() => {
-                        if (this.selectionBox && !this.isSelecting) {
-                            this.selectionBox.style.display = 'none';
-                        }
-                    }, 100);
-                }
-            }
-        });
-        
-        // Останавливаем выделение при выходе за пределы контейнера
         container.addEventListener('mouseleave', () => {
+            this.rightPanStart = null;
             if (isMouseDown) {
                 isMouseDown = false;
                 this.isSelecting = false;
-                if (this.selectionBox) {
-                    this.selectionBox.style.display = 'none';
-                }
+                if (this.selectionBox) this.selectionBox.style.display = 'none';
             }
         });
     },
