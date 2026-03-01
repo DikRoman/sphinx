@@ -944,6 +944,25 @@ body::before {
     white-space: nowrap;
 }
 
+.auth-sync-row {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.auth-sync-status {
+    font-size: 0.7rem;
+    min-width: 1ch;
+}
+.auth-sync-status[data-status="ok"] { color: var(--neon-green, #0f0); }
+.auth-sync-status[data-status="error"] { color: var(--neon-red, #f44); }
+.auth-sync-status[data-status="loading"] { color: var(--neon-cyan); }
+
+.auth-btn.auth-sync-btn {
+    padding: 0.25rem 0.4rem;
+    font-size: 0.65rem;
+}
+
 .auth-block[data-configured="0"] {
     display: none;
 }

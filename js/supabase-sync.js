@@ -3,16 +3,32 @@
  */
 const SupabaseSync = {
     initialized: false,
+    lastStatus: null, // 'idle' | 'loading' | 'ok' | 'error'
+    onStatusChange: null,
+
+    setStatus(status) {
+        this.lastStatus = status;
+        if (typeof this.onStatusChange === 'function') this.onStatusChange(status);
+    },
 
     init() {
-        if (this.initialized || !SupabaseAuth.client) return;
+        if (this.initialized || !SupabaseAuth.client) {
+            if (!SupabaseAuth.client) console.warn('[SupabaseSync] init skipped: no client');
+            return;
+        }
         this.initialized = true;
         this.wrapStorage();
+        console.log('[SupabaseSync] initialized, storage wrapped');
     },
 
     async loadFromSupabase() {
         const uid = SupabaseAuth.getUserId();
-        if (!uid || !SupabaseAuth.client) return;
+        if (!uid || !SupabaseAuth.client) {
+            console.warn('[SupabaseSync] loadFromSupabase skipped: uid=', !!uid, 'client=', !!SupabaseAuth.client);
+            return;
+        }
+        this.setStatus('loading');
+        console.log('[SupabaseSync] loadFromSupabase start, uid=', uid);
 
         try {
             // Локальные данные для первичной инициализации, если в Supabase пока пусто
@@ -109,8 +125,11 @@ const SupabaseSync = {
                     await this.pushSticky(notesObj, completedObj, shapesObj, stickyBg);
                 }
             }
+            this.setStatus('ok');
+            console.log('[SupabaseSync] loadFromSupabase done');
         } catch (e) {
-            console.error('SupabaseSync load error', e);
+            this.setStatus('error');
+            console.error('[SupabaseSync] load error', e);
         }
     },
 
@@ -147,7 +166,45 @@ const SupabaseSync = {
                 shapes: shapes || {},
                 background: background || 'dark'
             }, { onConflict: 'user_id' });
-        } catch (e) { console.error('pushSticky', e); }
+        } catch (e) { console.error('[SupabaseSync] pushSticky', e); }
+    },
+
+    /** Ручная синхронизация: выгрузить всё из localStorage в Supabase */
+    async syncNow() {
+        const uid = SupabaseAuth.getUserId();
+        if (!uid || !SupabaseAuth.client) {
+            console.warn('[SupabaseSync] syncNow: не авторизован или нет client');
+            return;
+        }
+        this.setStatus('loading');
+        console.log('[SupabaseSync] syncNow start');
+        try {
+            const tasks = typeof Storage !== 'undefined' && Storage.getTasks ? Storage.getTasks() : {};
+            const areas = typeof Storage !== 'undefined' && Storage.getAreas ? Storage.getAreas() : {};
+            const habits = typeof Storage !== 'undefined' && Storage.getHabits ? Storage.getHabits() : {};
+            const content = typeof Storage !== 'undefined' && Storage.getContent ? Storage.getContent() : {};
+            const notes = typeof Storage !== 'undefined' && Storage.getNotes ? Storage.getNotes() : {};
+            if (Object.keys(tasks).length) await this.pushTasks(tasks);
+            if (Object.keys(areas).length) await this.pushAreas(areas);
+            if (Object.keys(habits).length) await this.pushHabits(habits);
+            if (Object.keys(content).length) await this.pushContent(content);
+            if (Object.keys(notes).length) await this.pushNotes(notes);
+            const wb = localStorage.getItem(CONFIG.STORAGE_KEYS.WISHBOARD);
+            if (wb) await this.pushWishboard(JSON.parse(wb));
+            const stickyNotes = localStorage.getItem('sphinx_sticky_notes');
+            const stickyCompleted = localStorage.getItem('sphinx_sticky_completed');
+            const stickyShapes = localStorage.getItem('sphinx_sticky_shapes');
+            const stickyBg = localStorage.getItem('sphinx_sticky_notes_background') || 'dark';
+            const notesObj = stickyNotes ? JSON.parse(stickyNotes) : {};
+            const completedObj = stickyCompleted ? JSON.parse(stickyCompleted) : {};
+            const shapesObj = stickyShapes ? JSON.parse(stickyShapes) : {};
+            await this.pushSticky(notesObj, completedObj, shapesObj, stickyBg);
+            this.setStatus('ok');
+            console.log('[SupabaseSync] syncNow done');
+        } catch (e) {
+            this.setStatus('error');
+            console.error('[SupabaseSync] syncNow error', e);
+        }
     },
 
     async upsertTable(table, obj) {
@@ -162,10 +219,12 @@ const SupabaseSync = {
             }));
             const { error } = await SupabaseAuth.client.from(table).upsert(rows, { onConflict: 'user_id,id' });
             if (error) {
-                console.error('SupabaseSync upsert error', table, error.message, error);
+                this.setStatus('error');
+                console.error('[SupabaseSync] upsert error', table, error.message, error);
             }
         } catch (e) {
-            console.error('SupabaseSync upsert exception', table, e);
+            this.setStatus('error');
+            console.error('[SupabaseSync] upsert exception', table, e);
         }
     },
 

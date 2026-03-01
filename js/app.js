@@ -15,6 +15,9 @@ const App = {
         Gantt.init();
         if (typeof Cover !== 'undefined') Cover.init();
 
+        // Supabase Auth — ДО роутера! Иначе роутер перезапишет #access_token при OAuth редиректе
+        this.setupSupabase();
+
         // Router — hash-based navigation and page loading
         Router.init('pageContainer');
 
@@ -32,9 +35,6 @@ const App = {
 
         // Right panel: resize, music collapse
         this.setupPanelControls();
-
-        // Supabase Auth + Sync
-        this.setupSupabase();
 
         this.setupAppSettings();
 
@@ -192,7 +192,12 @@ const App = {
         SupabaseAuth.init(async (session) => {
             this.updateAuthUI(session);
             if (session) {
+                if (/[?#](access_token|refresh_token|error|code)=/i.test(location.href)) {
+                    location.replace(location.pathname + location.search + '#inbox');
+                }
                 SupabaseSync.init();
+                SupabaseSync.onStatusChange = (status) => this.updateSyncStatusUI(status);
+                this.updateSyncStatusUI(SupabaseSync.lastStatus || 'idle');
                 await SupabaseSync.loadFromSupabase();
                 GTD.renderAreas();
                 Kanban.renderKanban('inboxKanban', null, 'inbox');
@@ -210,6 +215,19 @@ const App = {
         document.getElementById('authGoogle')?.addEventListener('click', () => SupabaseAuth.signInWithGoogle());
         document.getElementById('authGithub')?.addEventListener('click', () => SupabaseAuth.signInWithGithub());
         document.getElementById('authLogout')?.addEventListener('click', () => SupabaseAuth.signOut());
+        document.getElementById('authSyncNow')?.addEventListener('click', () => {
+            if (SupabaseAuth.isLoggedIn() && typeof SupabaseSync?.syncNow === 'function') {
+                SupabaseSync.syncNow();
+            }
+        });
+    },
+
+    updateSyncStatusUI(status) {
+        const el = document.getElementById('authSyncStatus');
+        if (!el) return;
+        const labels = { idle: '', loading: '…', ok: '✓', error: '!' };
+        el.textContent = labels[status] || '';
+        el.setAttribute('data-status', status || 'idle');
     },
 
     updateAuthUI(session) {

@@ -24,8 +24,11 @@ const Router = {
         this.container = document.getElementById(containerId || 'pageContainer');
         if (!this.container) return;
 
-        if (!location.hash) history.replaceState(null, '', (location.pathname || '/') + (location.search || '') + '#inbox');
+        const isOAuthCallback = /[?#](access_token|refresh_token|error|code)=/i.test(location.hash || location.href);
         window.addEventListener('hashchange', () => this.onHashChange());
+        if (isOAuthCallback) return; // не трогать hash — Supabase обработает OAuth callback
+
+        if (!location.hash) history.replaceState(null, '', (location.pathname || '/') + (location.search || '') + '#inbox');
         this.onHashChange();
     },
 
