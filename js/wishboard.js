@@ -5,6 +5,9 @@ const Wishboard = {
     isPanning: false,
     panStart: { x: 0, y: 0 },
     panScrollStart: { x: 0, y: 0 },
+    draggedImage: null,
+    dragStartClient: { x: 0, y: 0 },
+    dragStartPosition: { x: 0, y: 0 },
 
     get currentBoard() {
         return this.data.boards.find(b => b.id === this.data.currentBoardId) || this.data.boards[0];
@@ -250,6 +253,10 @@ const Wishboard = {
         const board = this.currentBoard;
         if (!board) return;
         const id = 'img_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+        const images = board.images || [];
+        const lastImg = images[images.length - 1];
+        const baseX = lastImg?.position?.x ?? 50;
+        const baseY = lastImg?.position?.y ?? 50;
         const image = {
             id,
             url: data.url || null,
@@ -258,6 +265,7 @@ const Wishboard = {
             height: data.height || 200,
             frameStyle,
             caption: '',
+            position: { x: baseX + (images.length % 3) * 250, y: baseY + Math.floor(images.length / 3) * 280 },
             createdAt: new Date().toISOString()
         };
         board.images.push(image);
@@ -289,15 +297,82 @@ const Wishboard = {
 
         if (prompt) prompt.classList.remove('show-empty');
 
-        container.innerHTML = images.map(img => `
-            <div class="wishboard-image-card ${img.frameStyle || 'polaroid'}" data-id="${img.id}">
+        let needsSave = false;
+        container.innerHTML = images.map((img, i) => {
+            if (!img.position) {
+                img.position = { x: 50 + (i % 4) * 240, y: 50 + Math.floor(i / 4) * 300 };
+                needsSave = true;
+            }
+            const pos = img.position;
+            return `
+            <div class="wishboard-image-card ${img.frameStyle || 'polaroid'}" data-id="${img.id}"
+                 style="left: ${pos.x}px; top: ${pos.y}px; position: absolute;">
                 <div class="polaroid-image">
                     <img src="${img.dataUrl || img.url}" alt="Вдохновение">
                 </div>
-                <button class="wishboard-image-remove" onclick="Wishboard.removeImage('${img.id}')" title="Удалить">
+                <button class="wishboard-image-remove" onclick="event.stopPropagation(); Wishboard.removeImage('${img.id}')" title="Удалить">
                     <i class="fas fa-times"></i>
                 </button>
-            </div>
-        `).join('');
+            </div>`;
+        }).join('');
+        if (needsSave) Storage.saveWishboard(this.data);
+
+        this.setupImageDrag();
+    },
+
+    setupImageDrag() {
+        const container = document.getElementById('wishboardContainer');
+        if (!container || container.dataset.wbDragSetup === 'true') return;
+
+        document.addEventListener('mousemove', (e) => {
+            if (!this.draggedImage) return;
+            e.preventDefault();
+            const img = this.currentBoard?.images?.find(i => i.id === this.draggedImage);
+            if (!img) return;
+            const dx = e.clientX - this.dragStartClient.x;
+            const dy = e.clientY - this.dragStartClient.y;
+            const x = Math.max(0, this.dragStartPosition.x + dx);
+            const y = Math.max(0, this.dragStartPosition.y + dy);
+            const el = container.querySelector(`[data-id="${this.draggedImage}"]`);
+            if (el) {
+                el.style.left = x + 'px';
+                el.style.top = y + 'px';
+            }
+        });
+
+        document.addEventListener('mouseup', (e) => {
+            if (!this.draggedImage) return;
+            const img = this.currentBoard?.images?.find(i => i.id === this.draggedImage);
+            const el = container?.querySelector(`[data-id="${this.draggedImage}"]`);
+            if (img && el) {
+                img.position = {
+                    x: Math.max(0, this.dragStartPosition.x + (e.clientX - this.dragStartClient.x)),
+                    y: Math.max(0, this.dragStartPosition.y + (e.clientY - this.dragStartClient.y))
+                };
+                Storage.saveWishboard(this.data);
+            }
+            if (el) el.classList.remove('wishboard-card-dragging');
+            this.draggedImage = null;
+        });
+
+        container.addEventListener('mousedown', (e) => {
+            const card = e.target.closest('.wishboard-image-card');
+            if (!card || e.target.closest('.wishboard-image-remove')) return;
+            e.preventDefault();
+            this.draggedImage = card.dataset.id;
+            this.dragStartClient.x = e.clientX;
+            this.dragStartClient.y = e.clientY;
+            const img = this.currentBoard?.images?.find(i => i.id === this.draggedImage);
+            if (img?.position) {
+                this.dragStartPosition = { x: img.position.x, y: img.position.y };
+            } else {
+                const rect = card.getBoundingClientRect();
+                const cr = container.getBoundingClientRect();
+                this.dragStartPosition = { x: rect.left - cr.left + container.scrollLeft, y: rect.top - cr.top + container.scrollTop };
+            }
+            card.classList.add('wishboard-card-dragging');
+        });
+
+        container.dataset.wbDragSetup = 'true';
     }
 };

@@ -65,18 +65,18 @@
     --radius-2xl: 40px;
 }
 
-/* Santorini — белый фон, голубая палитра (по скриншоту) */
+/* Santorini — благородный белый, синие акценты, без серого */
 body[data-theme="santorini"] {
     --bg-primary: #ffffff;
-    --bg-secondary: #f8fafc;
-    --bg-tertiary: #f1f5f9;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #fafbff;
     --bg-card: #ffffff;
     --bg-hover: #eff6ff;
-    --text-primary: #1e293b;
-    --text-secondary: #475569;
-    --text-muted: #64748b;
-    --border: #e2e8f0;
-    --border-light: #f1f5f9;
+    --text-primary: #0f172a;
+    --text-secondary: #1e40af;
+    --text-muted: #3b82f6;
+    --border: #bfdbfe;
+    --border-light: #dbeafe;
     --primary: #3b82f6;
     --primary-dark: #2563eb;
     --primary-light: #60a5fa;
@@ -817,12 +817,20 @@ body::before {
     box-shadow: 0 0 0 2px var(--area-color), 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+.nav-section-tags-header { display: flex; align-items: center; gap: 0.25rem; padding: 0.4rem 0.75rem; }
+.nav-tags-chevron-btn { cursor: pointer; padding: 0.15rem; color: var(--text-muted); display: flex; }
+.nav-tags-chevron-btn:hover { color: var(--text-primary); }
+.nav-tags-chevron { font-size: 0.55rem; transition: transform 0.2s; }
+.nav-section-tags.expanded .nav-tags-chevron { transform: rotate(90deg); }
+.nav-tags-list.nav-tags-collapsed { display: none; }
+.nav-tags-list { overflow: hidden; }
+
 .nav-tag-card {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.35rem 0.6rem;
-    border-radius: var(--radius-sm);
+    padding: 0.2rem 0.45rem;
+    border-radius: 6px;
     text-decoration: none;
     color: var(--text-primary);
     font-size: 0.75rem;
@@ -833,27 +841,27 @@ body::before {
     opacity: 0.9;
     filter: brightness(1.1);
 }
-.nav-tag-card .nav-tag-card-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.nav-tag-card .nav-tag-card-meta { font-size: 0.65rem; color: var(--text-muted); }
+.nav-tag-card .nav-tag-card-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.7rem; }
+.nav-tag-card .nav-tag-card-meta { font-size: 0.6rem; color: var(--text-muted); }
 .nav-tag-card.active { box-shadow: 0 0 0 2px var(--tag-color); }
 .nav-empty-hint { font-size: 0.7rem; color: var(--text-muted); padding: 0.35rem 0.6rem; }
 
-.tags-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.75rem; }
+.tags-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.5rem; }
 .tag-card {
     display: block;
-    padding: 1rem;
+    padding: 0.6rem 0.8rem;
     border-radius: var(--radius-md);
     text-decoration: none;
     color: var(--text-primary);
     transition: all 0.2s;
 }
 .tag-card:hover { opacity: 0.9; filter: brightness(1.05); }
-.tag-card-name { display: block; font-weight: 600; font-size: 0.95rem; margin-bottom: 0.25rem; }
-.tag-card-count { font-size: 0.75rem; color: var(--text-muted); }
+.tag-card-name { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.15rem; }
+.tag-card-count { font-size: 0.7rem; color: var(--text-muted); }
 
 .tags-settings-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
 .tags-settings-row:last-child { border-bottom: none; }
-.tags-settings-tag { padding: 0.25rem 0.5rem; border-radius: var(--radius-sm); background: var(--tag-color)22; border-left: 3px solid var(--tag-color); min-width: 100px; }
+.tags-settings-tag { padding: 0.18rem 0.4rem; font-size: 0.8rem; border-radius: 6px; background: var(--tag-color)22; border-left: 3px solid var(--tag-color); min-width: 90px; }
 .tags-settings-colors { display: flex; gap: 0.25rem; flex-wrap: wrap; }
 .tags-color-btn { width: 24px; height: 24px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: all 0.2s; padding: 0; }
 .tags-color-btn:hover { transform: scale(1.15); }
@@ -4104,11 +4112,10 @@ body::before {
     flex: 1;
     padding: 2rem;
     overflow: auto;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.5rem;
-    align-content: flex-start;
-    cursor: grab;
+    position: relative;
+    min-height: 3000px;
+    min-width: 100%;
+    cursor: default;
 }
 
 .wishboard-container:active {
@@ -4129,6 +4136,10 @@ body::before {
 .wishboard-image-card:nth-child(even) { --polaroid-rotate: 1.5deg; }
 .wishboard-image-card:nth-child(3n) { --polaroid-rotate: -1deg; }
 .wishboard-image-card:nth-child(5n) { --polaroid-rotate: 2deg; }
+
+.wishboard-image-card { cursor: grab; user-select: none; }
+.wishboard-image-card:active { cursor: grabbing; }
+.wishboard-image-card.wishboard-card-dragging { z-index: 100; cursor: grabbing; }
 
 .wishboard-image-card:hover {
     transform: rotate(0deg) translateY(-6px) scale(1.02);

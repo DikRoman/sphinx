@@ -53,8 +53,27 @@ const GTD = {
     init() {
         this.renderAreas();
         this.renderTagsNav();
+        this.setupTagsToggle();
         this.updateBadges();
         this.setupEventListeners();
+    },
+
+    setupTagsToggle() {
+        const section = document.querySelector('.nav-section-tags');
+        const list = document.getElementById('tagsListNav');
+        const chevronBtn = document.querySelector('.nav-tags-chevron-btn');
+        if (!section || !list || !chevronBtn) return;
+        const collapsed = localStorage.getItem('sphinx_tags_collapsed');
+        const isCollapsed = collapsed === null ? true : collapsed === '1';
+        list.classList.toggle('nav-tags-collapsed', isCollapsed);
+        section.classList.toggle('expanded', !isCollapsed);
+        chevronBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const nowCollapsed = list.classList.toggle('nav-tags-collapsed');
+            section.classList.toggle('expanded', !nowCollapsed);
+            localStorage.setItem('sphinx_tags_collapsed', nowCollapsed ? '1' : '0');
+        });
     },
 
     setupEventListeners() {

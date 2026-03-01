@@ -74,7 +74,7 @@ const Router = {
             let active = false;
             if (el.dataset.page === page) {
                 if (page === 'area') active = el.dataset.areaId === id;
-                else if (page === 'tags') active = !id ? !el.dataset.tag : (el.dataset.tag === decodeURIComponent(id));
+                else if (page === 'tags') active = el.classList.contains('nav-section-tags-link') && !id ? true : (el.dataset.tag && el.dataset.tag === decodeURIComponent(id));
                 else active = true;
             }
             el.classList.toggle('active', active);
