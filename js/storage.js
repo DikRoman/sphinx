@@ -241,5 +241,28 @@ const Storage = {
 
     saveAppSettings(settings) {
         localStorage.setItem(CONFIG.STORAGE_KEYS.APP_SETTINGS, JSON.stringify(settings));
+    },
+
+    getTagColors() {
+        const raw = localStorage.getItem(CONFIG.STORAGE_KEYS.TAG_COLORS);
+        return raw ? JSON.parse(raw) : {};
+    },
+
+    saveTagColor(tag, color) {
+        const map = this.getTagColors();
+        map[tag] = color;
+        localStorage.setItem(CONFIG.STORAGE_KEYS.TAG_COLORS, JSON.stringify(map));
+    },
+
+    saveTagColors(map) {
+        localStorage.setItem(CONFIG.STORAGE_KEYS.TAG_COLORS, JSON.stringify(map || {}));
+    },
+
+    getTagColor(tag) {
+        const map = this.getTagColors();
+        if (map[tag]) return map[tag];
+        const palette = CONFIG.TAG_COLOR_PALETTE || ['#00F5FF', '#6366f1', '#10b981', '#f59e0b'];
+        const hash = tag.split('').reduce((h, c) => ((h << 5) - h) + c.charCodeAt(0) | 0, 0);
+        return palette[Math.abs(hash) % palette.length];
     }
 };

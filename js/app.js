@@ -122,6 +122,7 @@ const App = {
                     dragging = false;
                     rightPanelResizeHandle.classList.remove('dragging');
                     rightPanel.classList.remove('right-panel-resizing');
+                    if (typeof SupabaseSync !== 'undefined' && SupabaseSync.pushSettings) SupabaseSync.pushSettings();
                 }
             });
             const savedW = localStorage.getItem(RIGHT_PANEL_WIDTH_KEY);
@@ -160,6 +161,7 @@ const App = {
                     dragging = false;
                     coverResizeHandle.classList.remove('dragging');
                     cover.classList.remove('cover-resizing');
+                    if (typeof SupabaseSync !== 'undefined' && SupabaseSync.pushSettings) SupabaseSync.pushSettings();
                 }
             });
             const saved = localStorage.getItem(COVER_HEIGHT_KEY);
@@ -338,6 +340,100 @@ const App = {
         container.innerHTML = allTasks.map(task => this.createAllTaskItem(task, getContextTag(task))).join('');
     },
 
+    renderTagsView(tagId) {
+        const container = document.getElementById('tagsList');
+        if (!container) return;
+        const tasks = Storage.getTasks();
+        const areas = Storage.getAreas();
+        const allTasks = Object.values(tasks);
+
+        const tagDecoded = tagId ? decodeURIComponent(tagId) : null;
+
+        const taskHasTag = (task, tag) => {
+            if (task.contextType === 'area' && task.contextId && areas[task.contextId] && areas[task.contextId].name === tag) return true;
+            return (task.tags || []).includes(tag);
+        };
+
+        const tagCounts = {};
+        allTasks.forEach(t => {
+            if (t.contextType === 'area' && t.contextId && areas[t.contextId]) {
+                const tag = areas[t.contextId].name;
+                tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+            }
+            (t.tags || []).forEach(tg => { tagCounts[tg] = (tagCounts[tg] || 0) + 1; });
+        });
+        const uniqueTags = Object.keys(tagCounts).sort((a, b) => tagCounts[b] - tagCounts[a]);
+
+        const filteredTasks = tagDecoded ? allTasks.filter(t => taskHasTag(t, tagDecoded)) : [];
+
+        if (tagDecoded) {
+            const header = container.closest('.view-panel')?.querySelector('.view-header h1');
+            if (header) header.innerHTML = `<i class="fas fa-tag" style="color: ${Storage.getTagColor(tagDecoded)}"></i> #${this.escapeHtml(tagDecoded)}`;
+        }
+
+        if (!tagDecoded) {
+            if (uniqueTags.length === 0) {
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-tags"></i><h3>Нет тегов</h3><p>Добавьте теги к задачам</p></div>`;
+            } else {
+                container.innerHTML = `<div class="tags-grid" id="tagsGrid">${uniqueTags.map(tag => {
+                    const color = Storage.getTagColor(tag);
+                    const count = tagCounts[tag];
+                    return `<a href="#tags/${encodeURIComponent(tag)}" class="tag-card" style="--tag-color: ${color}; background: ${color}22; border-left: 4px solid ${color}">
+                        <span class="tag-card-name">${this.escapeHtml(tag)}</span>
+                        <span class="tag-card-count">${count} задач</span>
+                    </a>`;
+                }).join('')}</div>`;
+            }
+        } else if (filteredTasks.length === 0) {
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-tag"></i><h3>Нет задач</h3><p>С тегом «${this.escapeHtml(tagDecoded)}»</p></div>`;
+        } else {
+            const getContextTag = (task) => {
+                if (task.contextType === 'area' && task.contextId && areas[task.contextId]) return areas[task.contextId].name;
+                return 'Inbox';
+            };
+            container.innerHTML = filteredTasks.map(task => this.createAllTaskItem(task, getContextTag(task))).join('');
+        }
+        if (typeof GTD !== 'undefined' && GTD.renderTagsNav) GTD.renderTagsNav();
+
+        document.getElementById('tagsSettingsBtn')?.addEventListener('click', () => this.showTagsSettingsModal());
+    },
+
+    showTagsSettingsModal() {
+        const modal = document.getElementById('tagsSettingsModal');
+        const list = document.getElementById('tagsSettingsList');
+        if (!modal || !list) return;
+        const tasks = Storage.getTasks();
+        const areas = Storage.getAreas();
+        const tagSet = new Set();
+        Object.values(tasks).forEach(t => {
+            if (t.contextType === 'area' && t.contextId && areas[t.contextId]) tagSet.add(areas[t.contextId].name);
+            (t.tags || []).forEach(tg => tagSet.add(tg));
+        });
+        const tags = Array.from(tagSet).sort();
+        const palette = CONFIG.TAG_COLOR_PALETTE || ['#00F5FF', '#FF3D7F', '#FFE135', '#00FF88', '#A855F7', '#00B8FF'];
+        list.innerHTML = tags.map(tag => {
+            const color = Storage.getTagColor(tag);
+            return `<div class="tags-settings-row">
+                <span class="tags-settings-tag" style="--tag-color: ${color}">${this.escapeHtml(tag)}</span>
+                <div class="tags-settings-colors">${palette.map(c =>
+                    `<button type="button" class="tags-color-btn ${c === color ? 'active' : ''}" data-tag="${this.escapeHtml(tag)}" data-color="${c}" style="background: ${c}" title="${c}"></button>`
+                ).join('')}</div>
+            </div>`;
+        }).join('') || '<p class="modal-hint">Нет тегов. Добавьте теги к задачам.</p>';
+        list.querySelectorAll('.tags-color-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                Storage.saveTagColor(btn.dataset.tag, btn.dataset.color);
+                if (typeof SupabaseSync !== 'undefined' && SupabaseSync.pushSettings) SupabaseSync.pushSettings();
+                this.showTagsSettingsModal();
+                if (typeof GTD !== 'undefined' && GTD.renderTagsNav) GTD.renderTagsNav();
+                const r = typeof Router !== 'undefined' && Router.getRoute ? Router.getRoute() : {};
+                this.renderTagsView(r.id || null);
+                this.renderAllTasksView();
+            });
+        });
+        modal.classList.add('active');
+    },
+
     createAllTaskItem(task, contextTag) {
         const priorityColors = {
             high: 'var(--error)',
@@ -349,9 +445,10 @@ const App = {
         const formattedDate = dueDate ? dueDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }) : '';
 
         const allTags = [contextTag, ...(task.tags || [])].filter(Boolean);
-        const tagsHtml = allTags.map(tag =>
-            `<span class="card-tag">${this.escapeHtml(tag)}</span>`
-        ).join('');
+        const tagsHtml = allTags.map(tag => {
+            const color = typeof Storage !== 'undefined' && Storage.getTagColor ? Storage.getTagColor(tag) : '#6366f1';
+            return `<span class="card-tag" style="--tag-color: ${color}; background: ${color}22; border-left: 2px solid ${color}">${this.escapeHtml(tag)}</span>`;
+        }).join('');
 
         return `
             <div class="task-item" onclick="GTD.showTaskModal('${task.contextId || null}', '${task.contextType || 'inbox'}', '${task.id}')">

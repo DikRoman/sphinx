@@ -2,7 +2,7 @@
 const GTD = {
     currentAreaId: null,
 
-    /** Распознавание даты и времени из текста задачи (сегодня, завтра, 14:00 и т.д.) */
+    /** Распознавание даты и времени из текста (сегодня, @завтра, через 2 недели и т.д.) */
     parseNaturalDate(text) {
         if (!text || typeof text !== 'string') return { date: null, time: null };
         const t = text.toLowerCase().trim();
@@ -10,7 +10,7 @@ const GTD = {
         let date = null;
         let time = null;
 
-        // Время: 14:00, 9:30, 14 00
+        // Время: 14:00, 9:30
         const timeMatch = t.match(/\b(\d{1,2})[:\s](\d{2})\b/);
         if (timeMatch) {
             const h = parseInt(timeMatch[1], 10);
@@ -20,27 +20,30 @@ const GTD = {
             }
         }
 
-        // Слова даты
-        if (/\bсегодня\b/.test(t)) {
-            date = now.toISOString().split('T')[0];
-        } else if (/\bзавтра\b/.test(t)) {
-            const d = new Date(now);
-            d.setDate(d.getDate() + 1);
-            date = d.toISOString().split('T')[0];
-        } else if (/\bпослезавтра\b/.test(t)) {
-            const d = new Date(now);
-            d.setDate(d.getDate() + 2);
-            date = d.toISOString().split('T')[0];
-        } else if (/\bчерез неделю\b/.test(t) || /\bчерез 1 неделю\b/.test(t)) {
-            const d = new Date(now);
-            d.setDate(d.getDate() + 7);
-            date = d.toISOString().split('T')[0];
-        } else if (/\bчерез (\d+)\s*дн/.test(t)) {
-            const match = t.match(/через\s*(\d+)\s*дн/);
+        const addDays = (base, n) => {
+            const d = new Date(base);
+            d.setDate(d.getDate() + n);
+            return d.toISOString().split('T')[0];
+        };
+
+        // @завтра, @послезавтра, @сегодня, @неделя, @месяц, @14 дней, @2 недели
+        const patterns = [
+            [/@?сегодня\b/, () => addDays(now, 0)],
+            [/@?завтра\b/, () => addDays(now, 1)],
+            [/@?послезавтра\b/, () => addDays(now, 2)],
+            [/@?через\s*(\d+)\s*дн[ейя]?/i, (m) => addDays(now, parseInt(m[1], 10))],
+            [/@?(\d+)\s*дн[ейя]?\b/i, (m) => addDays(now, parseInt(m[1], 10))],
+            [/@?через\s*(\d+)\s*недел/i, (m) => addDays(now, parseInt(m[1], 10) * 7)],
+            [/@?(\d+)\s*недел/i, (m) => addDays(now, parseInt(m[1], 10) * 7)],
+            [/@?через\s*недел[уы]\b|@?через\s*1\s*недел|@?недел[ау]\b|@?неделю\b/, () => addDays(now, 7)],
+            [/@?через\s*(\d+)\s*месяц/i, (m) => { const d = new Date(now); d.setMonth(d.getMonth() + parseInt(m[1], 10)); return d.toISOString().split('T')[0]; }],
+            [/@?через\s*месяц|@?месяц\b/, () => { const d = new Date(now); d.setMonth(d.getMonth() + 1); return d.toISOString().split('T')[0]; }]
+        ];
+        for (const [re, fn] of patterns) {
+            const match = t.match(re);
             if (match) {
-                const d = new Date(now);
-                d.setDate(d.getDate() + parseInt(match[1], 10));
-                date = d.toISOString().split('T')[0];
+                date = match.length > 1 ? fn(match) : fn();
+                break;
             }
         }
 
@@ -49,6 +52,7 @@ const GTD = {
 
     init() {
         this.renderAreas();
+        this.renderTagsNav();
         this.updateBadges();
         this.setupEventListeners();
     },
@@ -94,6 +98,31 @@ const GTD = {
             `;
             areasList.appendChild(card);
         });
+    },
+
+    renderTagsNav() {
+        const container = document.getElementById('tagsListNav');
+        if (!container) return;
+        const tasks = Storage.getTasks();
+        const taskList = Object.values(tasks);
+        const tagCounts = {};
+        const areas = Storage.getAreas();
+        taskList.forEach(t => {
+            if (t.contextType === 'area' && t.contextId && areas[t.contextId]) {
+                const areaTag = areas[t.contextId].name;
+                tagCounts[areaTag] = (tagCounts[areaTag] || 0) + 1;
+            }
+            (t.tags || []).forEach(tag => { tagCounts[tag] = (tagCounts[tag] || 0) + 1; });
+        });
+        const tags = Object.keys(tagCounts).sort((a, b) => tagCounts[b] - tagCounts[a]);
+        container.innerHTML = tags.map(tag => {
+            const color = Storage.getTagColor(tag);
+            const count = tagCounts[tag];
+            return `<a href="#tags/${encodeURIComponent(tag)}" class="nav-item nav-tag-card" data-page="tags" data-tag="${this.escapeHtml(tag)}" style="--tag-color: ${color}; background: ${color}22; border-left: 3px solid ${color};">
+                <span class="nav-tag-card-title">${this.escapeHtml(tag)}</span>
+                <span class="nav-tag-card-meta">${count}</span>
+            </a>`;
+        }).join('') || '<span class="nav-empty-hint">Нет тегов</span>';
     },
 
     openArea(areaId) {
@@ -275,7 +304,12 @@ const GTD = {
             if (typeof App !== 'undefined') {
                 App.renderTodayView();
                 App.renderAllTasksView();
+                if (Router?.currentPage === 'tags' && App.renderTagsView) {
+                    const tagId = (location.hash || '').split('/')[1] || null;
+                    App.renderTagsView(tagId);
+                }
             }
+            this.renderTagsNav();
             this.updateBadges();
             this.closeTaskModal();
         });

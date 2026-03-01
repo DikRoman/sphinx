@@ -790,6 +790,48 @@ body::before {
     box-shadow: 0 0 0 2px var(--area-color), 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+.nav-tag-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.35rem 0.6rem;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    color: var(--text-primary);
+    font-size: 0.75rem;
+    margin-bottom: 0.2rem;
+    transition: all 0.2s;
+}
+.nav-tag-card:hover {
+    opacity: 0.9;
+    filter: brightness(1.1);
+}
+.nav-tag-card .nav-tag-card-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nav-tag-card .nav-tag-card-meta { font-size: 0.65rem; color: var(--text-muted); }
+.nav-tag-card.active { box-shadow: 0 0 0 2px var(--tag-color); }
+.nav-empty-hint { font-size: 0.7rem; color: var(--text-muted); padding: 0.35rem 0.6rem; }
+
+.tags-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.75rem; }
+.tag-card {
+    display: block;
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: all 0.2s;
+}
+.tag-card:hover { opacity: 0.9; filter: brightness(1.05); }
+.tag-card-name { display: block; font-weight: 600; font-size: 0.95rem; margin-bottom: 0.25rem; }
+.tag-card-count { font-size: 0.75rem; color: var(--text-muted); }
+
+.tags-settings-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+.tags-settings-row:last-child { border-bottom: none; }
+.tags-settings-tag { padding: 0.25rem 0.5rem; border-radius: var(--radius-sm); background: var(--tag-color)22; border-left: 3px solid var(--tag-color); min-width: 100px; }
+.tags-settings-colors { display: flex; gap: 0.25rem; flex-wrap: wrap; }
+.tags-color-btn { width: 24px; height: 24px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: all 0.2s; padding: 0; }
+.tags-color-btn:hover { transform: scale(1.15); }
+.tags-color-btn.active { border-color: #fff; box-shadow: 0 0 0 2px var(--bg-primary); }
+
 .nav-section-title {
     font-size: 0.65rem;
     font-weight: 600;
@@ -4254,7 +4296,7 @@ body::before {
     display: flex;
     flex-direction: row;
     align-items: stretch;
-    overflow: visible;
+    overflow: hidden;
     transition: width 0.25s ease, min-width 0.25s ease;
     position: relative;
 }
@@ -4316,7 +4358,7 @@ body::before {
     pointer-events: none;
     background-size: cover;
     background-position: center;
-    border-radius: inherit;
+    border-radius: 56px 0 0 56px;
     opacity: 0.35;
     transition: opacity 0.2s;
 }

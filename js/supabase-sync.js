@@ -97,6 +97,11 @@ const SupabaseSync = {
                 if (sticky.background) localStorage.setItem('sphinx_sticky_notes_background', sticky.background);
             }
 
+            const { data: [settings] } = await SupabaseAuth.client.from('sphinx_settings').select('data').eq('user_id', uid);
+            if (settings?.data && typeof settings.data === 'object') {
+                this.applySettings(settings.data);
+            }
+
             // Если в Supabase пока пусто, но локальные данные есть — отправляем их как первую версию
             if (!hasRemoteTasks && localTasks && Object.keys(localTasks).length > 0) {
                 await this.pushTasks(localTasks);
@@ -125,6 +130,8 @@ const SupabaseSync = {
                     await this.pushSticky(notesObj, completedObj, shapesObj, stickyBg);
                 }
             }
+            if (!settings?.data) await this.pushSettings();
+
             this.setStatus('ok');
             console.log('[SupabaseSync] loadFromSupabase done');
         } catch (e) {
@@ -169,6 +176,75 @@ const SupabaseSync = {
         } catch (e) { console.error('[SupabaseSync] pushSticky', e); }
     },
 
+    getSettingsFromStorage() {
+        const coverUrl = localStorage.getItem('sphinx_cover_image') || '';
+        const coverPos = localStorage.getItem('sphinx_cover_position') || '50% 50%';
+        const coverZoom = localStorage.getItem('sphinx_cover_zoom') || '100';
+        const rpBg = localStorage.getItem(CONFIG.STORAGE_KEYS.RIGHT_PANEL_BG);
+        const rp = rpBg ? JSON.parse(rpBg) : {};
+        const coverHeight = localStorage.getItem('sphinx_cover_height') || '';
+        const rpWidth = localStorage.getItem('sphinx_right_panel_width') || '';
+        const appS = localStorage.getItem(CONFIG.STORAGE_KEYS.APP_SETTINGS) || '{}';
+        const tagColors = localStorage.getItem(CONFIG.STORAGE_KEYS.TAG_COLORS);
+        const tagColorsMap = tagColors ? (() => { try { return JSON.parse(tagColors); } catch (e) { return {}; } })() : {};
+        return {
+            cover: { imageUrl: coverUrl, position: coverPos, zoom: parseFloat(coverZoom) || 100 },
+            rightPanelBg: { imageUrl: rp.imageUrl || '', opacity: typeof rp.opacity === 'number' ? rp.opacity : 0.35 },
+            coverHeight: coverHeight ? parseFloat(coverHeight) : null,
+            rightPanelWidth: rpWidth ? parseFloat(rpWidth) : null,
+            app: typeof appS === 'string' ? (() => { try { return JSON.parse(appS); } catch (e) { return {}; } })() : appS,
+            tagColors: tagColorsMap
+        };
+    },
+
+    applySettings(data) {
+        if (!data || typeof data !== 'object') return;
+        if (data.cover) {
+            if (data.cover.imageUrl) {
+                localStorage.setItem('sphinx_cover_image', data.cover.imageUrl);
+                if (typeof Cover !== 'undefined' && Cover.loadCover) Cover.loadCover();
+            }
+            if (data.cover.position) localStorage.setItem('sphinx_cover_position', data.cover.position);
+            if (data.cover.zoom != null) localStorage.setItem('sphinx_cover_zoom', String(data.cover.zoom));
+            if (typeof Cover !== 'undefined' && Cover.loadLayout) Cover.loadLayout();
+        }
+        if (data.rightPanelBg) {
+            const rp = { imageUrl: data.rightPanelBg.imageUrl || '', opacity: data.rightPanelBg.opacity ?? 0.35 };
+            localStorage.setItem(CONFIG.STORAGE_KEYS.RIGHT_PANEL_BG, JSON.stringify(rp));
+            if (typeof RightPanel !== 'undefined' && RightPanel.applyRightPanelBg) RightPanel.applyRightPanelBg();
+        }
+        if (data.coverHeight != null) {
+            localStorage.setItem('sphinx_cover_height', String(data.coverHeight));
+            const cover = document.getElementById('appCover');
+            if (cover) { cover.style.height = data.coverHeight + 'px'; cover.style.minHeight = data.coverHeight + 'px'; }
+        }
+        if (data.rightPanelWidth != null) {
+            localStorage.setItem('sphinx_right_panel_width', String(data.rightPanelWidth));
+            const rp = document.getElementById('rightPanel');
+            if (rp) { rp.style.width = data.rightPanelWidth + 'px'; rp.style.minWidth = data.rightPanelWidth + 'px'; }
+        }
+        if (data.app && typeof data.app === 'object') {
+            localStorage.setItem(CONFIG.STORAGE_KEYS.APP_SETTINGS, JSON.stringify(data.app));
+            if (typeof App !== 'undefined' && App.applyAppSettings) App.applyAppSettings();
+        }
+        if (data.tagColors && typeof data.tagColors === 'object') {
+            localStorage.setItem(CONFIG.STORAGE_KEYS.TAG_COLORS, JSON.stringify(data.tagColors));
+            if (typeof GTD !== 'undefined' && GTD.renderTagsNav) GTD.renderTagsNav();
+        }
+    },
+
+    async pushSettings() {
+        const uid = SupabaseAuth.getUserId();
+        if (!uid || !SupabaseAuth.client) return;
+        try {
+            const data = this.getSettingsFromStorage();
+            await SupabaseAuth.client.from('sphinx_settings').upsert(
+                { user_id: uid, data },
+                { onConflict: 'user_id' }
+            );
+        } catch (e) { console.error('[SupabaseSync] pushSettings', e); }
+    },
+
     /** Ручная синхронизация: выгрузить всё из localStorage в Supabase */
     async syncNow() {
         const uid = SupabaseAuth.getUserId();
@@ -199,6 +275,7 @@ const SupabaseSync = {
             const completedObj = stickyCompleted ? JSON.parse(stickyCompleted) : {};
             const shapesObj = stickyShapes ? JSON.parse(stickyShapes) : {};
             await this.pushSticky(notesObj, completedObj, shapesObj, stickyBg);
+            await this.pushSettings();
             this.setStatus('ok');
             console.log('[SupabaseSync] syncNow done');
         } catch (e) {
@@ -243,6 +320,25 @@ const SupabaseSync = {
         Storage.saveContent = wrap(Storage.saveContent, this.pushContent);
         Storage.saveNotes = wrap(Storage.saveNotes, this.pushNotes);
         Storage.saveWishboard = wrap(Storage.saveWishboard, this.pushWishboard);
+        Storage.saveRightPanelBg = wrap(Storage.saveRightPanelBg, () => this.pushSettings());
+        Storage.saveAppSettings = wrap(Storage.saveAppSettings, () => this.pushSettings());
+
+        if (typeof Cover !== 'undefined') {
+            const origSetBg = Cover.setBackground?.bind(Cover);
+            if (origSetBg) {
+                Cover.setBackground = (url) => {
+                    origSetBg(url);
+                    if (SupabaseAuth.isLoggedIn()) this.pushSettings();
+                };
+            }
+            const origSavePos = Cover.savePositionXY?.bind(Cover);
+            if (origSavePos) {
+                Cover.savePositionXY = (x, y) => {
+                    origSavePos(x, y);
+                    if (SupabaseAuth.isLoggedIn()) this.pushSettings();
+                };
+            }
+        }
 
         if (typeof StickyNotes !== 'undefined') {
             const pushSticky = () => {

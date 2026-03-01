@@ -12,11 +12,15 @@ const CONFIG = {
         YOUTUBE_HISTORY: 'sphinx_youtube_history',
         INBOX_COLUMNS: 'sphinx_inbox_columns',
         RIGHT_PANEL_BG: 'sphinx_right_panel_bg',
-        APP_SETTINGS: 'sphinx_app_settings'
+        APP_SETTINGS: 'sphinx_app_settings',
+        TAG_COLORS: 'sphinx_tag_colors'
     },
+
+    TAG_COLOR_PALETTE: ['#00F5FF', '#FF3D7F', '#FFE135', '#00FF88', '#A855F7', '#00B8FF', '#FF6B35', '#10b981', '#ef4444', '#f59e0b', '#8b5cf6', '#ec4899'],
 
     NAV_BLOCKS: [
         { id: 'all-tasks', label: 'Все задачи' },
+        { id: 'tags', label: '#теги' },
         { id: 'sticky-notes', label: 'Стикеры' },
         { id: 'today', label: 'Сегодня' },
         { id: 'calendar', label: 'Календарь' },

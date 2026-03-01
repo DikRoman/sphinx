@@ -121,6 +121,7 @@ const Cover = {
             localStorage.setItem(this.ZOOM_KEY, String(z));
             this.applyZoom(z);
             if (zoomValue) zoomValue.textContent = `${Math.round(z)}%`;
+            if (typeof SupabaseSync !== 'undefined' && SupabaseSync.pushSettings) SupabaseSync.pushSettings();
         });
     },
 
@@ -183,6 +184,7 @@ const Cover = {
             reader.onload = (ev) => {
                 this.setBackground(ev.target.result);
                 localStorage.setItem(this.STORAGE_KEY, ev.target.result);
+                if (typeof SupabaseSync !== 'undefined' && SupabaseSync.pushSettings) SupabaseSync.pushSettings();
                 this.hideModal();
             };
             reader.readAsDataURL(file);
@@ -199,6 +201,7 @@ const Cover = {
             if (!url) return;
             this.setBackground(url);
             localStorage.setItem(this.STORAGE_KEY, url);
+            if (typeof SupabaseSync !== 'undefined' && SupabaseSync.pushSettings) SupabaseSync.pushSettings();
             document.getElementById('coverUrlRow').style.display = 'none';
             document.getElementById('coverUrlInput').value = '';
             this.hideModal();
@@ -216,6 +219,7 @@ const Cover = {
             const url = `https://picsum.photos/seed/${seed}/${w}/${h}`;
             this.setBackground(url);
             localStorage.setItem(this.STORAGE_KEY, url);
+            if (typeof SupabaseSync !== 'undefined' && SupabaseSync.pushSettings) SupabaseSync.pushSettings();
             document.getElementById('coverUnsplashRow').style.display = 'none';
             document.getElementById('coverUnsplashQuery').value = '';
             this.hideModal();
@@ -223,6 +227,7 @@ const Cover = {
 
         document.getElementById('coverRemove')?.addEventListener('click', () => {
             this.setBackground(null);
+            if (typeof SupabaseSync !== 'undefined' && SupabaseSync.pushSettings) SupabaseSync.pushSettings();
             document.getElementById('coverUrlRow').style.display = 'none';
             document.getElementById('coverUnsplashRow').style.display = 'none';
             this.hideModal();

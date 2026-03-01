@@ -17,6 +17,7 @@ const Router = {
         content: { file: 'content.html', init: 'content' },
         gantt: { file: 'gantt.html', init: 'gantt' },
         wishboard: { file: 'wishboard.html', init: 'wishboard' },
+        tags: { file: 'tags.html', init: 'tags' },
         area: { file: 'area.html', init: 'area' }
     },
 
@@ -73,6 +74,7 @@ const Router = {
             let active = false;
             if (el.dataset.page === page) {
                 if (page === 'area') active = el.dataset.areaId === id;
+                else if (page === 'tags') active = !id ? !el.dataset.tag : (el.dataset.tag === decodeURIComponent(id));
                 else active = true;
             }
             el.classList.toggle('active', active);
@@ -101,6 +103,7 @@ const Router = {
             content: () => { Content.renderContent(); },
             gantt: () => { Gantt.renderGantt(); },
             wishboard: () => { Wishboard.render(); },
+            tags: () => { if (typeof App !== 'undefined' && App.renderTagsView) App.renderTagsView(id); },
             area: () => { if (id) GTD.openArea(id); }
         };
         const fn = inits[initName];
