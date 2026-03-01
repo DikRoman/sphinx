@@ -122,7 +122,6 @@ body[data-theme="santorini"]::before {
         radial-gradient(ellipse 60% 40% at 0% 100%, rgba(14, 165, 233, 0.03) 0%, transparent 50%);
 }
 
-body[data-theme="santorini"] .sidebar-footer,
 body[data-theme="santorini"] .auth-block {
     background: transparent;
 }
@@ -590,12 +589,12 @@ body::before {
 }
 
 .sidebar .nav-menu,
-.sidebar .sidebar-footer {
+.sidebar .auth-block-top {
     transition: opacity 0.3s ease;
 }
 
 .sidebar.collapsed .nav-menu,
-.sidebar.collapsed .sidebar-footer {
+.sidebar.collapsed .auth-block-top {
     opacity: 0;
     pointer-events: none;
 }
@@ -646,7 +645,7 @@ body::before {
 }
 
 .sidebar .nav-menu {
-    padding: 0.6rem 0.5rem 0.4rem 0.5rem;
+    padding: 0.45rem 0.5rem 0.35rem 0.5rem;
 }
 
 .logo {
@@ -741,7 +740,11 @@ body::before {
 }
 
 .nav-section {
-    margin-bottom: 0.35rem;
+    margin-bottom: 0.25rem;
+}
+
+.nav-section-tags {
+    margin-bottom: 0.2rem;
 }
 
 .nav-item.nav-hidden,
@@ -875,7 +878,7 @@ body::before {
     box-shadow: 0 0 0 2px var(--area-color), 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.nav-section-tags-header { display: flex; align-items: center; gap: 0.25rem; padding: 0.4rem 0.75rem; }
+.nav-section-tags-header { display: flex; align-items: center; gap: 0.25rem; padding: 0.28rem 0.65rem; }
 .nav-tags-chevron-btn { cursor: pointer; padding: 0.15rem; color: var(--text-muted); display: flex; }
 .nav-tags-chevron-btn:hover { color: var(--text-primary); }
 .nav-tags-chevron { font-size: 0.55rem; transition: transform 0.2s; }
@@ -931,13 +934,13 @@ body::before {
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--text-muted);
-    padding: 0.35rem 0.75rem;
-    margin-bottom: 0.15rem;
+    padding: 0.25rem 0.65rem 0.15rem;
+    margin-bottom: 0.1rem;
 }
 
 .nav-item {
     width: 100%;
-    padding: 0.4rem 0.75rem;
+    padding: 0.28rem 0.65rem;
     background: transparent;
     border: none;
     color: var(--text-secondary);
@@ -1028,23 +1031,104 @@ body::before {
     display: none;
 }
 
-.sidebar-footer {
-    border-top: 1px solid var(--border);
-    padding: 0.5rem;
-    transition: opacity 0.25s ease;
-}
-
-.auth-block {
-    margin-top: 0.5rem;
-    padding-top: 0.5rem;
+.auth-block.auth-block-top {
+    margin-top: 0;
+    padding: 0.35rem 0.5rem 0.5rem;
     border-top: 1px solid var(--border);
 }
 
-.auth-logged-out,
+.auth-logged-out {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+
 .auth-logged-in {
     display: flex;
     flex-direction: column;
+    gap: 0;
+    position: relative;
+}
+
+.auth-profile-row {
+    display: flex;
+    align-items: center;
     gap: 0.4rem;
+    min-height: 0;
+}
+
+.auth-avatar-btn {
+    flex-shrink: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-radius: 50%;
+    line-height: 0;
+}
+
+.auth-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--bg-tertiary);
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    overflow: hidden;
+}
+
+.auth-name {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.75rem;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.auth-profile-popover {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 0.25rem;
+    padding: 0.4rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    display: none;
+    flex-direction: column;
+    gap: 0.35rem;
+    z-index: 100;
+}
+
+.auth-profile-popover.visible {
+    display: flex;
+}
+
+.auth-profile-email {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    word-break: break-all;
+}
+
+.auth-block {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+}
+
+.auth-block:not(.auth-block-top) {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border);
 }
 
 .auth-btn {

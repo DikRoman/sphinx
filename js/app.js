@@ -217,6 +217,16 @@ const App = {
         document.getElementById('authGoogle')?.addEventListener('click', () => SupabaseAuth.signInWithGoogle());
         document.getElementById('authGithub')?.addEventListener('click', () => SupabaseAuth.signInWithGithub());
         document.getElementById('authLogout')?.addEventListener('click', () => SupabaseAuth.signOut());
+        const avatarBtn = document.getElementById('authAvatarBtn');
+        const popover = document.getElementById('authProfilePopover');
+        if (avatarBtn && popover) {
+            avatarBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                popover.classList.toggle('visible');
+            });
+            document.addEventListener('click', () => popover.classList.remove('visible'));
+            popover.addEventListener('click', (e) => e.stopPropagation());
+        }
         document.getElementById('authSyncNow')?.addEventListener('click', () => {
             if (SupabaseAuth.isLoggedIn() && typeof SupabaseSync?.syncNow === 'function') {
                 SupabaseSync.syncNow();
@@ -235,13 +245,31 @@ const App = {
     updateAuthUI(session) {
         const out = document.getElementById('authLoggedOut');
         const inEl = document.getElementById('authLoggedIn');
-        const email = document.getElementById('authEmail');
+        const avatar = document.getElementById('authAvatar');
+        const name = document.getElementById('authName');
+        const profileEmail = document.getElementById('authProfileEmail');
         const block = document.getElementById('authBlock');
         if (!block) return;
         if (session) {
             if (out) out.style.display = 'none';
             if (inEl) inEl.style.display = 'flex';
-            if (email) email.textContent = session.user?.email || 'Вход выполнен';
+            const user = session.user;
+            const email = user?.email || '';
+            const displayName = user?.user_metadata?.full_name || user?.user_metadata?.name;
+            const shortName = displayName || (email ? email.split('@')[0] : 'Пользователь');
+            if (avatar) {
+                const url = user?.user_metadata?.avatar_url || user?.user_metadata?.picture;
+                if (url) {
+                    avatar.style.backgroundImage = `url(${url})`;
+                    avatar.style.backgroundSize = 'cover';
+                    avatar.textContent = '';
+                } else {
+                    avatar.style.backgroundImage = '';
+                    avatar.textContent = shortName.charAt(0).toUpperCase();
+                }
+            }
+            if (name) name.textContent = shortName;
+            if (profileEmail) profileEmail.textContent = email || 'Вход выполнен';
         } else {
             if (out) out.style.display = 'flex';
             if (inEl) inEl.style.display = 'none';
