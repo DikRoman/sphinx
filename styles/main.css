@@ -1943,8 +1943,8 @@ body::before {
     padding: 1.5rem 2rem;
     overflow-y: auto;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 1rem;
 }
 
 .content-card {
@@ -1970,14 +1970,14 @@ body::before {
 }
 
 .content-info {
-    padding: 1rem;
+    padding: 0.5rem 0.6rem;
 }
 
 .content-title {
     font-weight: 600;
     color: var(--text-primary);
-    margin-bottom: 0.5rem;
-    font-size: 0.875rem;
+    margin-bottom: 0.3rem;
+    font-size: 0.78rem;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -1987,15 +1987,15 @@ body::before {
 .content-genres {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.25rem;
-    margin-bottom: 0.5rem;
+    gap: 0.2rem;
+    margin-bottom: 0.3rem;
 }
 
 .genre-tag {
     background: var(--bg-tertiary);
-    padding: 0.2rem 0.4rem;
+    padding: 0.15rem 0.3rem;
     border-radius: 4px;
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     color: var(--text-secondary);
 }
 
@@ -2003,10 +2003,10 @@ body::before {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.75rem;
+    font-size: 0.68rem;
     color: var(--text-muted);
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.35rem;
 }
 
 .content-rating {
@@ -2015,9 +2015,9 @@ body::before {
 }
 
 .content-status {
-    padding: 0.25rem 0.5rem;
+    padding: 0.18rem 0.4rem;
     border-radius: 4px;
-    font-size: 0.7rem;
+    font-size: 0.64rem;
     font-weight: 500;
 }
 
@@ -2029,6 +2029,37 @@ body::before {
 .content-status.planned {
     background: var(--info);
     color: white;
+}
+
+.content-add-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 180px;
+    aspect-ratio: 2/3;
+    background: var(--bg-tertiary);
+    border: 2px dashed var(--border);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.2s;
+}
+
+.content-add-card:hover {
+    border-color: var(--neon-green);
+    color: var(--neon-green);
+    background: rgba(0, 255, 136, 0.06);
+}
+
+.content-add-card i {
+    font-size: 2rem;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 2px solid currentColor;
 }
 
 .genres-selector {
@@ -3014,10 +3045,10 @@ body::before {
 
 .sticky-notes-board {
     position: relative;
-    min-width: 20000px;
-    min-height: 20000px;
-    width: 20000px;
-    height: 20000px;
+    min-width: 4000px;
+    min-height: 4000px;
+    width: 4000px;
+    height: 4000px;
 }
 
 .sticky-notes-board.grid {

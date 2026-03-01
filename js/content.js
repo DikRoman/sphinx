@@ -9,7 +9,6 @@ const Content = {
 
     setupEventListeners() {
         document.addEventListener('click', (e) => {
-            if (e.target.closest('#addContent')) { e.preventDefault(); this.showContentModal(); }
             const tab = e.target.closest('.tab-btn');
             if (tab && document.getElementById('pageContainer')?.contains(tab)) {
                 e.preventDefault();
@@ -27,18 +26,24 @@ const Content = {
         const content = Storage.getContent();
         const filteredContent = Object.values(content).filter(item => item.type === this.currentType);
 
+        const addCard = `
+            <div class="content-add-card" onclick="event.stopPropagation(); Content.showContentModal();" title="Добавить ${this.getTypeName()}">
+                <i class="fas fa-plus"></i>
+            </div>
+        `;
+
         if (filteredContent.length === 0) {
-            grid.innerHTML = `
-                <div class="empty-state" style="grid-column: 1 / -1;">
+            grid.innerHTML = addCard + `
+                <div class="empty-state" style="grid-column: 2 / -1; align-self: start;">
                     <i class="fas fa-film"></i>
                     <h3>Нет ${this.getTypeName()}</h3>
-                    <p>Добавьте свой первый элемент</p>
+                    <p>Нажмите + чтобы добавить</p>
                 </div>
             `;
             return;
         }
 
-        grid.innerHTML = filteredContent.map(item => this.createContentCard(item)).join('');
+        grid.innerHTML = addCard + filteredContent.map(item => this.createContentCard(item)).join('');
     },
 
     createContentCard(item) {
