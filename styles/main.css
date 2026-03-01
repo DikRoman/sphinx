@@ -105,6 +105,64 @@ body[data-theme="santorini"] {
     --glow-pink: 0 0 20px rgba(236, 72, 153, 0.2);
 }
 
+/* Santorini — убираем градиенты к серому/чёрному */
+body[data-theme="santorini"] .sidebar {
+    background: linear-gradient(180deg, #ffffff 0%, #fafbff 100%);
+    box-shadow: 2px 0 20px rgba(59, 130, 246, 0.08);
+}
+
+body[data-theme="santorini"] .main-content {
+    background: linear-gradient(180deg, #ffffff 0%, #f8faff 100%);
+    box-shadow: var(--shadow-md), -1px 0 0 var(--border), inset 1px 0 0 rgba(59, 130, 246, 0.06);
+}
+
+body[data-theme="santorini"]::before {
+    background:
+        radial-gradient(ellipse 80% 50% at 100% 0%, rgba(59, 130, 246, 0.04) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 40% at 0% 100%, rgba(14, 165, 233, 0.03) 0%, transparent 50%);
+}
+
+body[data-theme="santorini"] .sidebar-footer,
+body[data-theme="santorini"] .auth-block {
+    background: transparent;
+}
+
+body[data-theme="santorini"] .auth-btn {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: var(--text-primary);
+}
+
+body[data-theme="santorini"] .auth-btn:hover {
+    background: #dbeafe;
+    border-color: #3b82f6;
+}
+
+body[data-theme="santorini"] .view-header {
+    box-shadow: 0 1px 0 rgba(59, 130, 246, 0.1);
+}
+
+body[data-theme="santorini"] .view-header h1 i {
+    color: #3b82f6;
+    text-shadow: none;
+}
+
+body[data-theme="santorini"] .wishboard-wrapper {
+    background: #f8faff !important;
+}
+
+body[data-theme="santorini"] .wishboard-wrapper.wishboard-bg-dark {
+    background: #f8faff !important;
+}
+
+body[data-theme="santorini"] .app-body {
+    background: transparent;
+}
+
+body[data-theme="santorini"] .content-wrapper {
+    background: transparent;
+}
+
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: var(--bg-primary);
