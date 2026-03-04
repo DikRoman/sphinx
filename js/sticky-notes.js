@@ -36,7 +36,7 @@ const StickyNotes = {
         this.loadShapes();
         // Загрузить сохраненный уровень масштаба (по умолчанию 50%)
         const savedZoom = localStorage.getItem('sticky_notes_zoom_level');
-        this.zoomLevel = savedZoom ? parseFloat(savedZoom) : 0.5;
+        this.zoomLevel = savedZoom ? parseFloat(savedZoom) : 0.6;
         this.setupEventListeners();
         this.setupSelection();
         this.setupBackground();
