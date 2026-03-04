@@ -41,6 +41,7 @@ const StickyNotes = {
         this.setupSelection();
         this.setupBackground();
         this.loadGridState();
+        this.loadStickyFontState();
         this.updateZoomIndicator();
         // setupDragAndDrop будет вызван в renderNotes когда контейнер будет доступен
         // или при первом показе sticky notes view
@@ -75,6 +76,11 @@ const StickyNotes = {
                     e.preventDefault();
                     this.zoomReset();
                     break;
+            }
+            const fontBtn = e.target.closest('.sticky-font-btn');
+            if (fontBtn && fontBtn.dataset.size) {
+                e.preventDefault();
+                this.setStickyFontSize(fontBtn.dataset.size);
             }
         });
         document.addEventListener('click', (e) => {
@@ -246,6 +252,27 @@ const StickyNotes = {
         this.gridEnabled = !this.gridEnabled;
         localStorage.setItem('sticky_grid_enabled', this.gridEnabled ? 'true' : 'false');
         this.applyGrid();
+    },
+
+    loadStickyFontState() {
+        const size = localStorage.getItem('sticky_notes_font_size') || 'large';
+        this.applyStickyFontSize(size);
+    },
+
+    setStickyFontSize(size) {
+        if (!['small', 'medium', 'large'].includes(size)) return;
+        localStorage.setItem('sticky_notes_font_size', size);
+        this.applyStickyFontSize(size);
+    },
+
+    applyStickyFontSize(size) {
+        const container = document.getElementById('stickyNotesContainer');
+        if (!container) return;
+        container.classList.remove('sticky-font-small', 'sticky-font-medium', 'sticky-font-large');
+        container.classList.add('sticky-font-' + size);
+        document.querySelectorAll('.sticky-font-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.size === size);
+        });
     },
 
     setupSelection() {
@@ -1262,7 +1289,7 @@ const StickyNotes = {
             <textarea class="sticky-shape-content" placeholder="Введите текст..."
                       onblur="StickyNotes.updateShape('${shape.id}', 'text', this.value)"
                       onmousedown="event.stopPropagation()"
-                      style="width: 100%; height: calc(100% - 30px); border: none; background: transparent; resize: none; padding: 0.5rem; font-family: inherit; font-size: 0.875rem;">${this.escapeHtml(shape.text || '')}</textarea>
+                      style="width: 100%; height: calc(100% - 30px); border: none; background: transparent; resize: none; padding: 0.5rem; font-family: inherit;">${this.escapeHtml(shape.text || '')}</textarea>
             <div class="sticky-shape-color-picker" id="shapeColorPicker_${shape.id}" style="display: none;">
                 <div class="color-dot" onclick="StickyNotes.changeShapeColor('${shape.id}', '#ffffff')" style="background: #ffffff; border: 1px solid #ccc;"></div>
                 <div class="color-dot" onclick="StickyNotes.changeShapeColor('${shape.id}', '#ffeb3b')" style="background: #ffeb3b;"></div>
