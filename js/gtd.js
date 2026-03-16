@@ -336,17 +336,31 @@ const GTD = {
         const deleteBtn = document.getElementById('taskDeleteBtn');
         if (deleteBtn && taskId) {
             deleteBtn.addEventListener('click', () => {
-                if (!confirm('Удалить задачу?')) return;
-                Storage.deleteTask(taskId);
-                Kanban.renderKanban('inboxKanban', null, 'inbox');
-                if (this.currentAreaId) Kanban.renderKanban('areaKanban', this.currentAreaId, 'area');
-                if (typeof Calendar !== 'undefined') Calendar.render();
-                if (typeof App !== 'undefined') {
-                    App.renderTodayView();
-                    App.renderAllTasksView();
+                if (typeof App !== 'undefined' && App.confirmDelete) {
+                    App.confirmDelete('Удалить задачу?', () => {
+                        Storage.deleteTask(taskId);
+                        Kanban.renderKanban('inboxKanban', null, 'inbox');
+                        if (this.currentAreaId) Kanban.renderKanban('areaKanban', this.currentAreaId, 'area');
+                        if (typeof Calendar !== 'undefined') Calendar.render();
+                        if (typeof App !== 'undefined') {
+                            App.renderTodayView();
+                            App.renderAllTasksView();
+                        }
+                        this.updateBadges();
+                        this.closeTaskModal();
+                    });
+                } else if (confirm('Удалить задачу?')) {
+                    Storage.deleteTask(taskId);
+                    Kanban.renderKanban('inboxKanban', null, 'inbox');
+                    if (this.currentAreaId) Kanban.renderKanban('areaKanban', this.currentAreaId, 'area');
+                    if (typeof Calendar !== 'undefined') Calendar.render();
+                    if (typeof App !== 'undefined') {
+                        App.renderTodayView();
+                        App.renderAllTasksView();
+                    }
+                    this.updateBadges();
+                    this.closeTaskModal();
                 }
-                this.updateBadges();
-                this.closeTaskModal();
             });
         }
 

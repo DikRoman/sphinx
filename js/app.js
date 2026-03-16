@@ -1,5 +1,7 @@
 // Main Application
 const App = {
+    _confirmHandler: null,
+
     init() {
         this.applyAppSettings();
         // Initialize modules
@@ -37,6 +39,7 @@ const App = {
         this.setupPanelControls();
 
         this.setupAppSettings();
+        this.setupConfirmModal();
 
         // Initial page load via Router (hashchange triggers on load)
         this.moveViewHeaderToCover();
@@ -185,6 +188,54 @@ const App = {
             });
             if (icon && collapsed) icon.className = 'fas fa-chevron-up';
         }
+    },
+
+    setupConfirmModal() {
+        const modal = document.getElementById('confirmModal');
+        if (!modal) return;
+        const msgEl = document.getElementById('confirmMessage');
+        const okBtn = document.getElementById('confirmOkBtn');
+        const cancelBtn = document.getElementById('confirmCancelBtn');
+
+        const close = () => {
+            modal.classList.remove('active');
+            this._confirmHandler = null;
+        };
+
+        okBtn?.addEventListener('click', () => {
+            if (typeof this._confirmHandler === 'function') {
+                const fn = this._confirmHandler;
+                this._confirmHandler = null;
+                fn();
+            }
+            close();
+        });
+
+        cancelBtn?.addEventListener('click', close);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) close();
+        });
+    },
+
+    /**
+     * Красивое подтверждение удаления в центре экрана.
+     * message — текст, onConfirm — колбэк при подтверждении.
+     */
+    confirmDelete(message, onConfirm) {
+        const modal = document.getElementById('confirmModal');
+        const msgEl = document.getElementById('confirmMessage');
+        const titleEl = document.getElementById('confirmTitle');
+        if (!modal || !msgEl || !titleEl) {
+            // fallback на стандартный confirm
+            if (confirm(message || 'Удалить?')) {
+                if (typeof onConfirm === 'function') onConfirm();
+            }
+            return;
+        }
+        titleEl.textContent = 'Удалить?';
+        msgEl.textContent = message || 'Вы уверены, что хотите удалить?';
+        this._confirmHandler = typeof onConfirm === 'function' ? onConfirm : null;
+        modal.classList.add('active');
     },
 
     setupSupabase() {

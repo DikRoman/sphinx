@@ -2150,6 +2150,45 @@ body::before {
     box-shadow: var(--shadow-md);
 }
 
+/* Global confirm modal */
+.confirm-modal {
+    text-align: center;
+    padding: 1.75rem 1.75rem 1.5rem;
+}
+
+.confirm-icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    background: rgba(248, 113, 113, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.confirm-icon i {
+    color: #f97373;
+    font-size: 1.5rem;
+}
+
+.confirm-modal h3 {
+    margin-bottom: 0.5rem;
+}
+
+.confirm-message {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 1.25rem;
+}
+
+.confirm-actions {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+
 /* Calendar View — компактный */
 .calendar-container {
     padding: 0.75rem 1rem;

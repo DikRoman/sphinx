@@ -494,38 +494,42 @@ const StickyNotes = {
         }
         
         const count = this.selectedElements.size;
-        if (!confirm(`Удалить ${count} выделенных элементов?`)) {
-            return;
+        const doDelete = () => {
+            const toDelete = Array.from(this.selectedElements);
+            let deletedNotes = 0;
+            let deletedShapes = 0;
+            
+            toDelete.forEach(id => {
+                const parts = id.split('_');
+                if (parts.length < 2) return;
+                
+                const type = parts[0];
+                const elementId = parts.slice(1).join('_'); // На случай если ID содержит подчеркивания
+                
+                if (type === 'note') {
+                    if (this.notes[elementId]) {
+                        delete this.notes[elementId];
+                        deletedNotes++;
+                    }
+                } else if (type === 'shape') {
+                    if (this.shapes[elementId]) {
+                        delete this.shapes[elementId];
+                        deletedShapes++;
+                    }
+                }
+            });
+            
+            this.saveNotes();
+            this.saveShapes();
+            this.clearSelection();
+            this.renderNotes();
+        };
+
+        if (typeof App !== 'undefined' && App.confirmDelete) {
+            App.confirmDelete(`Удалить ${count} выделенных элементов?`, doDelete);
+        } else if (confirm(`Удалить ${count} выделенных элементов?`)) {
+            doDelete();
         }
-        
-        const toDelete = Array.from(this.selectedElements);
-        let deletedNotes = 0;
-        let deletedShapes = 0;
-        
-        toDelete.forEach(id => {
-            const parts = id.split('_');
-            if (parts.length < 2) return;
-            
-            const type = parts[0];
-            const elementId = parts.slice(1).join('_'); // На случай если ID содержит подчеркивания
-            
-            if (type === 'note') {
-                if (this.notes[elementId]) {
-                    delete this.notes[elementId];
-                    deletedNotes++;
-                }
-            } else if (type === 'shape') {
-                if (this.shapes[elementId]) {
-                    delete this.shapes[elementId];
-                    deletedShapes++;
-                }
-            }
-        });
-        
-        this.saveNotes();
-        this.saveShapes();
-        this.clearSelection();
-        this.renderNotes();
     },
 
     setupDragAndDrop() {
@@ -1122,10 +1126,15 @@ const StickyNotes = {
     },
 
     deleteNote(id) {
-        if (confirm('Удалить эту заметку?')) {
+        const doDelete = () => {
             delete this.notes[id];
             this.saveNotes();
             this.renderNotes();
+        };
+        if (typeof App !== 'undefined' && App.confirmDelete) {
+            App.confirmDelete('Удалить эту заметку?', doDelete);
+        } else if (confirm('Удалить эту заметку?')) {
+            doDelete();
         }
     },
 
@@ -1173,10 +1182,15 @@ const StickyNotes = {
     },
 
     deleteCompletedNote(id) {
-        if (confirm('Удалить эту заметку навсегда?')) {
+        const doDelete = () => {
             delete this.completedNotes[id];
             this.saveCompletedNotes();
             this.renderCompletedNotes();
+        };
+        if (typeof App !== 'undefined' && App.confirmDelete) {
+            App.confirmDelete('Удалить эту заметку навсегда?', doDelete);
+        } else if (confirm('Удалить эту заметку навсегда?')) {
+            doDelete();
         }
     },
 
@@ -1429,10 +1443,15 @@ const StickyNotes = {
     },
 
     deleteShape(id) {
-        if (confirm('Удалить эту фигуру?')) {
+        const doDelete = () => {
             delete this.shapes[id];
             this.saveShapes();
             this.renderNotes();
+        };
+        if (typeof App !== 'undefined' && App.confirmDelete) {
+            App.confirmDelete('Удалить эту фигуру?', doDelete);
+        } else if (confirm('Удалить эту фигуру?')) {
+            doDelete();
         }
     },
 
