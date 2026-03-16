@@ -109,10 +109,14 @@ const GTD = {
             card.dataset.page = 'area';
             card.dataset.areaId = area.id;
             card.style.setProperty('--area-color', color);
-            card.style.background = color;
             card.innerHTML = `
-                <span class="nav-area-card-title">${this.escapeHtml(area.name)}</span>
-                <span class="nav-area-card-meta">${total} задач</span>
+                <div class="nav-area-main">
+                    <span class="nav-area-icon"></span>
+                    <div class="nav-area-text">
+                        <span class="nav-area-card-title">${this.escapeHtml(area.name)}</span>
+                        <span class="nav-area-card-meta">${total} задач</span>
+                    </div>
+                </div>
                 <i class="nav-area-card-icon fas fa-external-link-alt"></i>
             `;
             areasList.appendChild(card);
