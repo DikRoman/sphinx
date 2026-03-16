@@ -284,17 +284,56 @@ const SupabaseSync = {
         }
     },
 
+    /**
+     * Полная синхронизация таблицы: делаем снапшот.
+     * Всё, чего НЕТ в локальном объекте, удаляется на сервере, чтобы
+     * "воскресшие" задачи / области не возвращались после синка.
+     */
     async upsertTable(table, obj) {
         const uid = SupabaseAuth.getUserId();
         if (!uid || !SupabaseAuth.client) return;
-        if (!obj || typeof obj !== 'object' || Object.keys(obj).length === 0) return;
+        if (!obj || typeof obj !== 'object') return;
         try {
-            const rows = Object.entries(obj).map(([id, data]) => ({
+            const client = SupabaseAuth.client;
+
+            // 1) Получаем текущие id на сервере
+            const { data: remoteRows, error: selectError } = await client
+                .from(table)
+                .select('id')
+                .eq('user_id', uid);
+            if (selectError) {
+                console.error('[SupabaseSync] select error before upsert', table, selectError.message, selectError);
+            }
+
+            const localIds = new Set(Object.keys(obj));
+            const remoteIds = new Set((remoteRows || []).map(r => r.id));
+
+            // 2) Удаляем на сервере всё, чего нет локально
+            const toDelete = Array.from(remoteIds).filter(id => !localIds.has(id));
+            if (toDelete.length > 0) {
+                const { error: deleteError } = await client
+                    .from(table)
+                    .delete()
+                    .eq('user_id', uid)
+                    .in('id', toDelete);
+                if (deleteError) {
+                    console.error('[SupabaseSync] delete error during upsert', table, deleteError.message, deleteError);
+                }
+            }
+
+            // 3) Если локально вообще ничего нет — после удаления таблица становится пустой
+            if (localIds.size === 0) {
+                return;
+            }
+
+            // 4) Апсертим свежий снапшот локальных данных
+            const rows = Array.from(localIds).map(id => ({
                 user_id: uid,
                 id,
-                data: typeof data === 'object' ? data : {}
+                data: typeof obj[id] === 'object' ? obj[id] : {}
             }));
-            const { error } = await SupabaseAuth.client.from(table).upsert(rows, { onConflict: 'user_id,id' });
+
+            const { error } = await client.from(table).upsert(rows, { onConflict: 'user_id,id' });
             if (error) {
                 this.setStatus('error');
                 console.error('[SupabaseSync] upsert error', table, error.message, error);
