@@ -538,7 +538,7 @@ body::before {
     background: linear-gradient(180deg, var(--bg-secondary) 0%, rgba(12, 12, 18, 0.98) 100%);
     border-right: 1px solid var(--border);
     box-shadow: 2px 0 20px rgba(0, 255, 136, 0.05);
-    border-radius: 0 0 var(--radius-2xl) 0;
+    border-radius: var(--radius-2xl);
     display: flex;
     flex-direction: column;
     transition: width 0.3s ease, min-width 0.3s ease;

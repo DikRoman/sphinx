@@ -298,6 +298,8 @@ const GTD = {
             const duration = parseFloat(document.getElementById('taskDuration').value) || 1;
 
             const emoji = (document.getElementById('taskEmoji')?.value || '').trim();
+            const columns = Storage.getInboxColumns();
+            const fallbackStatus = columns[0]?.id || CONFIG.TASK_STATUSES.NEW;
             Storage.saveTask(id, {
                 title,
                 description,
@@ -307,7 +309,10 @@ const GTD = {
                 duration: duration,
                 tags: tags,
                 emoji: emoji || undefined,
-                status: task?.status || (contextType === 'inbox' ? (defaults?.status || Storage.getInboxColumns()[0]?.id || CONFIG.TASK_STATUSES.NEW) : CONFIG.TASK_STATUSES.NEW),
+                // 1) если редактируем задачу — оставляем её статус
+                // 2) если пришёл статус из колонки (defaults.status) — используем его
+                // 3) иначе — первая колонка Inbox или NEW
+                status: task?.status ?? defaults?.status ?? fallbackStatus,
                 contextId: contextId || task?.contextId,
                 contextType: contextType || task?.contextType || 'inbox'
             });
