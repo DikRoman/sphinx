@@ -2,6 +2,7 @@
 const Kanban = {
     draggedElement: null,
     draggedData: null,
+    _lastPointerDownInComplete: false,
 
     init() {
         this.setupDragAndDrop();
@@ -9,7 +10,15 @@ const Kanban = {
     },
 
     setupDragAndDrop() {
+        document.addEventListener('mousedown', (e) => {
+            this._lastPointerDownInComplete = !!(e.target && e.target.closest && e.target.closest('.kanban-card-complete-wrap'));
+        }, true);
         document.addEventListener('dragstart', (e) => {
+            if (e.target.classList.contains('kanban-card') && this._lastPointerDownInComplete) {
+                e.preventDefault();
+                this._lastPointerDownInComplete = false;
+                return;
+            }
             if (e.target.classList.contains('kanban-card')) {
                 this.draggedElement = e.target;
                 this.draggedData = {
@@ -296,6 +305,7 @@ const Kanban = {
 
         const tasks = Storage.getTasks();
         const filteredTasks = Object.values(tasks).filter(task => {
+            if (task.archived) return false;
             if (contextType === 'inbox') {
                 return task.contextType === 'inbox';
             } else if (contextType === 'area') {
@@ -361,6 +371,9 @@ const Kanban = {
         return `
             <div class="kanban-card" draggable="true" data-task-id="${task.id}" 
                  onclick="Kanban.openTask('${task.id}')" style="--card-color: ${color}">
+                <div class="kanban-card-complete-wrap" onclick="event.stopPropagation(); Kanban.completeTaskCard('${task.id}', event)" title="Выполнено — в архив" role="button">
+                    <span class="kanban-card-complete"><i class="fas fa-check" aria-hidden="true"></i></span>
+                </div>
                 <div class="kanban-card-emoji-wrap" onclick="event.stopPropagation(); Kanban.openEmojiPicker('${task.id}', event)" title="Выбрать эмодзи">
                     <span class="kanban-card-emoji">${emojiDisplay}</span>
                 </div>
@@ -391,6 +404,45 @@ const Kanban = {
         const contextType = task.contextType || 'inbox';
         const contextId = task.contextId || null;
         GTD.showTaskModal(contextId, contextType, taskId);
+    },
+
+    completeTaskCard(taskId, event) {
+        event.preventDefault();
+        const card = event.target.closest('.kanban-card');
+        if (!card || card.dataset.completing === '1') return;
+        const task = Storage.getTask(taskId);
+        if (!task || task.archived) return;
+        card.dataset.completing = '1';
+        const box = card.querySelector('.kanban-card-complete');
+        if (box) box.classList.add('kanban-card-complete--checked');
+        setTimeout(() => this.archiveTask(taskId), 420);
+    },
+
+    archiveTask(taskId) {
+        const task = Storage.getTask(taskId);
+        if (!task || task.archived) return;
+        task.status = CONFIG.TASK_STATUSES.DONE;
+        task.archived = true;
+        task.archivedAt = new Date().toISOString();
+        Storage.saveTask(taskId, task);
+        this.renderKanban('inboxKanban', null, 'inbox');
+        if (typeof GTD !== 'undefined' && GTD.currentAreaId) {
+            this.renderKanban('areaKanban', GTD.currentAreaId, 'area');
+        }
+        if (typeof App !== 'undefined') {
+            App.renderTodayView();
+            App.renderAllTasksView();
+            const r = typeof Router !== 'undefined' && Router.getRoute ? Router.getRoute() : {};
+            if (r.page === 'tags') App.renderTagsView(r.id);
+            if (r.page === 'task-archive' && App.renderTaskArchiveView) App.renderTaskArchiveView();
+        }
+        if (typeof Calendar !== 'undefined' && Calendar.render) Calendar.render();
+        if (typeof Gantt !== 'undefined' && Gantt.renderGantt) Gantt.renderGantt();
+        if (typeof GTD !== 'undefined') {
+            GTD.updateBadges();
+            if (GTD.renderAreas) GTD.renderAreas();
+            if (GTD.renderTagsNav) GTD.renderTagsNav();
+        }
     },
 
     openEmojiPicker(taskId, event) {

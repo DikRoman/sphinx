@@ -228,11 +228,11 @@ const Storage = {
         if (!raw) {
             return {
                 theme: 'dark',
-                nav: { 'all-tasks': true, 'sticky-notes': true, 'today': true, 'calendar': true, 'habits': true, 'content': true, 'wishboard': true, 'areas': true }
+                nav: { 'all-tasks': true, 'task-archive': true, 'sticky-notes': true, 'today': true, 'calendar': true, 'habits': true, 'content': true, 'wishboard': true, 'areas': true }
             };
         }
         const p = JSON.parse(raw);
-        const defaults = { 'all-tasks': true, 'sticky-notes': true, 'today': true, 'calendar': true, 'habits': true, 'content': true, 'wishboard': true, 'areas': true };
+        const defaults = { 'all-tasks': true, 'task-archive': true, 'sticky-notes': true, 'today': true, 'calendar': true, 'habits': true, 'content': true, 'wishboard': true, 'areas': true };
         return {
             theme: p.theme || 'dark',
             nav: { ...defaults, ...(p.nav || {}) }

@@ -408,6 +408,7 @@ const Calendar = {
         const tasks = Storage.getTasks();
         const dateStr = date.toISOString().split('T')[0];
         return Object.values(tasks).filter(task => {
+            if (task.archived) return false;
             if (!task.dueDate) return false;
             const taskDate = new Date(task.dueDate).toISOString().split('T')[0];
             return taskDate === dateStr && task.status !== CONFIG.TASK_STATUSES.DONE;

@@ -41,6 +41,7 @@ const Gantt = {
         // Get tasks for selected area (areas + inbox with dueDate)
         const tasks = Storage.getTasks();
         let filteredTasks = Object.values(tasks).filter(task => {
+            if (task.archived) return false;
             if (task.contextType === 'inbox' || task.contextType === 'area') {
                 if (selectedArea === 'all') return true;
                 return task.contextType === 'area' && task.contextId === selectedArea;

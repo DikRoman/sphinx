@@ -1,6 +1,6 @@
 /**
  * Роутер — навигация и загрузка страниц
- * Hash: #inbox, #today, #calendar, #sticky-notes, #habits, #content, #gantt, #wishboard, #area/ID
+ * Hash: #inbox, #all-tasks, #task-archive, #today, #calendar, #sticky-notes, #habits, #content, #gantt, #wishboard, #area/ID
  */
 const Router = {
     container: null,
@@ -10,6 +10,7 @@ const Router = {
     PAGE_MAP: {
         inbox: { file: 'inbox.html', init: 'inbox' },
         'all-tasks': { file: 'all-tasks.html', init: 'allTasks' },
+        'task-archive': { file: 'task-archive.html', init: 'taskArchive' },
         today: { file: 'today.html', init: 'today' },
         calendar: { file: 'calendar.html', init: 'calendar' },
         'sticky-notes': { file: 'sticky-notes.html', init: 'stickyNotes' },
@@ -85,6 +86,7 @@ const Router = {
         const inits = {
             inbox: () => { Kanban.renderKanban('inboxKanban', null, 'inbox'); },
             allTasks: () => { App.renderAllTasksView(); },
+            taskArchive: () => { if (typeof App !== 'undefined' && App.renderTaskArchiveView) App.renderTaskArchiveView(); },
             today: () => { App.renderTodayView(); },
             calendar: () => { Calendar.render(); },
             stickyNotes: () => {

@@ -101,7 +101,7 @@ const GTD = {
 
         Object.values(areas).forEach((area, i) => {
             const color = area.color || areaColors[i % areaColors.length];
-            const areaTasks = taskList.filter(t => t.contextType === 'area' && t.contextId === area.id);
+            const areaTasks = taskList.filter(t => !t.archived && t.contextType === 'area' && t.contextId === area.id);
             const total = areaTasks.length;
             const card = document.createElement('a');
             card.href = `#area/${area.id}`;
@@ -127,6 +127,7 @@ const GTD = {
         const tagCounts = {};
         const areas = Storage.getAreas();
         taskList.forEach(t => {
+            if (t.archived) return;
             if (t.contextType === 'area' && t.contextId && areas[t.contextId]) {
                 const areaTag = areas[t.contextId].name;
                 tagCounts[areaTag] = (tagCounts[areaTag] || 0) + 1;
@@ -301,6 +302,7 @@ const GTD = {
             const columns = Storage.getInboxColumns();
             const fallbackStatus = columns[0]?.id || CONFIG.TASK_STATUSES.NEW;
             Storage.saveTask(id, {
+                ...(task || {}),
                 title,
                 description,
                 priority: document.getElementById('taskPriority').value,
@@ -332,6 +334,9 @@ const GTD = {
                     const tagId = (location.hash || '').split('/')[1] || null;
                     App.renderTagsView(tagId);
                 }
+                if (Router?.currentPage === 'task-archive' && App.renderTaskArchiveView) {
+                    App.renderTaskArchiveView();
+                }
             }
             this.renderTagsNav();
             this.updateBadges();
@@ -350,7 +355,15 @@ const GTD = {
                         if (typeof App !== 'undefined') {
                             App.renderTodayView();
                             App.renderAllTasksView();
+                            if (Router?.currentPage === 'task-archive' && App.renderTaskArchiveView) App.renderTaskArchiveView();
+                            if (Router?.currentPage === 'tags' && App.renderTagsView) {
+                                const tagId = (location.hash || '').split('/')[1] || null;
+                                App.renderTagsView(tagId);
+                            }
                         }
+                        if (typeof Gantt !== 'undefined' && Gantt.renderGantt) Gantt.renderGantt();
+                        this.renderAreas();
+                        this.renderTagsNav();
                         this.updateBadges();
                         this.closeTaskModal();
                     });
@@ -362,7 +375,15 @@ const GTD = {
                     if (typeof App !== 'undefined') {
                         App.renderTodayView();
                         App.renderAllTasksView();
+                        if (Router?.currentPage === 'task-archive' && App.renderTaskArchiveView) App.renderTaskArchiveView();
+                        if (Router?.currentPage === 'tags' && App.renderTagsView) {
+                            const tagId = (location.hash || '').split('/')[1] || null;
+                            App.renderTagsView(tagId);
+                        }
                     }
+                    if (typeof Gantt !== 'undefined' && Gantt.renderGantt) Gantt.renderGantt();
+                    this.renderAreas();
+                    this.renderTagsNav();
                     this.updateBadges();
                     this.closeTaskModal();
                 }
@@ -546,11 +567,11 @@ const GTD = {
     updateBadges() {
         const tasks = Storage.getTasks();
         const today = new Date().toDateString();
-        const inboxCount = Object.values(tasks).filter(t => 
-            t.contextType === 'inbox' && t.status !== CONFIG.TASK_STATUSES.DONE
+        const inboxCount = Object.values(tasks).filter(t =>
+            t.contextType === 'inbox' && !t.archived && t.status !== CONFIG.TASK_STATUSES.DONE
         ).length;
         const todayCount = Object.values(tasks).filter(t => {
-            if (t.status === CONFIG.TASK_STATUSES.DONE) return false;
+            if (t.archived || t.status === CONFIG.TASK_STATUSES.DONE) return false;
             if (!t.dueDate) return false;
             return new Date(t.dueDate).toDateString() === today;
         }).length;

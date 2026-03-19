@@ -20,6 +20,7 @@ const CONFIG = {
 
     NAV_BLOCKS: [
         { id: 'all-tasks', label: 'Все задачи' },
+        { id: 'task-archive', label: 'Архив задач' },
         { id: 'tags', label: '#теги' },
         { id: 'sticky-notes', label: 'Стикеры' },
         { id: 'today', label: 'Сегодня' },

@@ -372,6 +372,7 @@ const App = {
         const today = new Date().toDateString();
         
         const todayTasks = Object.values(tasks).filter(task => {
+            if (task.archived) return false;
             if (task.status === CONFIG.TASK_STATUSES.DONE) return false;
             if (!task.dueDate) return false;
             return new Date(task.dueDate).toDateString() === today;
@@ -396,7 +397,7 @@ const App = {
         if (!container) return;
         const tasks = Storage.getTasks();
         const areas = Storage.getAreas();
-        const allTasks = Object.values(tasks);
+        const allTasks = Object.values(tasks).filter(t => !t.archived);
 
         const getContextTag = (task) => {
             if (task.contextType === 'area' && task.contextId && areas[task.contextId]) {
@@ -424,7 +425,7 @@ const App = {
         if (!container) return;
         const tasks = Storage.getTasks();
         const areas = Storage.getAreas();
-        const allTasks = Object.values(tasks);
+        const allTasks = Object.values(tasks).filter(t => !t.archived);
 
         const tagDecoded = tagId ? decodeURIComponent(tagId) : null;
 
@@ -586,14 +587,103 @@ const App = {
     toggleTask(taskId, completed) {
         const task = Storage.getTask(taskId);
         if (task) {
-            task.status = completed ? CONFIG.TASK_STATUSES.DONE : CONFIG.TASK_STATUSES.NEW;
+            if (completed) {
+                task.status = CONFIG.TASK_STATUSES.DONE;
+                task.archived = true;
+                task.archivedAt = new Date().toISOString();
+            } else {
+                task.status = CONFIG.TASK_STATUSES.NEW;
+                task.archived = false;
+                delete task.archivedAt;
+            }
             Storage.saveTask(taskId, task);
             Kanban.renderKanban('inboxKanban', null, 'inbox');
+            if (typeof GTD !== 'undefined' && GTD.currentAreaId) {
+                Kanban.renderKanban('areaKanban', GTD.currentAreaId, 'area');
+            }
             this.renderTodayView();
             this.renderAllTasksView();
+            const r = typeof Router !== 'undefined' && Router.getRoute ? Router.getRoute() : {};
+            if (r.page === 'tags') this.renderTagsView(r.id);
+            if (r.page === 'task-archive' && this.renderTaskArchiveView) this.renderTaskArchiveView();
             Calendar.render();
+            if (typeof Gantt !== 'undefined' && Gantt.renderGantt) Gantt.renderGantt();
             GTD.updateBadges();
+            if (GTD.renderAreas) GTD.renderAreas();
+            if (GTD.renderTagsNav) GTD.renderTagsNav();
         }
+    },
+
+    renderTaskArchiveView() {
+        const container = document.getElementById('taskArchiveList');
+        if (!container) return;
+        const tasks = Storage.getTasks();
+        const areas = Storage.getAreas();
+        const archived = Object.values(tasks)
+            .filter(t => t.archived)
+            .sort((a, b) => (b.archivedAt || b.updatedAt || '').localeCompare(a.archivedAt || a.updatedAt || ''));
+
+        const getContextTag = (task) => {
+            if (task.contextType === 'area' && task.contextId && areas[task.contextId]) {
+                return areas[task.contextId].name;
+            }
+            return 'Inbox';
+        };
+
+        if (archived.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-archive"></i>
+                    <h3>Архив пуст</h3>
+                    <p>Выполненные задачи с доски появятся здесь</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = archived.map(task => {
+            const ctx = getContextTag(task);
+            const when = task.archivedAt
+                ? new Date(task.archivedAt).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+                : '';
+            return `
+            <div class="task-item task-item-archived">
+                <span class="task-archive-check" title="Выполнено"><i class="fas fa-check"></i></span>
+                <div class="task-content" onclick="GTD.showTaskModal('${task.contextId || null}', '${task.contextType || 'inbox'}', '${task.id}')">
+                    <div class="task-title completed">${this.escapeHtml(task.title)}</div>
+                    ${task.description ? `<div class="task-description">${this.escapeHtml(task.description)}</div>` : ''}
+                    <div class="task-meta">
+                        <span class="card-tag">${this.escapeHtml(ctx)}</span>
+                        ${when ? `<span class="task-date"><i class="fas fa-clock"></i> ${this.escapeHtml(when)}</span>` : ''}
+                    </div>
+                </div>
+                <button type="button" class="btn-icon task-archive-delete" onclick="event.stopPropagation(); App.deleteArchivedTask('${task.id}')" title="Удалить навсегда">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>`;
+        }).join('');
+    },
+
+    deleteArchivedTask(taskId) {
+        const task = Storage.getTask(taskId);
+        if (!task || !task.archived) return;
+        this.confirmDelete('Удалить задачу из архива безвозвратно?', () => {
+            Storage.deleteTask(taskId);
+            this.renderTaskArchiveView();
+            Kanban.renderKanban('inboxKanban', null, 'inbox');
+            if (typeof GTD !== 'undefined' && GTD.currentAreaId) {
+                Kanban.renderKanban('areaKanban', GTD.currentAreaId, 'area');
+            }
+            this.renderTodayView();
+            this.renderAllTasksView();
+            const r = typeof Router !== 'undefined' && Router.getRoute ? Router.getRoute() : {};
+            if (r.page === 'tags') this.renderTagsView(r.id);
+            Calendar.render();
+            if (typeof Gantt !== 'undefined' && Gantt.renderGantt) Gantt.renderGantt();
+            GTD.updateBadges();
+            if (GTD.renderAreas) GTD.renderAreas();
+            if (GTD.renderTagsNav) GTD.renderTagsNav();
+        });
     },
 
     escapeHtml(text) {
