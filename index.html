@@ -3,361 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SPHINX - GTD Productivity System</title>
+    <title>Ascension — RPG самообучение</title>
+    <meta name="description" content="Персональная платформа саморазвития в стиле RPG: навыки, курсы, книги, графики прогресса.">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="styles/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="app-container">
-        <!-- Cover Settings Modal -->
-        <div class="modal cover-modal" id="coverModal">
-            <div class="modal-content modal-small">
-                <span class="modal-close" data-close="coverModal">&times;</span>
-                <div class="modal-body">
-                    <h3>Обложка блока</h3>
-                    <p class="modal-hint">Загрузите своё изображение, вставьте ссылку (в т.ч. с unsplash.com) или выберите случайное фото</p>
-                    <div class="cover-options">
-                        <label class="cover-option-btn" for="coverUpload">
-                            <input type="file" accept="image/*" id="coverUpload" hidden>
-                            <i class="fas fa-upload"></i>
-                            <span>Загрузить</span>
-                        </label>
-                        <button type="button" class="cover-option-btn" id="coverUrlBtn">
-                            <i class="fas fa-link"></i>
-                            <span>По ссылке</span>
-                        </button>
-                        <button type="button" class="cover-option-btn" id="coverUnsplash">
-                            <i class="fas fa-random"></i>
-                            <span>Случайное</span>
-                        </button>
-                        <button type="button" class="cover-option-btn cover-option-remove" id="coverRemove">
-                            <i class="fas fa-times"></i>
-                            <span>Убрать</span>
-                        </button>
-                    </div>
-                    <div class="cover-url-row" id="coverUrlRow" style="display: none;">
-                        <input type="url" id="coverUrlInput" class="form-input" placeholder="Вставьте ссылку на изображение">
-                        <button class="btn-primary" id="coverUrlApply">Применить</button>
-                    </div>
-                    <div class="cover-unsplash-row" id="coverUnsplashRow" style="display: none;">
-                        <p class="cover-hint">Случайное фото с Picsum Photos</p>
-                        <button class="btn-primary" id="coverUnsplashApply">Выбрать случайное</button>
-                    </div>
-                </div>
+    <div class="rpg-app">
+        <aside class="rpg-sidebar">
+            <div class="rpg-brand">
+                <h1>ASCENSION</h1>
+                <p>Путь силы</p>
             </div>
-        </div>
-
-        <!-- Layout: Sidebar (full height) + Main (cover + content) -->
-        <div class="app-layout">
-        <aside class="sidebar" id="sidebar">
-            <button class="sidebar-tab" id="sidebarTab" title="Скрыть / Показать панель">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-            <div class="auth-block auth-block-top" id="authBlock">
-                <div class="auth-logged-out" id="authLoggedOut">
-                    <button type="button" class="auth-btn" id="authGoogle" title="Войти через Google"><i class="fab fa-google"></i> Google</button>
-                    <button type="button" class="auth-btn" id="authGithub" title="Войти через GitHub"><i class="fab fa-github"></i> GitHub</button>
-                </div>
-                <div class="auth-logged-in" id="authLoggedIn" style="display: none;">
-                    <div class="auth-profile-row">
-                        <button type="button" class="auth-avatar-btn" id="authAvatarBtn" title="Профиль">
-                            <span class="auth-avatar" id="authAvatar"></span>
-                        </button>
-                        <span class="auth-name" id="authName"></span>
-                        <button type="button" class="sidebar-settings-btn" id="sidebarSettingsBtn" title="Настройки">
-                            <i class="fas fa-cog"></i>
-                        </button>
-                    </div>
-                    <div class="auth-profile-popover" id="authProfilePopover">
-                        <div class="auth-profile-email" id="authProfileEmail"></div>
-                        <div class="auth-sync-row">
-                            <span class="auth-sync-status" id="authSyncStatus" title="Статус синхронизации"></span>
-                            <button type="button" class="auth-btn auth-sync-btn" id="authSyncNow" title="Синхронизировать">Синхр.</button>
-                        </div>
-                        <button type="button" class="auth-btn auth-logout" id="authLogout">Выйти</button>
-                    </div>
-                </div>
-            </div>
-            <nav class="nav-menu">
-                <div class="nav-section">
-                    <a href="#inbox" class="nav-item active" data-page="inbox" data-icon-color="cyan">
-                        <i class="fas fa-inbox"></i>
-                        <span>Inbox</span>
-                        <span class="badge" id="inboxBadge">0</span>
-                    </a>
-                    <a href="#all-tasks" class="nav-item" data-page="all-tasks" data-nav-block="all-tasks" data-icon-color="blue">
-                        <i class="fas fa-tasks"></i>
-                        <span>Все задачи</span>
-                    </a>
-                    <a href="#task-archive" class="nav-item nav-item-sub" data-page="task-archive" data-nav-block="task-archive" data-icon-color="blue">
-                        <i class="fas fa-archive"></i>
-                        <span>Архив выполненных</span>
-                    </a>
-                    <a href="#sticky-notes" class="nav-item" data-page="sticky-notes" data-nav-block="sticky-notes" data-icon-color="pink">
-                        <i class="fas fa-thumbtack"></i>
-                        <span>Стикеры</span>
-                    </a>
-                    <a href="#today" class="nav-item" data-page="today" data-nav-block="today" data-icon-color="yellow">
-                        <i class="fas fa-calendar-day"></i>
-                        <span>Сегодня</span>
-                        <span class="badge" id="todayBadge">0</span>
-                    </a>
-                    <a href="#calendar" class="nav-item" data-page="calendar" data-nav-block="calendar" data-icon-color="green">
-                        <i class="fas fa-calendar-alt"></i>
-                        <span>Календарь</span>
-                    </a>
-                    <a href="#habits" class="nav-item" data-page="habits" data-nav-block="habits" data-icon-color="teal">
-                        <i class="fas fa-chart-line"></i>
-                        <span>Привычки</span>
-                    </a>
-                    <a href="#content" class="nav-item" data-page="content" data-nav-block="content" data-icon-color="purple">
-                        <i class="fas fa-film"></i>
-                        <span>Контент</span>
-                    </a>
-                    <a href="#wishboard" class="nav-item" data-page="wishboard" data-nav-block="wishboard" data-icon-color="magenta">
-                        <i class="fas fa-gem"></i>
-                        <span>Доска желаний</span>
-                    </a>
-                </div>
-
-                <div class="nav-section nav-section-tags" data-nav-block="tags">
-                    <div class="nav-item nav-section-tags-header">
-                        <span class="nav-tags-chevron-btn" title="Раскрыть / скрыть"><i class="fas fa-chevron-right nav-tags-chevron"></i></span>
-                        <a href="#tags" class="nav-item nav-section-tags-link" data-page="tags">#теги</a>
-                    </div>
-                    <div id="tagsListNav" class="nav-tags-list nav-tags-collapsed">
-                        <!-- Tags added dynamically -->
-                    </div>
-                </div>
-                <div class="nav-section" data-nav-block="areas">
-                    <div class="nav-section-title">Области</div>
-                    <div id="areasList">
-                        <!-- Areas will be dynamically added -->
-                    </div>
-                    <button class="nav-item nav-add" id="addArea">
-                        <i class="fas fa-plus-circle"></i>
-                        <span>Добавить область</span>
-                    </button>
-                </div>
-
+            <nav class="rpg-nav">
+                <a href="#/" data-page="sanctum"><i class="fas fa-fire-alt"></i> Святилище</a>
+                <a href="#/skills" data-page="skills"><i class="fas fa-dragon"></i> Навыки</a>
+                <a href="#/courses" data-page="courses"><i class="fas fa-graduation-cap"></i> Курсы</a>
+                <a href="#/books" data-page="books"><i class="fas fa-book-skull"></i> Книги</a>
+                <a href="#/charts" data-page="charts"><i class="fas fa-chart-column"></i> Графики</a>
             </nav>
-        </aside>
-
-        <div class="app-main">
-        <header class="app-cover" id="appCover">
-            <div class="cover-resize-handle" id="coverResizeHandle" title="Тянуть вверх или вниз для изменения высоты"></div>
-            <button class="cover-settings-btn" id="coverSettingsBtn" title="Изменить обложку">
-                <i class="fas fa-image"></i>
-            </button>
-            <button class="cover-layout-btn" id="coverLayoutBtn" title="Расположение обложки">
-                <i class="fas fa-crop-alt"></i> Расположение
-            </button>
-            <div class="cover-center" id="coverCenter"></div>
-            <div class="cover-layout-overlay" id="coverLayoutOverlay" style="display: none;">
-                <div class="cover-layout-panel">
-                    <h4>Расположение обложки</h4>
-                    <p class="cover-drag-hint">Перетащите обложку мышью и настройте масштаб</p>
-                    <div class="cover-zoom-row">
-                        <span class="cover-zoom-label">Масштаб</span>
-                        <input type="range" id="coverZoomRange" min="60" max="220" step="5">
-                        <span class="cover-zoom-value" id="coverZoomValue">100%</span>
-                    </div>
-                    <button type="button" class="btn-primary cover-layout-ok" id="coverLayoutOk">Готово</button>
-                </div>
-            </div>
-        </header>
-        <div class="app-body">
-        <div class="content-wrapper">
-        <!-- Main Content -->
-        <main class="main-content">
-            <div id="pageContainer"></div>
-        </main>
-
-        <!-- Right Panel: Calendar + YouTube (сжимаемая, полукруглые края) -->
-        <aside class="right-panel" id="rightPanel">
-            <div class="right-panel-resize-handle" id="rightPanelResizeHandle" title="Тянуть влево/вправо для изменения ширины"></div>
-            <div class="right-panel-inner">
-            <div class="right-panel-bg" id="rightPanelBg"></div>
-            <button type="button" class="right-panel-bg-btn" id="rightPanelBgBtn" title="Фон панели"><i class="fas fa-image"></i></button>
-            <div class="right-panel-calendar" id="rightPanelCalendar">
-                <div class="right-panel-calendar-header">
-                    <div class="right-panel-title">
-                        <i class="fas fa-calendar"></i>
-                        <span>Календарь</span>
-                        <button type="button" class="calendar-tab" id="calendarTab" title="Свернуть / Развернуть">
-                            <i class="fas fa-chevron-down"></i>
-                        </button>
-                    </div>
-                    <div class="right-panel-month-nav">
-                        <button type="button" class="right-panel-nav" id="rightPanelPrevMonth" title="Пред. месяц"><i class="fas fa-chevron-left"></i></button>
-                        <span id="rightPanelMonthYear"></span>
-                        <button type="button" class="right-panel-nav" id="rightPanelNextMonth" title="След. месяц"><i class="fas fa-chevron-right"></i></button>
-                    </div>
-                </div>
-                <div class="right-panel-weekdays">
-                    <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span>
-                </div>
-                <div class="right-panel-days" id="rightPanelDays"></div>
-                <div class="right-panel-week-strip" id="rightPanelWeekStrip"></div>
-            </div>
+            <div class="rpg-sidebar-foot">
+                Данные только в этом браузере (localStorage).<br>
+                <a href="legacy/sphinx-gtd/index.html">Старая версия GTD (архив)</a>
+                · <a href="landing.html">Лендинг</a>
             </div>
         </aside>
-        </div>
-        </div>
-        </div>
-    </div>
-
-    <!-- Task Modal -->
-    <div class="modal" id="taskModal">
-        <div class="modal-content modal-task">
-            <span class="modal-close">&times;</span>
-            <div class="modal-body" id="taskModalBody"></div>
+        <div class="rpg-main-wrap">
+            <main class="rpg-main" id="rpgMain"></main>
         </div>
     </div>
 
-    <!-- Area Modal -->
-    <div class="modal" id="areaModal">
-        <div class="modal-content">
-            <span class="modal-close">&times;</span>
-            <div class="modal-body" id="areaModalBody"></div>
-        </div>
-    </div>
-
-    <!-- Habit Modal -->
-    <div class="modal" id="habitModal">
-        <div class="modal-content">
-            <span class="modal-close">&times;</span>
-            <div class="modal-body" id="habitModalBody"></div>
-        </div>
-    </div>
-
-    <!-- Content Modal -->
-    <div class="modal" id="contentModal">
-        <div class="modal-content modal-large">
-            <span class="modal-close">&times;</span>
-            <div class="modal-body" id="contentModalBody"></div>
-        </div>
-    </div>
-
-    <!-- Note Modal -->
-    <div class="modal" id="noteModal">
-        <div class="modal-content modal-large">
-            <span class="modal-close">&times;</span>
-            <div class="modal-body" id="noteModalBody"></div>
-        </div>
-    </div>
-
-    <!-- Right panel background -->
-    <div class="modal" id="rightPanelBgModal">
-        <div class="modal-content modal-small">
-            <span class="modal-close" data-close="rightPanelBgModal">&times;</span>
-            <div class="modal-body">
-                <h3>Фон правой панели</h3>
-                <p class="modal-hint">Вставьте ссылку на картинку. Она будет отображаться с прозрачностью поверх фона.</p>
-                <div class="form-group">
-                    <label class="form-label">URL картинки</label>
-                    <input type="url" class="form-input" id="rightPanelBgUrl" placeholder="https://...">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Прозрачность картинки</label>
-                    <div class="form-range-row">
-                        <input type="range" class="form-range" id="rightPanelBgOpacity" min="0.1" max="0.9" step="0.05" value="0.35">
-                        <span id="rightPanelBgOpacityValue">35%</span>
-                    </div>
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn-secondary" id="rightPanelBgRemove">Убрать фон</button>
-                    <button type="button" class="btn-primary" id="rightPanelBgSave">Применить</button>
-                </div>
+    <div class="rpg-modal" id="rpgModal" role="dialog" aria-modal="true">
+        <div class="rpg-modal-box">
+            <div class="rpg-modal-head">
+                <span id="rpgModalTitle">—</span>
+                <button type="button" class="rpg-modal-close" id="rpgModalClose" aria-label="Закрыть">&times;</button>
             </div>
+            <div class="rpg-modal-body" id="rpgModalBody"></div>
         </div>
     </div>
 
-    <!-- App settings: theme + nav visibility -->
-    <div class="modal" id="appSettingsModal">
-        <div class="modal-content modal-small">
-            <span class="modal-close" data-close="appSettingsModal">&times;</span>
-            <div class="modal-body">
-                <h3>Настройки</h3>
-                <div class="form-group">
-                    <label class="form-label">Тема</label>
-                    <select class="select-input" id="appSettingsTheme">
-                        <option value="dark">Dark (тёмная)</option>
-                        <option value="santorini">Santorini</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Блоки в меню</label>
-                    <p class="modal-hint">Включите или отключите пункты (Inbox всегда отображается)</p>
-                    <div class="app-settings-nav-toggles" id="appSettingsNavToggles"></div>
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn-primary" id="appSettingsSave">Сохранить</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Tag colors settings -->
-    <div class="modal" id="tagsSettingsModal">
-        <div class="modal-content modal-medium">
-            <span class="modal-close" data-close="tagsSettingsModal">&times;</span>
-            <div class="modal-body">
-                <h3><i class="fas fa-palette"></i> Цвета тегов</h3>
-                <p class="modal-hint">Выберите цвет для каждого тега</p>
-                <div class="tags-settings-list" id="tagsSettingsList"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Inbox columns (blocks) settings -->
-    <div class="modal" id="inboxColumnsModal">
-        <div class="modal-content modal-medium">
-            <span class="modal-close" data-close="inboxColumnsModal">&times;</span>
-            <div class="modal-body" id="inboxColumnsModalBody"></div>
-        </div>
-    </div>
-
-    <!-- Global confirm modal -->
-    <div class="modal" id="confirmModal">
-        <div class="modal-content modal-small confirm-modal">
-            <div class="confirm-icon">
-                <i class="fas fa-exclamation-triangle"></i>
-            </div>
-            <h3 id="confirmTitle">Подтверждение</h3>
-            <p class="confirm-message" id="confirmMessage"></p>
-            <div class="confirm-actions">
-                <button type="button" class="btn-secondary" id="confirmCancelBtn">Отмена</button>
-                <button type="button" class="btn-danger" id="confirmOkBtn">Удалить</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
-    <script src="js/config.js"></script>
-    <script src="js/supabase-config.js"></script>
-    <script src="js/supabase-auth.js"></script>
-    <script src="js/supabase-sync.js"></script>
-    <script src="js/storage.js"></script>
-    <script src="js/gtd.js"></script>
-    <script src="js/kanban.js"></script>
-    <script src="js/habits.js"></script>
-    <script src="js/content.js"></script>
-    <script src="js/calendar.js"></script>
-    <script src="js/notes.js"></script>
-    <script src="js/sticky-notes.js"></script>
-    <script src="js/wishboard.js"></script>
-    <script src="js/gantt.js"></script>
-    <script src="js/right-panel.js"></script>
-    <script src="js/cover.js"></script>
-    <script src="js/router.js"></script>
-    <script src="js/app.js"></script>
+    <script src="js/rpg-data.js"></script>
+    <script src="js/rpg-app.js"></script>
 </body>
 </html>

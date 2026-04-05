@@ -1,61 +1,18 @@
-# Архитектура SPHINX
+# Архитектура репозитория (Ascension)
 
-## Структура
+## Текущее приложение (корень)
 
-```
-SPHINX/
-├── index.html          # Единая точка входа, layout shell
-├── pages/              # HTML-фрагменты страниц (подгружаются динамически)
-│   ├── inbox.html
-│   ├── today.html
-│   ├── calendar.html
-│   ├── sticky-notes.html
-│   ├── habits.html
-│   ├── content.html
-│   ├── gantt.html
-│   ├── wishboard.html
-│   ├── area.html
-│   └── project.html
-├── js/
-│   ├── core/           # Ядро (всегда загружается)
-│   │   ├── config.js
-│   │   └── storage.js
-│   ├── shared/         # Общие модули (загрузка по необходимости)
-│   │   ├── gtd.js
-│   │   ├── kanban.js
-│   │   ├── layout.js   # Cover, RightPanel, модалки
-│   │   └── modals.js
-│   └── pages/          # Модули страниц (ленивая загрузка)
-│       ├── inbox.js
-│       ├── today.js
-│       ├── calendar.js
-│       ├── sticky-notes.js
-│       ├── habits.js
-│       ├── content.js
-│       ├── gantt.js
-│       ├── wishboard.js
-│       ├── area.js
-│       └── project.js
-├── styles/
-│   └── main.css
-└── app.js              # Роутер, инициализация
-```
+- **`index.html`** — одностраничное RPG-приложение самообучения (навигация по `location.hash`).
+- **`js/rpg-data.js`** — схема данных, localStorage (`sphinx_ascension_v1`), XP героя и навыков, курсы, книги, лог.
+- **`js/rpg-app.js`** — экраны: Святилище, Навыки, Курсы, Книги, Графики; модалки.
+- **`styles/main.css`** — визуальный стиль (ориентир: Hades / Dota 2 — тёмный фон, золото, бордовый акцент).
+- **`landing.html`** — страница входа (Supabase); стили только из `styles/landing.css` + `js/supabase-*.js`, `js/landing.js`.
 
-## Роутинг
+## Архив
 
-- **Hash-based:** `#inbox`, `#today`, `#calendar`, `#sticky-notes`, `#habits`, `#content`, `#gantt`, `#wishboard`, `#area/ID`, `#project/ID`
-- При навигации: fetch страницы → inject в main → init модуль страницы
-- History API для красивых URL (опционально)
+- **`legacy/sphinx-gtd/`** — полная старая кодовая база GTD (свой `index.html`, `js/`, `pages/`, `styles/main.css`).
 
-## Загрузка модулей
+## Прочее
 
-1. **Ядро** (всегда): config, storage
-2. **Layout** (сразу): cover, right-panel, modals, gtd (для sidebar)
-3. **Страница** (при первом посещении): динамический import или script inject
-
-## Преимущества
-
-- Быстрая загрузка: только нужное
-- Чёткое разделение: каждая страница — отдельный файл
-- Один layout — нет дублирования
-- localStorage — общее состояние между страницами
+- **`supabase/`** — SQL миграции (использовались старым GTD; новое приложение пока только localStorage).
+- **`vercel.json`** — реwrites для статики.

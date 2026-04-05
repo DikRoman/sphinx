@@ -25,3 +25,5 @@ build/
 
 # Local backups
 backups/
+*.backup
+js/*.backup
