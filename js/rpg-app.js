@@ -30,6 +30,9 @@ const RPGApp = {
         else if (p === 'charts') main.innerHTML = this.viewCharts();
         else if (p === 'inspire') main.innerHTML = this.viewInspire();
         else main.innerHTML = this.viewSanctum();
+        main.classList.remove('rpg-main-enter');
+        void main.offsetWidth;
+        main.classList.add('rpg-main-enter');
         this.bindPage(p, id);
     },
 

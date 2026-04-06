@@ -8,10 +8,6 @@
 - **`styles/main.css`** — визуальный стиль (ориентир: Hades / Dota 2 — тёмный фон, золото, бордовый акцент).
 - **`landing.html`** — страница входа (Supabase); стили только из `styles/landing.css` + `js/supabase-*.js`, `js/landing.js`.
 
-## Архив
-
-- **`legacy/sphinx-gtd/`** — полная старая кодовая база GTD (свой `index.html`, `js/`, `pages/`, `styles/main.css`).
-
 ## Прочее
 
 - **`supabase/`** — SQL миграции (использовались старым GTD; новое приложение пока только localStorage).

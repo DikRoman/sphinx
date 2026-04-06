@@ -1,5 +1,4 @@
-/* Ascension — Assassin’s Creed × RPG: тёмный фиолетовый «Анимус», золото лута, красный акцент */
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,500;1,500&family=Rajdhani:wght@400;500;600;700&display=swap');
+/* Ascension — тёмный фиолетовый HUD; шрифт подключается в index.html (без @import для скорости) */
 
 :root {
     --rpg-void: #040308;
@@ -25,18 +24,25 @@
     --rpg-muted: #8b819e;
     --rpg-glow: rgba(167, 139, 250, 0.38);
     --rpg-glow-gold: rgba(201, 162, 77, 0.22);
-    /* Эпичные заголовки + HUD как в меню AC */
-    --font-inscription: 'Cinzel', 'Times New Roman', serif;
-    --font-classical: 'Rajdhani', system-ui, sans-serif;
-    --font-ui: 'Rajdhani', system-ui, sans-serif;
-    --font-narrative: 'Cormorant Garamond', Georgia, serif;
-    --font-display: var(--font-inscription);
-    /* Сетка «памяти» вместо меандра */
-    --rpg-hud-grid: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath fill='none' stroke='%23a78bfa' stroke-width='0.4' opacity='0.12' d='M0 24h48M24 0v48M12 0v48M36 0v48M0 12h48M0 36h48'/%3E%3C/svg%3E");
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-inscription: var(--font-sans);
+    --font-classical: var(--font-sans);
+    --font-ui: var(--font-sans);
+    --font-narrative: var(--font-sans);
+    --font-display: var(--font-sans);
     --rpg-stone-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E");
+    --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+    --dur-fast: 0.2s;
+    --dur-mid: 0.35s;
+    --dur-slow: 0.5s;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
+
+@media (prefers-reduced-motion: no-preference) {
+    html { scroll-behavior: smooth; }
+}
 
 html, body {
     margin: 0;
@@ -44,23 +50,20 @@ html, body {
     background: var(--rpg-void);
     color: var(--rpg-text);
     font-family: var(--font-classical);
-    font-size: 18px;
-    line-height: 1.4;
-    letter-spacing: 0.04em;
+    font-size: 17px;
+    line-height: 1.5;
+    letter-spacing: 0.01em;
     font-weight: 500;
 }
 
 body.rpg-theme-assassin {
     background-image:
         var(--rpg-stone-texture),
-        var(--rpg-hud-grid),
-        repeating-linear-gradient(90deg, transparent, transparent 71px, rgba(109, 40, 217, 0.04) 71px, rgba(109, 40, 217, 0.04) 72px),
-        repeating-linear-gradient(0deg, transparent, transparent 71px, rgba(109, 40, 217, 0.04) 71px, rgba(109, 40, 217, 0.04) 72px),
         radial-gradient(ellipse 95% 65% at 50% -12%, rgba(109, 40, 217, 0.22), transparent 48%),
         radial-gradient(ellipse 55% 45% at 105% 60%, rgba(76, 29, 149, 0.35), transparent),
         radial-gradient(ellipse 40% 50% at -5% 90%, rgba(30, 11, 46, 0.9), transparent),
         linear-gradient(180deg, var(--rpg-deep) 0%, var(--rpg-void) 55%, #020105 100%);
-    background-size: auto, 48px 48px, auto, auto, auto, auto, auto, auto;
+    background-size: auto, auto, auto, auto, auto;
     background-attachment: fixed;
 }
 
@@ -76,9 +79,7 @@ body.rpg-theme-assassin {
 }
 
 .rpg-sidebar {
-    background-image:
-        repeating-linear-gradient(90deg, transparent 0, transparent 5px, rgba(167, 139, 250, 0.04) 5px, rgba(167, 139, 250, 0.04) 6px),
-        linear-gradient(165deg, var(--rpg-panel) 0%, var(--rpg-plum) 100%);
+    background-image: linear-gradient(165deg, var(--rpg-panel) 0%, var(--rpg-plum) 100%);
     border-right: 2px solid rgba(109, 40, 217, 0.45);
     padding: 1.25rem 0.85rem;
     box-shadow:
@@ -154,13 +155,17 @@ body.rpg-theme-assassin {
     padding: 0.55rem 0.75rem;
     color: var(--rpg-muted);
     text-decoration: none;
-    border-radius: 2px;
+    border-radius: 8px;
     border-left: 3px solid transparent;
     font-family: var(--font-ui);
     font-weight: 600;
-    font-size: 0.98rem;
-    letter-spacing: 0.04em;
-    transition: color 0.2s, background 0.2s, border-color 0.2s;
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+    transition:
+        color var(--dur-mid) var(--ease-soft),
+        background var(--dur-mid) var(--ease-soft),
+        border-color var(--dur-mid) var(--ease-soft),
+        transform var(--dur-fast) var(--ease-smooth);
 }
 
 .rpg-nav a i {
@@ -173,6 +178,7 @@ body.rpg-theme-assassin {
 .rpg-nav a:hover {
     color: var(--rpg-text);
     background: rgba(109, 40, 217, 0.12);
+    transform: translateX(2px);
 }
 
 .rpg-nav a.active {
@@ -209,19 +215,31 @@ body.rpg-theme-assassin {
     margin: 0 auto;
 }
 
+@keyframes rpg-main-enter {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.rpg-main.rpg-main-enter {
+    animation: rpg-main-enter var(--dur-slow) var(--ease-smooth) both;
+}
+
 .rpg-panel {
     background-color: var(--rpg-panel);
-    background-image:
-        linear-gradient(90deg, rgba(167, 139, 250, 0.06) 1px, transparent 1px),
-        linear-gradient(rgba(167, 139, 250, 0.06) 1px, transparent 1px),
-        linear-gradient(165deg, rgba(22, 16, 34, 0.98) 0%, var(--rpg-panel) 100%);
-    background-size: 24px 24px, 24px 24px, auto;
+    background-image: linear-gradient(165deg, rgba(22, 16, 34, 0.98) 0%, var(--rpg-panel) 100%);
+    background-size: auto;
     background-position: center top;
     border: 1px solid var(--rpg-border);
     border-top: 2px solid rgba(109, 40, 217, 0.65);
     outline: 1px solid rgba(167, 139, 250, 0.1);
     outline-offset: -2px;
-    border-radius: 1px;
+    border-radius: 10px;
     padding: 1.35rem 1.55rem;
     margin-bottom: 1.25rem;
     box-shadow:
@@ -379,7 +397,7 @@ body.rpg-theme-assassin {
     height: 100%;
     background: linear-gradient(90deg, var(--rpg-violet-deep), var(--rpg-purple), var(--rpg-gold-bright));
     box-shadow: 0 0 14px rgba(167, 139, 250, 0.45), 0 0 8px rgba(201, 162, 77, 0.25);
-    transition: width 0.4s ease;
+    transition: width 0.55s var(--ease-smooth);
 }
 
 .rpg-xp-text {
@@ -395,19 +413,30 @@ body.rpg-theme-assassin {
     background: var(--rpg-panel2);
     color: var(--rpg-text);
     padding: 0.45rem 1rem;
-    border-radius: 1px;
+    border-radius: 8px;
     font-size: 0.9rem;
     font-weight: 600;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.02em;
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+    transition:
+        background var(--dur-mid) var(--ease-soft),
+        border-color var(--dur-mid) var(--ease-soft),
+        box-shadow var(--dur-mid) var(--ease-soft),
+        transform var(--dur-fast) var(--ease-smooth),
+        filter var(--dur-fast) var(--ease-soft);
 }
 
 .rpg-btn:hover {
     border-color: var(--rpg-violet);
     box-shadow: 0 0 14px var(--rpg-glow);
+    transform: translateY(-1px);
+}
+
+.rpg-btn:active {
+    transform: translateY(0);
+    filter: brightness(0.95);
 }
 
 .rpg-btn-primary {
@@ -591,14 +620,17 @@ body.rpg-theme-assassin {
     background: var(--rpg-deep);
     border: 1px solid var(--rpg-border);
     padding: 1rem 1.1rem;
-    border-radius: 2px;
-    transition: border-color 0.2s, transform 0.2s;
+    border-radius: 10px;
+    transition:
+        border-color var(--dur-mid) var(--ease-soft),
+        transform var(--dur-mid) var(--ease-smooth),
+        box-shadow var(--dur-mid) var(--ease-soft);
 }
 
 .rpg-course-card:hover {
     border-color: var(--rpg-violet);
     box-shadow: 0 0 20px rgba(109, 40, 217, 0.2);
-    transform: translateY(-2px);
+    transform: translateY(-3px);
 }
 
 .rpg-course-card h3 {
@@ -670,7 +702,12 @@ body.rpg-theme-assassin {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
+    transition:
+        border-color var(--dur-mid) var(--ease-soft),
+        background var(--dur-mid) var(--ease-soft),
+        color var(--dur-mid) var(--ease-soft),
+        box-shadow var(--dur-mid) var(--ease-soft),
+        transform var(--dur-fast) var(--ease-smooth);
 }
 
 .rpg-lesson-check:hover:not(:disabled) {
@@ -807,20 +844,33 @@ body.rpg-theme-assassin {
 .rpg-modal {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.75);
-    display: none;
+    background: rgba(0, 0, 0, 0.72);
+    display: flex;
     align-items: center;
     justify-content: center;
     z-index: 200;
     padding: 1rem;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+        opacity var(--dur-mid) var(--ease-smooth),
+        visibility 0s linear var(--dur-mid);
 }
 
-.rpg-modal.active { display: flex; }
+.rpg-modal.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition:
+        opacity var(--dur-mid) var(--ease-smooth),
+        visibility 0s;
+}
 
 .rpg-modal-box {
     background: linear-gradient(165deg, var(--rpg-panel2) 0%, var(--rpg-panel) 100%);
     border: 1px solid rgba(167, 139, 250, 0.45);
-    border-radius: 2px;
+    border-radius: 12px;
     max-width: 420px;
     width: 100%;
     max-height: 90vh;
@@ -829,6 +879,16 @@ body.rpg-theme-assassin {
         0 24px 80px rgba(0, 0, 0, 0.65),
         0 0 48px rgba(76, 29, 149, 0.35),
         inset 0 0 0 1px rgba(225, 29, 72, 0.12);
+    transform: translateY(16px) scale(0.97);
+    opacity: 0;
+    transition:
+        transform var(--dur-slow) var(--ease-smooth),
+        opacity var(--dur-mid) var(--ease-smooth);
+}
+
+.rpg-modal.active .rpg-modal-box {
+    transform: translateY(0) scale(1);
+    opacity: 1;
 }
 
 .rpg-modal-head {
@@ -851,9 +911,17 @@ body.rpg-theme-assassin {
     font-size: 1.5rem;
     cursor: pointer;
     line-height: 1;
+    border-radius: 8px;
+    padding: 0.15rem 0.35rem;
+    transition: color var(--dur-fast) var(--ease-soft), background var(--dur-fast) var(--ease-soft), transform var(--dur-fast) var(--ease-smooth);
 }
 
-.rpg-modal-close:hover { color: var(--rpg-text); }
+.rpg-modal-close:hover {
+    color: var(--rpg-text);
+    background: rgba(167, 139, 250, 0.12);
+}
+
+.rpg-modal-close:active { transform: scale(0.92); }
 
 .rpg-modal-body { padding: 1.25rem; }
 
@@ -876,7 +944,8 @@ body.rpg-theme-assassin {
     color: var(--rpg-text);
     font-family: var(--font-ui);
     font-size: 1rem;
-    border-radius: 2px;
+    border-radius: 8px;
+    transition: border-color var(--dur-mid) var(--ease-soft), box-shadow var(--dur-mid) var(--ease-soft);
 }
 
 .rpg-input:focus {
@@ -1051,7 +1120,7 @@ body.rpg-theme-assassin {
     background: conic-gradient(from 0deg, var(--sl-core), var(--sl-neon), var(--sl-magenta), var(--sl-core));
     opacity: 0.85;
     filter: blur(0.5px);
-    animation: sl-spin 18s linear infinite;
+    animation: sl-spin 28s linear infinite;
 }
 
 @keyframes sl-spin {
@@ -1522,12 +1591,14 @@ body.rpg-theme-assassin {
         0 10px 28px rgba(0, 0, 0, 0.55),
         0 2px 6px rgba(0, 0, 0, 0.35);
     transform: rotate(var(--tilt, 0deg));
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition:
+        transform 0.42s var(--ease-smooth),
+        box-shadow 0.42s var(--ease-smooth);
     position: relative;
 }
 
 .insp-polaroid:hover {
-    transform: rotate(var(--tilt, 0deg)) translateY(-4px) scale(1.02);
+    transform: rotate(var(--tilt, 0deg)) translateY(-6px) scale(1.03);
     box-shadow:
         0 1px 0 rgba(255, 255, 255, 0.5) inset,
         0 16px 36px rgba(0, 0, 0, 0.5),
@@ -1619,7 +1690,10 @@ body.rpg-theme-assassin {
         0 2px 10px rgba(0, 0, 0, 0.5),
         0 0 0 1px rgba(192, 132, 252, 0.35);
     opacity: 0;
-    transition: opacity 0.15s ease, transform 0.15s ease, background 0.15s ease;
+    transition:
+        opacity var(--dur-mid) var(--ease-smooth),
+        transform var(--dur-mid) var(--ease-smooth),
+        background var(--dur-fast) var(--ease-soft);
 }
 
 .insp-polaroid:hover .insp-remove,
@@ -1667,7 +1741,18 @@ body.rpg-theme-assassin {
 }
 
 @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
     .sl-avatar-spikes { animation: none; }
     .insp-polaroid { transition: none; }
     .insp-polaroid:hover { transform: rotate(var(--tilt, 0deg)); }
+    .rpg-main.rpg-main-enter { animation: none; }
+    .rpg-nav a:hover { transform: none; }
+    .rpg-modal,
+    .rpg-modal-box {
+        transition: none !important;
+    }
+    .rpg-modal .rpg-modal-box {
+        transform: none;
+        opacity: 1;
+    }
 }

@@ -220,7 +220,7 @@ const RPGData = {
             id: 'insp_' + Date.now(),
             url: clean,
             caption: (caption || '').trim().slice(0, 120),
-            tilt: parseFloat(tilt, 10) || 0,
+            tilt: parseFloat(tilt) || 0,
             createdAt: new Date().toISOString()
         });
         this.save(state);

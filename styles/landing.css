@@ -3,6 +3,7 @@
 .landing-auth-page {
     min-height: 100vh;
     overflow: hidden;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
 }
 
 .landing-auth-wrapper {
@@ -287,8 +288,14 @@
     font-weight: 600;
     font-family: inherit;
     cursor: pointer;
+    transition: filter 0.25s cubic-bezier(0.22, 1, 0.36, 1), transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .btn-primary:hover {
     filter: brightness(1.05);
+    transform: translateY(-1px);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
 }
