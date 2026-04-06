@@ -27,3 +27,4 @@ build/
 backups/
 *.backup
 js/*.backup
+.vercel
