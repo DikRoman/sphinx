@@ -22,7 +22,8 @@ const RPG_DEFAULTS = () => ({
     ],
     courses: [],
     books: [],
-    log: []
+    log: [],
+    inspiration: []
 });
 
 const RPGData = {
@@ -47,6 +48,7 @@ const RPGData = {
         if (!Array.isArray(d.courses)) d.courses = [];
         if (!Array.isArray(d.books)) d.books = [];
         if (!Array.isArray(d.log)) d.log = [];
+        if (!Array.isArray(d.inspiration)) d.inspiration = [];
         d.courses.forEach(c => {
             if (!Array.isArray(c.lessons)) c.lessons = [];
             if (!Array.isArray(c.skillIds)) c.skillIds = [];
@@ -201,6 +203,36 @@ const RPGData = {
         return state;
     },
 
+    normalizeImageUrl(url) {
+        const u = (url || '').trim();
+        if (!u) return '';
+        if (/^https?:\/\//i.test(u)) return u;
+        if (/^data:image\//i.test(u)) return u;
+        return '';
+    },
+
+    addInspiration(state, { url, caption }) {
+        const clean = this.normalizeImageUrl(url);
+        if (!clean) return state;
+        if ((state.inspiration || []).length >= 48) return state;
+        const tilt = (Math.random() * 6 - 3).toFixed(1);
+        state.inspiration.push({
+            id: 'insp_' + Date.now(),
+            url: clean,
+            caption: (caption || '').trim().slice(0, 120),
+            tilt: parseFloat(tilt, 10) || 0,
+            createdAt: new Date().toISOString()
+        });
+        this.save(state);
+        return state;
+    },
+
+    deleteInspiration(state, id) {
+        state.inspiration = (state.inspiration || []).filter(x => x.id !== id);
+        this.save(state);
+        return state;
+    },
+
     weeklyXp(state) {
         const weeks = {};
         const now = new Date();
@@ -216,5 +248,34 @@ const RPGData = {
             if (weeks[day] !== undefined) weeks[day] += entry.xp;
         });
         return Object.entries(weeks).reverse();
+    },
+
+    /** Дни с активностью (XP в логе) для календаря-сетки */
+    calendarActivityCells(state, numDays = 35) {
+        const active = new Set();
+        (state.log || []).forEach(e => {
+            if (e.at && (e.xp > 0 || e.type === 'xp' || e.type === 'skill')) active.add(e.at.slice(0, 10));
+        });
+        const cells = [];
+        for (let i = numDays - 1; i >= 0; i--) {
+            const d = new Date();
+            d.setHours(12, 0, 0, 0);
+            d.setDate(d.getDate() - i);
+            const key = d.toISOString().slice(0, 10);
+            cells.push({
+                key,
+                day: d.getDate(),
+                weekday: d.getDay(),
+                active: active.has(key)
+            });
+        }
+        return cells;
+    },
+
+    /** Условная «валюта» для HUD (сумма XP навыков + прогресс героя) */
+    metaCurrency(state) {
+        const sk = (state.skills || []).reduce((a, s) => a + (s.xp || 0), 0);
+        const h = state.hero || {};
+        return Math.floor(sk + (h.level || 1) * 80 + (h.xpCurrent || 0));
     }
 };

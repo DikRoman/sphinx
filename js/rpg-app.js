@@ -28,6 +28,7 @@ const RPGApp = {
         else if (p === 'courses') main.innerHTML = this.viewCourses(id);
         else if (p === 'books') main.innerHTML = this.viewBooks();
         else if (p === 'charts') main.innerHTML = this.viewCharts();
+        else if (p === 'inspire') main.innerHTML = this.viewInspire();
         else main.innerHTML = this.viewSanctum();
         this.bindPage(p, id);
     },
@@ -42,58 +43,165 @@ const RPGApp = {
         return d.innerHTML;
     },
 
+    /** Безопасная подстановка URL в атрибут src */
+    safeUrlAttr(u) {
+        return String(u || '').replace(/[\s"'<>`]/g, '');
+    },
+
+    /** Радар навыков (компактный, стиль Solo Leveling) */
+    radarSvgHTML(skills) {
+        const list = skills && skills.length ? skills : [{ name: '—', xp: 0 }];
+        const n = list.length;
+        const cx = 100;
+        const cy = 100;
+        const r = 76;
+        const ringPoly = ratio => list.map((_, i) => {
+            const ang = -Math.PI / 2 + (i * 2 * Math.PI) / n;
+            return `${cx + r * ratio * Math.cos(ang)},${cy + r * ratio * Math.sin(ang)}`;
+        }).join(' ');
+        const rings = [0.35, 0.65]
+            .map(ratio => `<polygon class="sl-radar-ring" fill="none" points="${ringPoly(ratio)}" />`)
+            .join('');
+        const outerPts = ringPoly(1);
+        const pts = list.map((s, i) => {
+            const v = Math.min(1, (s.xp || 0) / 600);
+            const ang = -Math.PI / 2 + (i * 2 * Math.PI) / n;
+            return [cx + r * v * Math.cos(ang), cy + r * v * Math.sin(ang)];
+        });
+        const poly = pts.map(p => p.join(',')).join(' ');
+        const axes = list.map((_, i) => {
+            const ang = -Math.PI / 2 + (i * 2 * Math.PI) / n;
+            const x2 = cx + r * Math.cos(ang);
+            const y2 = cy + r * Math.sin(ang);
+            return `<line class="sl-radar-axis" x1="${cx}" y1="${cy}" x2="${x2}" y2="${y2}" />`;
+        }).join('');
+        const labels = list.map((s, i) => {
+            const ang = -Math.PI / 2 + (i * 2 * Math.PI) / n;
+            const lx = cx + (r + 16) * Math.cos(ang);
+            const ly = cy + (r + 16) * Math.sin(ang);
+            const short = (s.name || '—').split(/\s+/)[0].slice(0, 5);
+            return `<text x="${lx}" y="${ly}" class="sl-radar-lbl" text-anchor="middle" dominant-baseline="middle">${this.esc(short)}</text>`;
+        }).join('');
+        return `<svg class="sl-radar-svg" viewBox="0 0 200 200" aria-hidden="true">${rings}${axes}<polygon class="sl-radar-outer" fill="none" points="${outerPts}" /><polygon class="sl-radar-poly" points="${poly}" />${labels}</svg>`;
+    },
+
     viewSanctum() {
         const h = this.state.hero;
         const pct = Math.min(100, Math.round((h.xpCurrent / Math.max(1, h.xpToNext)) * 100));
-        const skillsTop = [...this.state.skills].sort((a, b) => (b.xp || 0) - (a.xp || 0)).slice(0, 4);
-        const recent = this.state.log.slice(0, 8);
+        const skills = this.state.skills;
+        const recent = this.state.log.slice(0, 7);
         const activeCourses = this.state.courses.filter(c => c.lessons.some(l => !l.done)).length;
         const booksReading = this.state.books.filter(b => b.progress > 0 && b.progress < 100).length;
+        const cal = RPGData.calendarActivityCells(this.state, 35);
+        const coins = RPGData.metaCurrency(this.state);
+        const potions = [...skills].sort((a, b) => (b.xp || 0) - (a.xp || 0)).slice(0, 6);
+        const monthName = new Date().toLocaleString('ru-RU', { month: 'long' });
 
         return `
-            <div class="rpg-hero-grid">
-                <section class="rpg-panel rpg-hero-card">
-                    <div class="rpg-hero-portrait">${this.esc(h.portrait)}</div>
-                    <div class="rpg-hero-info">
-                        <h1 class="rpg-hero-name">${this.esc(h.name)}</h1>
-                        <p class="rpg-hero-epithet">${this.esc(h.epithet)}</p>
-                        <div class="rpg-level-row">
-                            <span class="rpg-level-badge">Ур. ${h.level}</span>
-                            <div class="rpg-xp-bar-wrap">
-                                <div class="rpg-xp-bar" style="width:${pct}%"></div>
+            <div class="sl-dashboard">
+                <header class="sl-system-banner">
+                    <div class="sl-banner-glyph" aria-hidden="true">⬡</div>
+                    <div class="sl-banner-center">
+                        <span class="sl-oct-label">HABIT TRACKER</span>
+                        <h2 class="sl-system-title">ASCENSION <span class="sl-system-word">SYSTEM</span></h2>
+                        <p class="sl-system-tagline">${this.esc(h.epithet)}</p>
+                    </div>
+                    <div class="sl-banner-glyph sl-flip" aria-hidden="true">⬡</div>
+                </header>
+
+                <div class="sl-grid">
+                    <section class="rpg-panel sl-card sl-profile">
+                        <div class="sl-profile-row">
+                            <div class="sl-avatar-wrap">
+                                <div class="sl-avatar-spikes" aria-hidden="true"></div>
+                                <div class="sl-avatar-inner">${this.esc(h.portrait)}</div>
                             </div>
-                            <span class="rpg-xp-text">${h.xpCurrent} / ${h.xpToNext} XP</span>
+                            <div class="sl-profile-data">
+                                <div class="sl-datum"><span class="sl-datum-k">Имя</span><span class="sl-datum-v">${this.esc(h.name)}</span></div>
+                                <div class="sl-datum"><span class="sl-datum-k">Уровень</span><span class="sl-datum-v sl-glow-num">${h.level}</span></div>
+                                <div class="sl-datum"><span class="sl-datum-k">Очки роста</span><span class="sl-datum-v sl-glow-num">${coins}</span></div>
+                                <button type="button" class="rpg-btn rpg-btn-ghost sl-edit-hero" data-edit-hero><i class="fas fa-user-cog"></i> Профиль</button>
+                            </div>
                         </div>
-                        <button type="button" class="rpg-btn rpg-btn-ghost" data-edit-hero><i class="fas fa-pen"></i> Профиль героя</button>
+                        <div class="sl-bar-block">
+                            <span class="sl-bar-label">ОПЫТ</span>
+                            <div class="sl-bar-track sl-bar-xp"><div class="sl-bar-fill" style="width:${pct}%"></div></div>
+                            <span class="sl-bar-meta">${h.xpCurrent} / ${h.xpToNext} XP</span>
+                        </div>
+                    </section>
+
+                    <section class="rpg-panel sl-card sl-sync-col">
+                        <span class="sl-card-title-sm">СИНХРО</span>
+                        <div class="sl-vtrack">
+                            <div class="sl-vfill" style="height:${pct}%"></div>
+                        </div>
+                        <span class="sl-vpct">${pct}%</span>
+                    </section>
+
+                    <section class="rpg-panel sl-card sl-radar-block">
+                        <h3 class="sl-card-title-sm">ОЧКИ НАВЫКОВ</h3>
+                        <div class="sl-radar-host">${this.radarSvgHTML(skills)}</div>
+                        <a href="#/charts" class="sl-micro-link">Подробнее →</a>
+                    </section>
+
+                    <section class="rpg-panel sl-card sl-status-block">
+                        <h3 class="sl-card-title-sm">СТАТУС</h3>
+                        <div class="sl-status-list">
+                            ${skills.map(s => {
+                                const bar = Math.min(100, Math.round(((s.xp || 0) / 600) * 100));
+                                const lv = RPGData.skillLevel(s.xp);
+                                return `<div class="sl-status-line">
+                                    <i class="fas ${this.esc(s.icon)}" style="color:${this.esc(s.color)}"></i>
+                                    <span class="sl-st-name">${this.esc(s.name)}</span>
+                                    <div class="sl-bar-track sl-bar-fat"><div class="sl-bar-fill" style="width:${bar}%"></div></div>
+                                    <span class="sl-st-lv">LV ${lv}</span>
+                                </div>`;
+                            }).join('')}
+                        </div>
+                    </section>
+
+                    <section class="rpg-panel sl-card sl-goals-block">
+                        <h3 class="sl-card-title-sm">ЦЕЛИ</h3>
+                        <div class="sl-goal-pills">
+                            <div class="sl-goal-pill"><span>${this.state.courses.length}</span> курсов</div>
+                            <div class="sl-goal-pill sl-hot"><span>${activeCourses}</span> в работе</div>
+                            <div class="sl-goal-pill"><span>${this.state.books.length}</span> книг</div>
+                            <div class="sl-goal-pill"><span>${booksReading}</span> читаю</div>
+                        </div>
+                    </section>
+
+                    <section class="rpg-panel sl-card sl-cal-block">
+                        <h3 class="sl-card-title-sm">${monthName} · активность</h3>
+                        <div class="sl-cal-grid">
+                            ${cal.map(c => `<div class="sl-cal-cell${c.active ? ' sl-cal-hot' : ''}" title="${this.esc(c.key)}">${c.day}</div>`).join('')}
+                        </div>
+                    </section>
+
+                    <section class="rpg-panel sl-card sl-log-block">
+                        <h3 class="sl-card-title-sm">ЖУРНАЛ СИСТЕМЫ</h3>
+                        <ul class="sl-log-compact">
+                            ${recent.length ? recent.map(e => `
+                                <li><time>${new Date(e.at).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</time>
+                                <span>${this.esc(e.message)}</span>${e.xp ? `<b>+${e.xp}</b>` : ''}</li>`).join('')
+                                : '<li class="sl-log-empty">Завершите урок или сдвиньте прогресс книги — появится запись.</li>'}
+                        </ul>
+                    </section>
+                </div>
+
+                <footer class="sl-inventory">
+                    <span class="sl-inv-title">ИНВЕНТАРЬ УСИЛЕНИЙ</span>
+                    <div class="sl-potion-row">
+                        ${potions.map(s => {
+                            const lv = RPGData.skillLevel(s.xp);
+                            return `<div class="sl-potion" style="--liq:${this.esc(s.color)}">
+                                <div class="sl-potion-glass"><div class="sl-potion-liquid"></div></div>
+                                <span class="sl-potion-name">${this.esc(s.name.split(/\s+/)[0])}</span>
+                                <span class="sl-potion-lv">LV ${lv}</span>
+                            </div>`;
+                        }).join('')}
                     </div>
-                </section>
-                <section class="rpg-panel rpg-stats-quick">
-                    <h2 class="rpg-panel-title"><i class="fas fa-bolt"></i> Сводка</h2>
-                    <div class="rpg-stat-pills">
-                        <div class="rpg-pill"><span>${this.state.courses.length}</span> курсов</div>
-                        <div class="rpg-pill rpg-pill-gold"><span>${activeCourses}</span> в работе</div>
-                        <div class="rpg-pill"><span>${this.state.books.length}</span> книг</div>
-                        <div class="rpg-pill"><span>${booksReading}</span> читаю</div>
-                    </div>
-                    <h3 class="rpg-subtitle">Топ навыков</h3>
-                    <ul class="rpg-mini-skills">
-                        ${skillsTop.map(s => `
-                            <li><i class="fas ${this.esc(s.icon)}"></i> ${this.esc(s.name)}
-                                <em>${RPGData.skillLevel(s.xp)} ур.</em></li>`).join('')}
-                    </ul>
-                    <a href="#/charts" class="rpg-link-cta">Графики прогресса →</a>
-                </section>
-            </div>
-            <section class="rpg-panel rpg-log-panel">
-                <h2 class="rpg-panel-title"><i class="fas fa-scroll"></i> Хроника</h2>
-                <ul class="rpg-log-list">
-                    ${recent.length ? recent.map(e => `
-                        <li><time>${new Date(e.at).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</time>
-                            <span>${this.esc(e.message)}</span>
-                            ${e.xp ? `<b>+${e.xp} XP</b>` : ''}</li>`).join('')
-                        : '<li class="rpg-empty-inline">Пока тихо. Завершите урок или отметьте прогресс по книге.</li>'}
-                </ul>
-            </section>`;
+                </footer>
+            </div>`;
     },
 
     viewSkills() {
@@ -243,6 +351,40 @@ const RPGApp = {
             </div>`;
     },
 
+    viewInspire() {
+        const items = this.state.inspiration || [];
+        return `
+            <section class="rpg-panel sl-card insp-board">
+                <div class="insp-head">
+                    <div>
+                        <h2 class="rpg-panel-title"><i class="fas fa-images"></i> Доска вдохновения</h2>
+                        <p class="rpg-lead insp-lead">Вставьте ссылку на картинку (jpg, png, webp…) — она появится в рамке «как фото». До 48 снимков, всё хранится локально.</p>
+                    </div>
+                    <button type="button" class="rpg-btn rpg-btn-primary" data-open-inspire><i class="fas fa-plus"></i> Добавить фото</button>
+                </div>
+                <div class="insp-cork" aria-hidden="true"></div>
+                <div class="insp-grid">
+                    ${items.length ? items.map(it => {
+                        const tilt = typeof it.tilt === 'number' ? it.tilt : 0;
+                        return `
+                        <figure class="insp-polaroid" style="--tilt:${tilt}deg">
+                            <div class="insp-frame">
+                                <img src="${this.safeUrlAttr(it.url)}" alt="" loading="lazy" decoding="async"
+                                    onerror="var p=this.closest('.insp-polaroid');if(p)p.classList.add('insp-broken');">
+                                <div class="insp-broken-msg"><i class="fas fa-unlink"></i><span>Не удалось загрузить</span></div>
+                            </div>
+                            ${it.caption ? `<figcaption class="insp-caption">${this.esc(it.caption)}</figcaption>` : '<figcaption class="insp-caption insp-caption-empty"> </figcaption>'}
+                            <button type="button" class="insp-remove" data-del-inspire="${this.esc(it.id)}" title="Убрать с доски"><i class="fas fa-times"></i></button>
+                        </figure>`;
+                    }).join('') : `
+                        <div class="insp-empty">
+                            <i class="fas fa-camera-retro"></i>
+                            <p>Пока пусто. Нажмите «Добавить фото» и вставьте URL картинки (например с Unsplash или Pinterest).</p>
+                        </div>`}
+                </div>
+            </section>`;
+    },
+
     bindPage(page, id) {
         document.querySelector('[data-edit-hero]')?.addEventListener('click', () => this.openHeroModal());
         document.querySelector('[data-open-modal="course"]')?.addEventListener('click', () => this.openCourseModal());
@@ -274,6 +416,16 @@ const RPGApp = {
             btn.addEventListener('click', () => {
                 if (confirm('Убрать книгу из списка?')) {
                     RPGData.deleteBook(this.state, btn.dataset.delBook);
+                    this.route();
+                }
+            });
+        });
+        document.querySelector('[data-open-inspire]')?.addEventListener('click', () => this.openInspireModal());
+        document.querySelectorAll('[data-del-inspire]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (confirm('Убрать это фото с доски?')) {
+                    RPGData.deleteInspiration(this.state, btn.dataset.delInspire);
                     this.route();
                 }
             });
@@ -385,6 +537,30 @@ const RPGApp = {
             });
             this.closeModal();
             this.route();
+        });
+    },
+
+    openInspireModal() {
+        this.openModal('Новое фото на доску', `
+            <form class="rpg-form" id="rpgInspireForm">
+                <label>Ссылка на изображение</label>
+                <input name="url" type="text" class="rpg-input" required placeholder="https://… или data:image/…" autocomplete="off">
+                <p class="modal-hint insp-hint">Нужен прямой URL к файлу картинки (<code>https://…jpg</code>). Или вставьте data:image/… если сохраняли в base64.</p>
+                <label>Подпись под фото (необязательно)</label>
+                <input name="caption" type="text" class="rpg-input" maxlength="120" placeholder="Мечта, цитата, напоминание…">
+                <button type="submit" class="rpg-btn rpg-btn-primary">На доску</button>
+            </form>`);
+        document.getElementById('rpgInspireForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const url = fd.get('url');
+            if (!RPGData.normalizeImageUrl(url)) {
+                alert('Нужна ссылка, начинающаяся с http://, https:// или data:image/…');
+                return;
+            }
+            RPGData.addInspiration(this.state, { url, caption: fd.get('caption') });
+            this.closeModal();
+            this.go('#/inspire');
         });
     }
 };
